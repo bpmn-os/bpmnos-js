@@ -35,9 +35,10 @@ html {
   color: var(--bjs-accent);
 }
 
-/* drill-down breadcrumbs at the bottom-left instead of the default top-left (the left offset that
-   clears the palette is kept from bpmn-js) */
+/* Move the bpmn-js drill-down breadcrumbs (the trail shown when entering a collapsed sub-process) to
+   the bottom-left corner. */
 .bjs-breadcrumbs {
   top: auto;
-  bottom: 30px;
+  left: 20px !important;
+  bottom: 10px !important;
 }
