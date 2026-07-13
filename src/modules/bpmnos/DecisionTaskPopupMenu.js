@@ -48,7 +48,7 @@ export default class DecisionTaskPopupMenu {
     };
 
     return function (entries) {
-     if ( is(element, "bpmn:Activity") && element.collapsed != false )  {
+     if ( is(element, "bpmn:Task") )  {
         entries = {
           "replace-with-task": untypedTask,
           "replace-with-decision-task": decisionTask,
