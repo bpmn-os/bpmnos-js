@@ -1,0 +1,61 @@
+{
+  "name": "bpmnos-js",
+  "version": "0.0.0",
+  "description": "Reusable bpmn-js modules for BPMN-OS (moddle, decision-task decorator, properties panel) plus a demo modeller",
+  "main": "src/modules/bpmnos/index.js",
+  "scripts": {
+    "start": "run-s bundle dev",
+    "dev": "run-p watch:js watch:css serve",
+    "watch:js": "webpack -c webpack.config.js --watch",
+    "watch:css": "node scripts/watch-less.mjs",
+    "serve": "sirv dist --dev",
+    "bundle": "run-s bundle:*",
+    "bundle:less": "lessc src/app.less dist/app.css",
+    "bundle:js": "webpack -c webpack.config.js",
+    "test": "node --test test/*.test.mjs"
+  },
+  "author": {
+    "name": "Asvin Goel"
+  },
+  "contributors": [
+    {
+      "name": "bpmn.io contributors",
+      "url": "https://github.com/bpmn-io"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@bpmn-io/properties-panel": "^3.46.0",
+    "bpmn-js": "^18.19.0",
+    "bpmn-js-bpmnlint": "^0.24.0",
+    "bpmn-js-collapse-event-subprocess": "^0.2.2",
+    "bpmn-js-properties-panel": "^5.60.0",
+    "bpmn-js-side-panel": "github:bpmn-os/bpmn-js-side-panel#b97fb21acbe60d19b2beb7bb7d8e8fc35be854c3",
+    "bpmn-workbench": "github:bpmn-os/bpmn-workbench#93d05e70279c129d5eee16d77316e3b7dd5351b2",
+    "bpmnlint": "^10.3.0",
+    "bpmnlint-utils": "^1.1.1",
+    "diagram-js": "^15.18.0",
+    "ids": "^1.0.5",
+    "inherits": "^2.0.4",
+    "min-dash": "^4.2.3",
+    "tiny-svg": "^4.1.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "babel-loader": "^10.1.1",
+    "copy-webpack-plugin": "^14.0.0",
+    "css-loader": "^7.1.4",
+    "less": "^4.6.7",
+    "less-loader": "^12.2.0",
+    "npm-run-all": "^4.1.5",
+    "raw-loader": "^4.0.2",
+    "sirv-cli": "^3.0.1",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.108.1",
+    "webpack-cli": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
