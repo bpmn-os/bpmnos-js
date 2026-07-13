@@ -3,6 +3,8 @@
 Reusable [bpmn-js](https://github.com/bpmn-io/bpmn-js) modules for BPMN-OS (BPMN for optimization and
 simulation), with a demo modeller.
 
+The demo is available online at [bpmn-os.github.io/bpmnos-js](https://bpmn-os.github.io/bpmnos-js/).
+
 ## Modules
 
 Three reusable modules make up the BPMNOS extension:
