@@ -34,3 +34,10 @@ html {
 .bpmnos-gh:hover {
   color: var(--bjs-accent);
 }
+
+/* drill-down breadcrumbs at the bottom-left instead of the default top-left (the left offset that
+   clears the palette is kept from bpmn-js) */
+.bjs-breadcrumbs {
+  top: auto;
+  bottom: 30px;
+}
