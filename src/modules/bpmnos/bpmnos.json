@@ -1,0 +1,373 @@
+{
+  "name": "BPMNOS",
+  "uri": "https://bpmnos.telematique.eu",
+  "prefix": "bpmnos",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "associations": [],
+  "types": [
+    {
+      "name": "ExecutionExtension",
+      "extends": [ "bpmn:Activity" ],
+      "properties": [
+        {
+          "name": "type",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "Decisions", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "decision",
+          "type": "Decision",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Decision", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "condition",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    },
+    {
+      "name": "LoopCharacteristics", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "parameter",
+          "type": "Parameter",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Status", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "attributes",
+          "type": "Attributes",
+          "isMany": true
+        },
+        {
+          "name": "restrictions",
+          "type": "Restrictions",
+          "isMany": true
+        },
+        {
+          "name": "operators",
+          "type": "Operators",
+          "isMany": true
+        },
+        {
+          "name": "decisions",
+          "type": "Decisions",
+          "isMany": true
+        },
+        {
+          "name": "messages",
+          "type": "Messages",
+          "isMany": true
+        }
+       ]
+    },
+    {
+      "name": "Guidance",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "type",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "attributes",
+          "type": "Attributes",
+          "isMany": true
+        },
+        {
+          "name": "restrictions",
+          "type": "Restrictions",
+          "isMany": true
+        },
+        {
+          "name": "operators",
+          "type": "Operators",
+          "isMany": true
+        }
+       ]
+    },
+    {
+      "name": "Attributes", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "attribute",
+          "type": "Attribute",
+          "isMany": true
+        }
+       ]
+    },
+    {
+      "name": "Attribute",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "type",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "objective",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "weight",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    },
+    {
+      "name": "Operators", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "operator",
+          "type": "Operator",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Operator", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "expression",
+          "type": "String",
+          "isAttr": true
+        }
+       ]
+    },
+    {
+      "name": "Parameter",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "name",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "value",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    },
+    {
+      "name": "Restrictions", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "restriction",
+          "type": "Restriction",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Restriction", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "scope",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "expression",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    },
+    {
+      "name": "Timer", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "parameter",
+          "type": "Parameter",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Messages", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "message",
+          "type": "Message",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Message", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "name",
+          "type": "Name",
+          "isAttr": true
+        },
+        {
+          "name": "parameter",
+          "type": "Parameter",
+          "isMany": true
+        },
+        {
+          "name": "content",
+          "type": "Content",
+          "isMany": true
+        }
+       ]
+    },
+    {
+      "name": "Signal", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "name",
+          "type": "Name",
+          "isAttr": true
+        },
+        {
+          "name": "content",
+          "type": "Content",
+          "isMany": true
+        }
+       ]
+    },
+    {
+      "name": "Content",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "key",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "attribute",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    },
+    {
+      "name": "Allocations", 
+      "superClass": [ "Element" ],
+      "properties": [
+         {
+          "name": "allocation",
+          "type": "Allocation",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Allocation", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        }
+       ]
+    },
+    {
+      "name": "Tables", 
+      "superClass": [ "Element" ],
+      "properties": [
+         {
+          "name": "table",
+          "type": "Table",
+          "isMany": true
+        }
+      ]
+    },
+    {
+      "name": "Table", 
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "id",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "source",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    }
+  ]
+}

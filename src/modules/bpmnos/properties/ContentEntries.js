@@ -1,0 +1,147 @@
+import { CollapsibleEntry, TextFieldEntry } from '@bpmn-io/properties-panel';
+
+import { useService } from 'bpmn-js-properties-panel';
+
+import { getStatus, getBusinessObject } from '../utils/StatusUtil';
+
+export function Content(props) {
+  const {
+    element,
+    id: idPrefix,
+    index,
+    item: content,
+    open
+  } = props;
+
+  const contentId = `${ idPrefix }-${ index }`;
+
+  return (
+    <CollapsibleEntry
+      id={ contentId }
+      entries={ ContentEntries({
+        element,
+        content,
+        idPrefix: contentId
+      }) }
+      label={ (content.get('key')  || "<key>") + " ~ " +  (content.get('attribute') || "<attribute>") }
+      open={ open }
+    />
+  );
+
+}
+
+export function ContentEntries(props) {
+  const {
+    idPrefix,
+    element,
+    content
+  } = props;
+
+  const entries = [ {
+    id: idPrefix + '-key',
+    component: ContentKey,
+    idPrefix,
+    content
+  },{
+    id: idPrefix + '-attribute',
+    component: ContentAttribute,
+    idPrefix,
+    content
+  }
+ ];
+
+  return entries;
+}
+
+function ContentKey(props) {
+  const {
+    idPrefix,
+    element,
+    content
+  } = props;
+
+  const commandStack = useService('commandStack');
+  const translate = useService('translate');
+  const debounce = useService('debounceInput');
+
+  const setValue = (value) => {
+    commandStack.execute('element.updateModdleProperties', {
+      element: content,
+      moddleElement: content,
+      properties: {
+        key: value
+      }
+    });
+  };
+
+  const getValue = () => {
+    return content.key;
+  };
+
+  const validate = (value) => {
+    if ( !value || value.trim() == "" ) {
+      return 'Key must not be empty.';
+    }
+  }
+
+  return TextFieldEntry({
+    element: content,
+    id: idPrefix + '-key',
+    label: translate('Key'),
+    validate,
+    getValue,
+    setValue,
+    debounce
+  });
+}
+
+function ContentAttribute(props) {
+  const {
+    idPrefix,
+    element,
+    content
+  } = props;
+
+  const commandStack = useService('commandStack');
+  const translate = useService('translate');
+  const debounce = useService('debounceInput');
+
+  const setValue = (value) => {
+    commandStack.execute('element.updateModdleProperties', {
+      element: content,
+      moddleElement: content,
+      properties: {
+        attribute: value
+      }
+    });
+  };
+
+  const getValue = () => {
+    return content.attribute;
+  };
+
+  const validate = (value) => {
+    if ( !value || value.trim() == "" ) {
+      return 'Attribute name must not be empty.';
+    }
+/*
+    if ( value ) {
+      let businessObject = getBusinessObject(content);
+      const status = getStatus(businessObject);    
+      if (status.filter(attribute => attribute.name == value).length == 0) {
+        return 'Attribute name does not exist.';
+      }
+    }
+*/
+  }
+
+  return TextFieldEntry({
+    element: content,
+    id: idPrefix + '-attribute',
+    label: translate('Attribute name'),
+    validate,
+    getValue,
+    setValue,
+    debounce
+  });
+}

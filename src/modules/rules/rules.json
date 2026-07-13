@@ -1,0 +1,220 @@
+{
+  "@bpmn-workbench/bpmn/adhoc-subprocess.js": {
+    "severity": "error",
+    "subtypes": {
+      "start-event": {
+        "description": "Start events are not allowed in an ad-hoc sub-process. An activity without an incoming sequence flow is enabled immediately when the sub-process starts.",
+        "reference": "BPMN 2.0.2, Ad-Hoc Sub-Process, p. 181",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=211"
+      },
+      "end-event": {
+        "description": "End events are not allowed in an ad-hoc sub-process. Completion is governed by the sub-process completion condition instead.",
+        "reference": "BPMN 2.0.2, Ad-Hoc Sub-Process, p. 181",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=211"
+      },
+      "missing-activity": {
+        "description": "An ad-hoc sub-process must contain at least one activity.",
+        "reference": "BPMN 2.0.2, Ad-Hoc Sub-Process, p. 181",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=211"
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/implicit-start.js": {
+    "severity": "error",
+    "description": "A flow node without an incoming sequence flow is instantiated when the process starts. Use an explicit start event to improve clarity.",
+    "reference": "BPMN 2.0.2, Start Event, p. 238",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=268"
+  },
+  "@bpmn-workbench/bpmn/implicit-end.js": {
+    "severity": "error",
+    "description": "A flow node without an outgoing sequence flow consumes its token upon completion. Use an explicit end event to improve clarity.",
+    "reference": "BPMN 2.0.2, End Event, p. 246",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=276"
+  },
+  "@bpmn-workbench/bpmn/no-blank-event.js": {
+    "severity": "error",
+    "subtypes": {
+      "intermediate": {
+        "description": "Intermediate events must be typed to indicate the event that is caught or thrown (although not illegal, an untyped intermediate event would be interpreted as an insufficiently declared throw event).",
+        "reference": "BPMN 2.0.2, None Intermediate Event, p. 250",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=280"
+      },
+      "boundary": {
+        "description": "A boundary event must be typed to indicate the event it catches.",
+        "reference": "BPMN 2.0.2, Boundary Events, p. 257",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=287"
+      },
+      "event-sub-process-start": {
+        "description": "A start event of an event sub-process must be typed to indicate the event it catches.",
+        "reference": "BPMN 2.0.2, Start Events for Event Sub-Processes, p. 241",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=271"
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/implicit-split.js": {
+    "severity": "error",
+    "subtypes": {
+      "activity": {
+        "description": "Several unconditional outgoing flows from an activity create a parallel split, sending a token along each. Use an explicit gateway to improve clarity and avoid misinterpretation.",
+        "reference": "BPMN 2.0.2, Activities, p. 151",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=181"
+      },
+      "event": {
+        "description": "Several unconditional outgoing flows from an event create a parallel split, sending a token along each. Use an explicit gateway to improve clarity and avoid misinterpretation.",
+        "reference": "BPMN 2.0.2, Events, p. 258",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=288"
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/implicit-join.js": {
+    "severity": "error",
+    "subtypes": {
+      "activity": {
+        "description": "Several incoming flows to an activity are uncontrolled, so the activity is instantiated separately for each arriving token without synchronisation. Use an explicit gateway to improve clarity and avoid misinterpretation.",
+        "reference": "BPMN 2.0.2, Activities, p. 151",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=181"
+      },
+      "event": {
+        "description": "Several incoming flows to an event are uncontrolled, so the event is enabled separately for each arriving token without synchronisation. Use an explicit gateway to improve clarity and avoid misinterpretation.",
+        "reference": "BPMN 2.0.2, Events, p. 258",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=288"
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/flow-conditions.js": {
+    "severity": "error",
+    "subtypes": {
+      "conditional": {
+        "description": "A conditional flow out of an activity forms an implicit gateway. Use an explicit gateway to improve clarity.",
+        "reference": "BPMN 2.0.2, Conditional flow, p. 95",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=125"
+      },
+      "default": {
+        "description": "A default flow out of an activity forms an implicit gateway. Use an explicit gateway to improve clarity.",
+        "reference": "BPMN 2.0.2, Default flow, p. 95",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=125"
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/cycle.js": {
+    "severity": "warn",
+    "description": "A cycle in the sequence flow can cause unintended side-effects (e.g. livelock or race hazard). Use a loop activity to guard against such problems.",
+    "reference": "BPMN 2.0.2, Loop Activity, p. 432",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=462"
+  },
+  "@bpmn-workbench/bpmn/complex-gateway.js": {
+    "severity": "error",
+    "description": "Complex gateways should be avoided and can usually be replaced by a combination of exclusive, parallel, and inclusive gateways."
+  },
+  "@bpmn-workbench/bpmn/structural-anomaly.js": {
+    "severity": "error",
+    "description": "The control flow appears to have an overly complex structure that can probably be simplified.",
+    "subtypes": {
+      "deadlock": {
+        "description": "An exclusive split creates a token on only one outgoing sequence flow, but a parallel join waits for a token on every incoming flow. The join never receives all its tokens, so it blocks and the process deadlocks. Use matching gateway types."
+      },
+      "possible-deadlock": {
+        "description": "A branch leading to a parallel join may never receive a token, so the join waits for it forever and the process deadlocks. Use an inclusive merge."
+      },
+      "race": {
+        "description": "A parallel split creates a token on each outgoing sequence flow, but an exclusive merge passes on every token it receives. The flow after the merge therefore runs once for each token. Use matching gateway types."
+      },
+      "possible-race": {
+        "description": "More than one branch leading to an exclusive merge may receive a token, and the merge passes on each token it receives, so the flow after the merge may run more than once. Use an inclusive merge."
+      },
+      "mismatch": {
+        "description": "Avoid inconsistent blocks to improve readability and guard against issues such as deadlocks or race hazards."
+      },
+      "overcomplex": {
+        "description": "The control flow could not be reduced to properly nested splits and joins, so its soundness cannot be determined. Simplify it into matching split and join blocks."
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/non-interrupting-boundary-event.js": {
+    "severity": "warn",
+    "description": "Non-interrupting boundary events cause race hazards as they can be triggered multiple times. Consider using a non-interrupting event-subprocess instead."
+  },
+  "@bpmn-workbench/bpmn/process-start-event.js": {
+    "severity": "info",
+    "description": "It is discouraged to use multiple start events.",
+    "reference": "BPMN 2.0.2, Start Event, p. 239",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=269"
+  },
+  "@bpmn-workbench/bpmn/sub-process-start-event.js": {
+    "severity": "error",
+    "subtypes": {
+      "typed-start": {
+        "description": "A sub-process must use a blank start event. Its flow is triggered by the token from the parent process.",
+        "reference": "BPMN 2.0.2, Sub-Process, p. 430",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=460"
+      },
+      "multiple-start": {
+        "description": "A sub-process has at most one start event. The token from the parent process triggers it.",
+        "reference": "BPMN 2.0.2, Sub-Process, p. 430",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=460"
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/event-sub-process-start-event.js": {
+    "severity": "error",
+    "description": "An event sub-process must have exactly one start event.",
+    "reference": "BPMN 2.0.2, Start Events for Event Sub-Processes, p. 241",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=271"
+  },
+  "@bpmn-workbench/bpmn/no-duplicate-sequence-flows.js": {
+    "severity": "error",
+    "subtypes": {
+      "race": {
+        "description": "Both duplicate flows fire, so the target is reached twice, causing a race. Remove the duplicate."
+      },
+      "deadlock": {
+        "description": "A parallel join waits for a token on each duplicate flow, but the source sends only one, so the process deadlocks. Remove the duplicate."
+      },
+      "redundant": {
+        "description": "One of the duplicate flows is redundant and never affects the outcome. Remove it."
+      }
+    }
+  },
+  "@bpmn-workbench/bpmn/superfluous-gateway.js": {
+    "severity": "error",
+    "description": "A gateway must have either multiple incoming sequence flows or multiple outgoing sequence flows (i.e., it must merge or split the flow).",
+    "reference": "BPMN 2.0.2, Gateway, p. 289",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=319"
+  },
+  "engine/non-executable-process.js": {
+    "severity": "warn"
+  },
+  "engine/typed-task.js": {
+    "severity": "warn"
+  },
+  "engine/event-type.js": {
+    "severity": "error"
+  },
+  "engine/multiple-event-definitions.js": {
+    "severity": "error"
+  },
+  "engine/call-activity.js": {
+    "severity": "error"
+  },
+  "engine/transaction.js": {
+    "severity": "error"
+  },
+  "engine/inclusive-gateway.js": {
+    "severity": "error"
+  },
+  "bpmnos/default-attributes.js": {
+    "severity": "error"
+  },
+  "bpmnos/attribute-redeclared.js": {
+    "severity": "error"
+  },
+  "bpmnos/attribute-undeclared.js": {
+    "severity": "error"
+  },
+  "bpmnos/gatekeeper-restrictions.js": {
+    "severity": "error"
+  },
+  "bpmnos/allocation.js": {
+    "severity": "error"
+  }
+}
