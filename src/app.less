@@ -1,0 +1,19 @@
+/* The two-pane layout and the shared chrome palette (--bjs-*) are owned by bpmn-js-side-panel; the
+   Issues tab (bpmn-workbench/issues) and the toolbar (bpmn-workbench/toolbar) each ship their own CSS.
+   The app only needs the page to have a height and to size its logo. */
+body,
+html {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12px;
+
+  height: 100%;
+  max-height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* the BPMNOS logo shown in the side-panel header slot */
+.bpmnos-logo {
+  width: 120px;
+  height: auto;
+}
