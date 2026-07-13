@@ -12,8 +12,25 @@ html {
   margin: 0;
 }
 
-/* the BPMNOS logo shown in the side-panel header slot */
+/* logo + source link shown in the side-panel header slot */
+.bpmnos-brand {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .bpmnos-logo {
   width: 120px;
   height: auto;
+}
+
+.bpmnos-gh {
+  display: flex;
+  color: rgb(64, 64, 64); /* the bpmn.io logo grey */
+  text-decoration: none;
+}
+
+.bpmnos-gh:hover {
+  color: var(--bjs-accent);
 }
