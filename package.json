@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "description": "Reusable bpmn-js modules for BPMN-OS (moddle, decision-task decorator, properties panel) plus a demo modeller",
   "main": "src/modules/bpmnos/index.js",
+  "exports": {
+    ".": "./src/modules/bpmnos/index.js",
+    "./moddle": "./src/modules/bpmnos/bpmnos.json",
+    "./decision-task": "./src/modules/bpmnos/decision-task.js",
+    "./properties": "./src/modules/bpmnos/properties.js"
+  },
   "scripts": {
     "start": "run-s bundle dev",
     "dev": "run-p watch:js watch:css serve",

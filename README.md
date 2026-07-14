@@ -7,14 +7,18 @@ The demo is available online at [bpmn-os.github.io/bpmnos-js](https://bpmn-os.gi
 
 ## Modules
 
-Three reusable modules make up the BPMNOS extension:
+The BPMNOS extension is three reusable modules, importable individually or together (`bpmnos-js`
+bundles all three):
 
-- **BPMNOS moddle**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
+- **`bpmnos-js/moddle`**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
   operators, messages, guidance, allocations, and lookup tables.
-- **Decision-task decorator**: a renderer that draws the decision-task glyph, with its popup menu and
-  context-pad wiring.
-- **Property panel**: a properties-panel provider for the BPMNOS attributes, shown as a tab in the side
-  panel.
+- **`bpmnos-js/decision-task`**: draws the decision-task glyph and provides the activity replace menu
+  (the context-pad wrench). The menu adds the decision task and keeps type changes consistent: a task,
+  a typed task (user task, decision task, ...), and a sub-process convert only through an untyped task,
+  so a sub-process never becomes a typed task directly. Turning a flow sub-process into an event
+  sub-process is opt-in via `activityPopupMenu: { supportEventSubProcess: true }`.
+- **`bpmnos-js/properties`**: a properties-panel provider for the BPMNOS attributes, shown as a tab in
+  the side panel.
 
 ## Demo modeller
 
