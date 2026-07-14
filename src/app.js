@@ -53,6 +53,9 @@ var modeler = new BpmnModeler({
     IssuesPanelModule,
     CollapseEventSubProcessModule
   ],
+  // opt in to creating an event sub-process by replacing a flow sub-process, until
+  // bpmn-js-event-subprocess provides a palette entry
+  activityPopupMenu: { supportEventSubProcess: true },
   moddleExtensions
 });
 
