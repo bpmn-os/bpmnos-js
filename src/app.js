@@ -4,7 +4,7 @@ import { BpmnPropertiesPanelModule } from 'bpmn-js-properties-panel';
 
 import SidePanelModule from 'bpmn-js-side-panel';
 
-import CollapseEventSubProcessModule from 'bpmn-js-collapse-event-subprocess';
+import EventSubProcessesModule from 'bpmn-js-event-subprocesses'; // palette entry, collapse/expand popup menu, collapsed decorator
 
 import LintModule from 'bpmn-js-bpmnlint';
 import getRules from './modules/rules'; // reused essential + BPMNOS engine/execution lint rules (bundle carries descriptions)
@@ -53,12 +53,9 @@ var modeler = new BpmnModeler({
     SidePanelModule,
     LintModule,
     IssuesPanelModule,
-    CollapseEventSubProcessModule,
+    EventSubProcessesModule,
     ContextPadCompatModule
   ],
-  // opt in to creating an event sub-process by replacing a flow sub-process, until
-  // bpmn-js-event-subprocess provides a palette entry
-  activityPopupMenu: { supportEventSubProcess: true },
   moddleExtensions
 });
 

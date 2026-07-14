@@ -5,7 +5,8 @@ import { is } from 'bpmn-js/lib/util/ModelUtil';
 // A typed task (user/service/... or a decision task) can change type or revert to an untyped task, but
 // never become a sub-process. A flow sub-process can be flattened to an untyped task (when collapsed) or
 // changed to another sub-process, but never become a typed task. Only the untyped task bridges the two.
-// Turning a flow sub-process into an event sub-process is opt-in (config.activityPopupMenu.supportEventSubProcess).
+// Whether an activity's triggeredByEvent can be flipped (flow activity <-> event sub-process) is gated by
+// config.activityPopupMenu.unlockedTriggeredByEvent (locked by default).
 const TYPED_TASK_ENTRIES = [
   "replace-with-user-task",
   "replace-with-service-task",
@@ -18,6 +19,7 @@ const TYPED_TASK_ENTRIES = [
 ];
 
 const SUBPROCESS_ENTRIES = [
+  "replace-with-subprocess", // the generic "Sub-process" from the transaction / event-sub-process option set
   "replace-with-collapsed-subprocess",
   "replace-with-expanded-subprocess",
   "replace-with-ad-hoc-subprocess",
@@ -28,11 +30,13 @@ const SUBPROCESS_ENTRIES = [
 
 export default class ActivityPopupMenu {
   constructor(config, popupMenu, bpmnReplace, modeling) {
-    // opt-in: allow turning a flow sub-process into an event sub-process. Off by default. This is a
-    // temporary creation path until bpmn-js-event-subprocess provides a palette entry, after which the
-    // option is expected to be dropped.
-    this._supportEventSubProcess = !!(config && config.supportEventSubProcess);
-    popupMenu.registerProvider("bpmn-replace", this);
+    // Locked by default: event sub-processes stay separate from flow activities. A flow activity cannot be
+    // turned into an event sub-process, and an event sub-process cannot be turned into a task or a flow
+    // sub-process. Unlock to let triggeredByEvent be flipped in both directions.
+    this._triggeredByEventUnlocked = !!(config && config.unlockedTriggeredByEvent);
+    // register below the default priority (1000) so this runs after bpmn-js's ReplaceMenuProvider has
+    // populated the entries, letting the funnel add and remove options against the final set
+    popupMenu.registerProvider("bpmn-replace", 500, this);
     this.replaceElement = bpmnReplace.replaceElement;
     this.modeling = modeling;
   }
@@ -89,13 +93,21 @@ export default class ActivityPopupMenu {
     return function (entries) {
       const businessObject = element.businessObject;
 
-      // an event sub-process keeps its own standard menu (later owned by bpmn-js-event-subprocess)
+      // an event sub-process is not a flow activity: by default it never becomes a task or a flow
+      // sub-process. bpmn-js offers those conversions for both a collapsed event sub-process (the plain
+      // task/sub-process replace options) and an expanded one (the EVENT_SUB_PROCESS set carries the same
+      // task/sub-process targets), so strip them unless conversion is enabled.
       if ( is(element, "bpmn:SubProcess") && businessObject.triggeredByEvent ) {
+        if ( !self._triggeredByEventUnlocked ) {
+          [ "replace-with-task", ...TYPED_TASK_ENTRIES, ...SUBPROCESS_ENTRIES ].forEach(function (id) {
+            delete entries[id];
+          });
+        }
         return entries;
       }
 
       // turning a flow sub-process into an event sub-process is opt-in (see the constructor)
-      if ( !self._supportEventSubProcess ) {
+      if ( !self._triggeredByEventUnlocked ) {
         delete entries["replace-with-event-subprocess"];
       }
 

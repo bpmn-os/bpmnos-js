@@ -34,7 +34,7 @@
     "@bpmn-io/properties-panel": "^3.46.0",
     "bpmn-js": "^18.19.0",
     "bpmn-js-bpmnlint": "^0.24.0",
-    "bpmn-js-collapse-event-subprocess": "^0.2.2",
+    "bpmn-js-event-subprocesses": "github:bpmn-os/bpmn-js-event-subprocesses#4c82cf6894f6006783d6ba85825eacc2115c7f71",
     "bpmn-js-properties-panel": "^5.60.0",
     "bpmn-js-side-panel": "github:bpmn-os/bpmn-js-side-panel#b97fb21acbe60d19b2beb7bb7d8e8fc35be854c3",
     "bpmn-workbench": "github:bpmn-os/bpmn-workbench#93d05e70279c129d5eee16d77316e3b7dd5351b2",
