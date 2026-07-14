@@ -27,7 +27,8 @@ export function decisionHandler({ element, injector }) {
     return;
   }
 
-  if ( !is(element, 'bpmn:Task') || getRelevantBusinessObject(element).type != "Decision" ) {
+  // only a plain bpmn:Task (not a typed subtype such as a user task) carrying type="Decision"
+  if ( businessObject.$type !== 'bpmn:Task' || businessObject.type != "Decision" ) {
     return;
   }
 
@@ -35,7 +36,7 @@ export function decisionHandler({ element, injector }) {
         commandStack = injector.get('commandStack');
 
   const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-  const decisions = parent.decisions ? parent.get('decisions')[0] : {};
+  const decisions = ( parent.get ? parent.get('decisions') || [] : [] )[0] || {};
 
   const items = ( decisions.decision || []).map((decision, index) => {
     const id = element.id + '-decision-' + index;

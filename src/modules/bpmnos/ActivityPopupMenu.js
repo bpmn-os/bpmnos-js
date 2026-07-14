@@ -27,13 +27,14 @@ const SUBPROCESS_ENTRIES = [
 ];
 
 export default class ActivityPopupMenu {
-  constructor(config, popupMenu, bpmnReplace) {
+  constructor(config, popupMenu, bpmnReplace, modeling) {
     // opt-in: allow turning a flow sub-process into an event sub-process. Off by default. This is a
     // temporary creation path until bpmn-js-event-subprocess provides a palette entry, after which the
     // option is expected to be dropped.
     this._supportEventSubProcess = !!(config && config.supportEventSubProcess);
     popupMenu.registerProvider("bpmn-replace", this);
     this.replaceElement = bpmnReplace.replaceElement;
+    this.modeling = modeling;
   }
 
   getPopupMenuHeaderEntries(element) {
@@ -45,13 +46,26 @@ export default class ActivityPopupMenu {
   getPopupMenuEntries(element) {
     const self = this;
 
+    // Toggle the BPMNOS `type` on a fresh element. A decision task is a plain bpmn:Task carrying
+    // type="Decision"; reverting clears it. Never reuse the old businessObject (that corrupts a typed
+    // subtype such as a user task); let replaceElement build a clean bpmn:Task and set the attribute
+    // via modeling so it is a proper, undoable model change.
+    const setType = function (type) {
+      let target = element;
+      if (target.type !== "bpmn:Task") {
+        target = self.replaceElement(target, { type: "bpmn:Task" });
+      }
+      if ((target.businessObject.type || undefined) !== type) {
+        self.modeling.updateProperties(target, { type: type });
+      }
+      return target;
+    };
+
     const untypedTask = {
       label: "Task",
       className: "bpmn-icon-task",
       action: function () {
-        const businessObject = element.businessObject;
-        delete businessObject.type;
-        return self.replaceElement(element, { type: "bpmn:Task", businessObject });
+        return setType(undefined);
       }
     };
 
@@ -59,9 +73,7 @@ export default class ActivityPopupMenu {
       label: "Decision Task",
       className: "bpmn-icon-decision-task",
       action: function () {
-        const businessObject = element.businessObject;
-        businessObject.type = "Decision";
-        return self.replaceElement(element, { type: "bpmn:Task", businessObject });
+        return setType("Decision");
       }
     };
 
@@ -122,4 +134,4 @@ export default class ActivityPopupMenu {
   }
 }
 
-ActivityPopupMenu.$inject = ["config.activityPopupMenu", "popupMenu", "bpmnReplace"];
+ActivityPopupMenu.$inject = ["config.activityPopupMenu", "popupMenu", "bpmnReplace", "modeling"];
