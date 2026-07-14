@@ -16,6 +16,8 @@ import BPMNOSModule from './modules/bpmnos'; // moddle-backed properties panel, 
 
 import newDiagram from './newDiagram.bpmn';
 
+import ContextPadCompatModule from './context-pad-compat'; // shim bpmn-js's deprecated ContextPad#getPad call
+
 var moddleExtensions = {
   bpmnos: BPMNOSModdleDescriptor
 };
@@ -51,7 +53,8 @@ var modeler = new BpmnModeler({
     SidePanelModule,
     LintModule,
     IssuesPanelModule,
-    CollapseEventSubProcessModule
+    CollapseEventSubProcessModule,
+    ContextPadCompatModule
   ],
   // opt in to creating an event sub-process by replacing a flow sub-process, until
   // bpmn-js-event-subprocess provides a palette entry
