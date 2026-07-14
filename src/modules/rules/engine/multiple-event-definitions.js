@@ -1,14 +1,12 @@
-const requiresCheck = require('./helper').requiresCheck;
+import { requiresCheck } from './helper';
 
-const {
-  is,
-} = require('bpmnlint-utils');
+import { is, } from 'bpmnlint-utils';
 
 
 /**
  * A rule that verifies that an event contains one event definition.
  */
-module.exports = function() {
+export default function() {
 
   function check(node, reporter) {
     let process = requiresCheck(node) || {};

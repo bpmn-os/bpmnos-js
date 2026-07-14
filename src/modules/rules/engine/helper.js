@@ -1,7 +1,4 @@
-const {
-  is,
-  isAny
-} = require('bpmnlint-utils');
+import { is, isAny } from 'bpmnlint-utils';
 
 function getProcess(node) {
   do {
@@ -64,6 +61,4 @@ function unsupportedNode(description, types, property, value) {
   };
 }
 
-module.exports.getProcess = getProcess;
-module.exports.requiresCheck = requiresCheck;
-module.exports.unsupportedNode = unsupportedNode;
+export { getProcess, requiresCheck, unsupportedNode };

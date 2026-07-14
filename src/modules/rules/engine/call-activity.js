@@ -1,3 +1,3 @@
-const unsupportedNode = require('./helper').unsupportedNode;
+import { unsupportedNode } from './helper';
 
-module.exports = unsupportedNode('Call activities not supported by execution engine','bpmn:CallActivity');
+export default unsupportedNode('Call activities not supported by execution engine','bpmn:CallActivity');

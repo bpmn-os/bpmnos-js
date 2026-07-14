@@ -53,7 +53,4 @@ function getStatus(businessObject) {
   return status;
 }
 
-module.exports.getBusinessObject = getBusinessObject;
-module.exports.getCustomElements = getCustomElements;
-module.exports.getAttributes = getAttributes;
-module.exports.getStatus = getStatus;
+export { getBusinessObject, getCustomElements, getAttributes, getStatus };

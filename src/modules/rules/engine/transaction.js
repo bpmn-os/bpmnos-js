@@ -1,3 +1,3 @@
-const unsupportedNode = require('./helper').unsupportedNode;
+import { unsupportedNode } from './helper';
 
-module.exports = unsupportedNode('Transactions not supported by execution engine','bpmn:Transaction');
+export default unsupportedNode('Transactions not supported by execution engine','bpmn:Transaction');

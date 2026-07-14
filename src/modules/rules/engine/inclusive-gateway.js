@@ -1,3 +1,3 @@
-const unsupportedNode = require('./helper').unsupportedNode;
+import { unsupportedNode } from './helper';
 
-module.exports = unsupportedNode('Inclusive gateways not supported by execution engine','bpmn:InclusiveGateway');
+export default unsupportedNode('Inclusive gateways not supported by execution engine','bpmn:InclusiveGateway');

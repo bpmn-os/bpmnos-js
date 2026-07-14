@@ -29,7 +29,7 @@ export function Parameter(props) {
 
 }
 
-export default function ParameterEntries(props) {
+export function ParameterEntries(props) {
 
   const {
     idPrefix,

@@ -1,15 +1,13 @@
-const getProcess = require('../engine/helper').getProcess;
-const getCustomElements = require('../../bpmnos/utils/StatusUtil').getCustomElements;
+import { getProcess } from '../engine/helper';
+import { getCustomElements } from '../../bpmnos/utils/StatusUtil';
 
-const {
-  is
-} = require('bpmnlint-utils');
+import { is } from 'bpmnlint-utils';
 
 
 /**
  * A rule that verifies that request and release activities refer to at least one allocation.
  */
-module.exports = function() {
+export default function() {
 
   function check(node, reporter) {
     const process = getProcess(node) || {};

@@ -1,6 +1,6 @@
 name: Deploy to GitHub Pages
 
-# Builds the demo (webpack + lessc → dist/) and publishes it to GitHub Pages on every push to main.
+# Builds the demo (vite → dist/) and publishes it to GitHub Pages on every push to main.
 on:
   push:
     branches: [ main ]
@@ -26,7 +26,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run bundle
+      - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -1,12 +1,10 @@
-const {
-  is
-} = require('bpmnlint-utils');
+import { is } from 'bpmnlint-utils';
 
 
 /**
  * Rule that reports processes for which isExecutable is not true.
  */
-module.exports = function() {
+export default function() {
 
   function check(node, reporter) {
     if ( is(node, 'bpmn:Process') && !node.isExecutable ) {

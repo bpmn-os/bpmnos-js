@@ -152,6 +152,11 @@
         "description": "A sub-process has at most one start event. The token from the parent process triggers it.",
         "reference": "BPMN 2.0.2, Sub-Process, p. 430",
         "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=460"
+      },
+      "empty": {
+        "description": "An empty sub-process has no start event and no content, so there is nothing to execute.",
+        "reference": "BPMN 2.0.2, Sub-Process, p. 430",
+        "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=460"
       }
     }
   },

@@ -1,11 +1,8 @@
-const {
-  is,
-  isAny
-} = require('bpmnlint-utils');
+import { is, isAny } from 'bpmnlint-utils';
 
-const requiresCheck = require('./helper').requiresCheck;
+import { requiresCheck } from './helper';
 
-module.exports = function () {
+export default function () {
   function check(node, reporter) {
     if ( requiresCheck(node) ) {
       if ( is(node, 'bpmn:StartEvent') && !node.$parent.triggeredByEvent && node.eventDefinitions && node.eventDefinitions.length ) {

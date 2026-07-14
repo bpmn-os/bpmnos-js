@@ -1,10 +1,22 @@
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import '@bpmn-io/properties-panel/dist/assets/properties-panel.css';
+import 'bpmn-js-bpmnlint/dist/assets/css/bpmn-js-bpmnlint.css';
+import 'bpmn-js-side-panel/assets/side-panel.css';
+import './modules/bpmnos/css/bpmnos.css';
+import './app.less';
+
+import bpmnosLogo from './BPMNOS.svg'; // resolved to the served asset URL by Vite
+
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 
 import { BpmnPropertiesPanelModule } from 'bpmn-js-properties-panel';
 
 import SidePanelModule from 'bpmn-js-side-panel';
 
-import EventSubProcessesModule from 'bpmn-js-event-subprocesses'; // palette entry, collapse/expand popup menu, collapsed decorator
+import CollapseEventSubProcessModule from 'bpmn-js-collapse-event-subprocess'; // collapse/expand popup menu
+import EventSubProcessPaletteModule from 'bpmn-js-collapse-event-subprocess/palette'; // palette entry to create event sub-processes
 
 import LintModule from 'bpmn-js-bpmnlint';
 import getRules from './modules/rules'; // reused essential + BPMNOS engine/execution lint rules (bundle carries descriptions)
@@ -14,7 +26,7 @@ import createToolbar from 'bpmn-workbench/toolbar'; // on-canvas file/view toolb
 import BPMNOSModdleDescriptor from './modules/bpmnos/bpmnos.json';
 import BPMNOSModule from './modules/bpmnos'; // moddle-backed properties panel, decision-task decorator + popup menu
 
-import newDiagram from './newDiagram.bpmn';
+import newDiagram from './newDiagram.bpmn?raw';
 
 import ContextPadCompatModule from './context-pad-compat'; // shim bpmn-js's deprecated ContextPad#getPad call
 
@@ -33,7 +45,7 @@ var modeler = new BpmnModeler({
     parent: '#side-panel',
     // logo + source link, shown in the side-panel header (above the tabs)
     header: '<div class="bpmnos-brand">'
-      + '<img class="bpmnos-logo" src="BPMNOS.svg" alt="BPMNOS"/>'
+      + '<img class="bpmnos-logo" src="' + bpmnosLogo + '" alt="BPMNOS"/>'
       + '<a class="bpmnos-gh" href="https://github.com/bpmn-os/bpmnos-js" target="_blank"'
       + ' rel="noopener" title="View source on GitHub" aria-label="GitHub repository">'
       + '<svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path fill="currentColor"'
@@ -53,7 +65,8 @@ var modeler = new BpmnModeler({
     SidePanelModule,
     LintModule,
     IssuesPanelModule,
-    EventSubProcessesModule,
+    CollapseEventSubProcessModule,
+    EventSubProcessPaletteModule,
     ContextPadCompatModule
   ],
   moddleExtensions

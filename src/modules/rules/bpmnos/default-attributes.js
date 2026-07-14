@@ -1,15 +1,12 @@
-const getStatus = require('../../bpmnos/utils/StatusUtil').getStatus;
-const getCustomElements = require('../../bpmnos/utils/StatusUtil').getCustomElements;
+import { getStatus } from '../../bpmnos/utils/StatusUtil';
+import { getCustomElements } from '../../bpmnos/utils/StatusUtil';
 
-const {
-  is,
-  isAny
-} = require('bpmnlint-utils');
+import { is, isAny } from 'bpmnlint-utils';
 
 /**
  * A rule that checks that attributes for restrictions and operators are declared.
  */
-module.exports = function() {
+export default function() {
 
   function check(node, reporter) {
     if ( is(node,'bpmn:Process') && node.isExecutable ) {

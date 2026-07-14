@@ -1,16 +1,14 @@
-const getAttributes = require('../../bpmnos/utils/StatusUtil').getAttributes;
-const getStatus = require('../../bpmnos/utils/StatusUtil').getStatus;
+import { getAttributes } from '../../bpmnos/utils/StatusUtil';
+import { getStatus } from '../../bpmnos/utils/StatusUtil';
 
-const {
-  is
-} = require('bpmnlint-utils');
+import { is } from 'bpmnlint-utils';
 
 
 
 /**
  * A rule that checks that no attribute is redeclared.
  */
-module.exports = function() {
+export default function() {
 
   function check(node, reporter) {
     if ( node.$parent ) {

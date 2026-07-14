@@ -1,16 +1,14 @@
-const getCustomElements = require('../../bpmnos/utils/StatusUtil').getCustomElements;
-const getStatus = require('../../bpmnos/utils/StatusUtil').getStatus;
+import { getCustomElements } from '../../bpmnos/utils/StatusUtil';
+import { getStatus } from '../../bpmnos/utils/StatusUtil';
 
-const {
-  is
-} = require('bpmnlint-utils');
+import { is } from 'bpmnlint-utils';
 
 
 
 /**
  * A rule that checks that attributes for restrictions and operators are declared.
  */
-module.exports = function() {
+export default function() {
 
   function check(node, reporter) {
     const status = getStatus(node);
