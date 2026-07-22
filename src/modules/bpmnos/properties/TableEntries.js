@@ -193,7 +193,10 @@ function TableHeader(props) {
 
   const validate = (value) => {
     if ( !value || value.trim() == "" ) {
-      return 'Column headers must not be empty.';
+      return 'Table header must not be empty.';
+    }
+    if ( !value.includes(";") ) {
+      return 'Header must contain at least two column names separated by semicolon.';
     }
   }
 
@@ -201,7 +204,6 @@ function TableHeader(props) {
     element: table,
     id: idPrefix + '-header',
     label: translate('Table header'),
-    description: translate('Semicolon separated column names'),
     validate,
     getValue,
     setValue,
