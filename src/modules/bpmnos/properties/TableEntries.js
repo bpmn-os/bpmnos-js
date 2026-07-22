@@ -193,10 +193,14 @@ function TableHeader(props) {
 
   const validate = (value) => {
     if ( !value || value.trim() == "" ) {
-      return 'Table header must not be empty.';
+      return 'Header must not be empty.';
     }
-    if ( !value.includes(";") ) {
+    const columns = value.split(";").map(name => name.trim());
+    if ( columns.length < 2 ) {
       return 'Header must contain at least two column names separated by semicolon.';
+    }
+    if ( columns.some(name => name == "") ) {
+      return 'Column names must not be empty.';
     }
   }
 
