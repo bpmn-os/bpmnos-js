@@ -18,10 +18,10 @@ export default function() {
       if ( restrictions ) {
         for (var j=0; j < restrictions.length; j++) {
           if ( !restrictions[j].attribute ) {
-            reporter.report(node.id, "Attribute missing for restriction '" + restrictions[j].id + "'");
+            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute missing for restriction '" + restrictions[j].id + "'");
           }
           else if ( status.filter(attribute => attribute.name == restrictions[j].attribute).length == 0) {
-            reporter.report(node.id, "Restriction on undeclared attribute '" + restrictions[j].attribute + "'");
+            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Restriction on undeclared attribute '" + restrictions[j].attribute + "'");
           }
         }
       }
@@ -29,16 +29,16 @@ export default function() {
       if ( operators ) {
         for (var j=0; j < operators.length; j++) {
           if ( !operators[j].attribute ) {
-            reporter.report(node.id, "Attribute missing for operator '" + operators[j].id + "'");
+            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute missing for operator '" + operators[j].id + "'");
           }
           else if ( status.filter(attribute => attribute.name == operators[j].attribute).length == 0) {
-            reporter.report(node.id, "Operator on undeclared attribute '" + operators[j].attribute + "'");
+            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Operator on undeclared attribute '" + operators[j].attribute + "'");
           }
 
           if ( operators[j].parameter ) {
             operators[j].parameter.forEach(function(parameter) {
               if ( parameter.attribute && status.filter(attribute => attribute.name == parameter.attribute).length == 0) {
-                reporter.report(node.id, "Operator has parameter using undeclared attribute '" + parameter.attribute + "'");
+                // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Operator has parameter using undeclared attribute '" + parameter.attribute + "'");
               }
             });
           }
@@ -48,7 +48,7 @@ export default function() {
         // Timer parameter
         const timerAttribute = customElements[i].attribute;
         if ( timerAttribute && status.filter(attribute => attribute.name == timerAttribute).length == 0) {
-          reporter.report(node.id, "Parameter uses undeclared attribute '" + timerAttribute + "'");
+          // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Parameter uses undeclared attribute '" + timerAttribute + "'");
         }
       }
       if ( is(node,'bpmn:Event') && customElements[i].$type == "bpmnos:Message" ) {
@@ -57,7 +57,7 @@ export default function() {
         if ( parameters ) {
           parameters.forEach(function(parameter) {
             if ( parameter.attribute && status.filter(attribute => attribute.name == parameter.attribute).length == 0) {
-              reporter.report(node.id, "Parameter uses undeclared attribute '" + parameter.attribute + "'");
+              // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Parameter uses undeclared attribute '" + parameter.attribute + "'");
             }
           });
         }
@@ -66,7 +66,7 @@ export default function() {
         if ( contents ) {
           contents.forEach(function(content) {
             if ( content.attribute && status.filter(attribute => attribute.name == content.attribute).length == 0) {
-              reporter.report(node.id, "Message content uses undeclared attribute '" + content.attribute + "'");
+              // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Message content uses undeclared attribute '" + content.attribute + "'");
             }
           });
         }
@@ -81,7 +81,7 @@ export default function() {
                 if ( message.content ) {
                   message.content.forEach(function(content) {
                     if ( content.attribute && status.filter(attribute => attribute.name == content.attribute).length == 0) {
-                      reporter.report(node.id, "Message content uses undeclared attribute '" + content.attribute + "'");
+                      // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Message content uses undeclared attribute '" + content.attribute + "'");
                     }
                   });
                 }

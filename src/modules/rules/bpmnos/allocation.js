@@ -21,7 +21,7 @@ export default function() {
         return;
       }
     }
-    reporter.report(node.id, node.type + 's are missing');
+    // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, node.type + 's are missing');
   }
 
   return {

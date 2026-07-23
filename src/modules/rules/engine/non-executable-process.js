@@ -8,7 +8,7 @@ export default function() {
 
   function check(node, reporter) {
     if ( is(node, 'bpmn:Process') && !node.isExecutable ) {
-      reporter.report(node.id, 'Executable flag is not set');
+      // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, 'Executable flag is not set');
     }
   }
 

@@ -27,7 +27,7 @@ export default function() {
         }
       }
 
-      reporter.report(node.id, "Gatekeeper restrictions missing");
+      // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Gatekeeper restrictions missing");
     }
   }
 

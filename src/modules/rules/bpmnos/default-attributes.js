@@ -13,12 +13,12 @@ export default function() {
 /*
       const data = getData(node);
       if ( !data.find(attribute => attribute.name == "instance") ) {
-        reporter.report(node.id, "Attribute 'instance' is missing");
+        // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute 'instance' is missing");
       }
 */
       const status = getStatus(node);
       if ( !status.find(attribute => attribute.name == "timestamp") ) {
-        reporter.report(node.id, "Attribute 'timestamp' is missing");
+        // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute 'timestamp' is missing");
       }
     }
 
@@ -29,7 +29,7 @@ export default function() {
         if ( operators && operators.length > 0) {
           for (var j=0; j < operators.length; j++ ) {
             if ( operators[j].attribute == "timestamp" ) {
-              reporter.report(node.id, "Operator changes 'timestamp' attribute");
+              // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Operator changes 'timestamp' attribute");
             }
           } 
         }
@@ -43,7 +43,7 @@ export default function() {
         if ( operators && operators.length > 0) {
           for (var j=0; j < operators.length; j++ ) {
             if ( operators[j].attribute == "instance" ) {
-              reporter.report(node.id, "Operator changes 'instance' attribute");
+              // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Operator changes 'instance' attribute");
             }
           } 
         }
@@ -58,7 +58,7 @@ export default function() {
           if ( contents && contents.length > 0) {
             for (var j=0; j < contents.length; j++ ) {
               if ( contents[j].attribute == "instance" || contents[j].attribute == "timestamp" ) {
-                reporter.report(node.id, "Message changes '" + contents[j].attribute + "' attribute");
+                // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Message changes '" + contents[j].attribute + "' attribute");
               }
             } 
           }

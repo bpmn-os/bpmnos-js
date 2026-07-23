@@ -97,7 +97,7 @@
     }
   },
   "@bpmn-workbench/bpmn/cycle.js": {
-    "severity": "warn",
+    "severity": "error",
     "description": "A cycle in the sequence flow can cause unintended side-effects (e.g. livelock or race hazard). Use a loop activity to guard against such problems.",
     "reference": "BPMN 2.0.2, Loop Activity, p. 432",
     "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=462"
@@ -131,11 +131,11 @@
     }
   },
   "@bpmn-workbench/bpmn/non-interrupting-boundary-event.js": {
-    "severity": "warn",
+    "severity": "error",
     "description": "Non-interrupting boundary events cause race hazards as they can be triggered multiple times. Consider using a non-interrupting event-subprocess instead."
   },
   "@bpmn-workbench/bpmn/process-start-event.js": {
-    "severity": "info",
+    "severity": "error",
     "description": "It is discouraged to use multiple start events.",
     "reference": "BPMN 2.0.2, Start Event, p. 239",
     "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=269"

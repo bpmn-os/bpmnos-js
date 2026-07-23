@@ -1,13 +1,16 @@
 {
   "name": "bpmnos-js",
   "version": "0.0.0",
-  "description": "Reusable bpmn-js modules for BPMN-OS (moddle, decision-task decorator, properties panel) plus a demo modeller",
+  "description": "Reusable bpmn-js modules for BPMN-OS (moddle, decision-task decorator, properties panel, issues) plus a demo modeller",
   "main": "src/modules/bpmnos/index.js",
   "exports": {
     ".": "./src/modules/bpmnos/index.js",
     "./moddle": "./src/modules/bpmnos/bpmnos.json",
     "./decision-task": "./src/modules/bpmnos/decision-task.js",
-    "./properties": "./src/modules/bpmnos/properties.js"
+    "./properties": "./src/modules/bpmnos/properties.js",
+    "./rules": "./src/modules/rules/index.js",
+    "./rules/*": "./src/modules/rules/*",
+    "./newDiagram.bpmn": "./src/newDiagram.bpmn"
   },
   "scripts": {
     "dev": "vite",
@@ -34,8 +37,8 @@
     "bpmn-js-bpmnlint": "^0.24.0",
     "bpmn-js-collapse-event-subprocess": "^0.3.0",
     "bpmn-js-properties-panel": "^5.60.0",
-    "bpmn-js-side-panel": "github:bpmn-os/bpmn-js-side-panel#930cf757ae3088ba4f70f28e06c6fdf0e1de9a96",
-    "bpmn-workbench": "github:bpmn-os/bpmn-workbench#8d8d340a46977d3d789bf4ffb5209a2a80e74aa4",
+    "bpmn-js-side-panel": "github:bpmn-os/bpmn-js-side-panel#d1a61ca838570903df971443fdb0f4e1c5419186",
+    "bpmn-workbench": "github:bpmn-os/bpmn-workbench#588ce61bf2d16af22abe0ea14af1f69e97437511",
     "bpmnlint": "^10.3.0",
     "bpmnlint-utils": "^1.1.1",
     "diagram-js": "^15.18.0",

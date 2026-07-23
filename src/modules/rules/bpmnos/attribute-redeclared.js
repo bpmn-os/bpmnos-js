@@ -16,10 +16,10 @@ export default function() {
       const parentStatus = getStatus(node.$parent);
       for (var i=0; i < attributes.length; i++) {
         if (parentStatus.filter(attribute => attribute.id == attributes[i].id).length > 0) {
-          reporter.report(node.id, "Attribute with id '" + attributes[i].id + "' is redeclared");
+          // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute with id '" + attributes[i].id + "' is redeclared");
         }
         if (parentStatus.filter(attribute => attribute.name == attributes[i].name).length > 0) {
-          reporter.report(node.id, "Attribute with name '" + attributes[i].name + "' is shadowed");
+          // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute with name '" + attributes[i].name + "' is shadowed");
         }
       }
     }
