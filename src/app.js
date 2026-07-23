@@ -72,6 +72,10 @@ var modeler = new BpmnModeler({
   moddleExtensions
 });
 
+// Expose the modeler globally so the headless bpmnos2svg CLI (bpmnos2svg.js) can drive it — it
+// navigates a browser to this app and calls modeler.importXML / modeler.saveSVG in the page context.
+window.modeler = modeler;
+
 modeler.importXML(newDiagram);
 
 // On-canvas file/view toolbar (open, save, export SVG, centre, zoom) — packaged by bpmn-workbench.

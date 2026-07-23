@@ -35,8 +35,49 @@ Simulation is out of scope here. It is reserved for a future bpmnos-workbench.
 
 ```sh
 npm install
-npm start        # build, then watch (webpack + lessc) and serve dist/
-npm run bundle   # one-off build to dist/
+npm run dev       # Vite dev server (hot reload)
+npm run build     # production build to dist/
+npm run preview   # serve the production build
+```
+
+## Rendering diagrams to SVG (`bpmnos2svg`)
+
+`bpmnos2svg` is a command-line tool (shipped as this package's `bin`) that renders a `.bpmn` file to
+SVG headlessly including BPMNOS-specific decision task decorator. It emits
+one SVG per plane (each collapsed sub-process gets its own file) and adds `data-element-id` tooltips.
+
+It works by launching headless Chrome, loading the bpmnos-js app, and calling `modeler.importXML` /
+`modeler.saveSVG` in the page (the app exposes the modeller as `window.modeler`).
+
+### Prerequisites
+
+- Google Chrome — auto-detected via `chrome-launcher` (`sudo apt install google-chrome-stable`).
+
+### Install
+
+`bpmnos2svg` lives in this repo and depends on it, so put it on your `PATH` with `npm link`:
+
+```sh
+npm install
+npm link          # adds `bpmnos2svg` to your PATH
+```
+
+No `sudo` is needed as long as npm's global prefix is user-writable. If it isn't, point npm at a
+user-owned prefix once and make sure its `bin` is on your `PATH`:
+
+```sh
+npm config set prefix ~/.local     # then ensure ~/.local/bin is on PATH
+```
+
+### Usage
+
+```sh
+# Auto-start: spins up the bpmnos-js dev server, renders, then shuts it down.
+bpmnos2svg <file.bpmn> [-o <outputDir>]
+
+# Against an already-running server (start it once with `npm run dev`).
+# Reuse one server for a whole batch — much faster than auto-starting per file.
+bpmnos2svg -s <serverURL> <file.bpmn> [-o <outputDir>]
 ```
 
 ## License

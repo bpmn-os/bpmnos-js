@@ -60,7 +60,7 @@ Everything is a **bpmn-js/diagram-js DI module**: `{ __init__: [...], serviceNam
 added to `BpmnModeler`'s `additionalModules`. See `src/modules/bpmnos/index.js`. Optional deps use
 `injector.get(name, false)` so a module no-ops when a host lacks a service.
 
-**Build: Vite** (`vite.config.js`). The properties panel is authored in **preact JSX** inside `.js`
+**Build: Vite** (`vite.config.mjs`). The properties panel is authored in **preact JSX** inside `.js`
 files, so a small pre-transform plugin runs `src/*.js` through esbuild's jsx loader with `jsxImportSource:
 '@bpmn-io/properties-panel/preact'`, plus a `react → @bpmn-io/properties-panel/preact/compat` alias.
 Vendor CSS and `./app.less` are imported from `app.js`; `.bpmn` is imported with `?raw`; the BPMNOS.svg
