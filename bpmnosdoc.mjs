@@ -153,7 +153,11 @@ async function collectModel(page, diagram) {
     const root = registry.getAll().find((element) => element.type === 'bpmn:Process')
       || registry.getAll().find((element) => element.type === 'bpmn:Collaboration');
 
+    // the elements drawn on a plane of their own, which is what `renderBpmnToSvg` writes an extra SVG for
+    const collapsed = registry.getAll().filter((element) => element.collapsed).map((element) => element.id);
+
     return {
+      collapsed,
       root: root && {
         id: root.id,
         displayId: processRefOf(root.businessObject) || root.id,
@@ -543,11 +547,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
   const sectionNodes = nodes.filter((node) =>
     (!root || node.id !== root.id) && (hasContent(node) || diagramOf.has(node.id)));
 
-  const documented = new Set(sectionNodes.map((node) => node.id));
-
-  // the root plane, and any plane whose element gets no section of its own — better shown here than dropped
+  // the root plane; every other plane belongs to an element, and so to that element's section
   diagrams
-    .filter(({ elementId }) => !elementId || !documented.has(elementId))
+    .filter(({ elementId }) => !elementId)
     .forEach(({ title, file }) => {
       slug(title);
       lines.push(`## ${title}`, '', `![${title}](${file})`, '');
@@ -685,26 +687,21 @@ async function main() {
         // diagrams: the root plane plus one per collapsed sub-process
         await renderBpmnToSvg({ serverURL, file, outDir });
 
-        const diagrams = fs.readdirSync(outDir)
-          .filter((name) => name === baseName + '.svg' || name.startsWith(baseName + '-'))
-          .filter((name) => name.endsWith('.svg'))
-          .sort()
-          .map((name) => {
-            // `<baseName>-<element id>.svg` is the plane of a collapsed sub-process, `<baseName>.svg` the
-            // root plane; the id is what puts the diagram in that sub-process's section
-            const elementId = name === baseName + '.svg' ? '' : name.slice(baseName.length + 1, -4);
-
-            return {
-              title: elementId ? 'Diagram: ' + elementId : 'Diagram',
-              file: name,
-              elementId
-            };
-          })
-
-          // the root plane leads, whatever the file names sort like; the rest go to their sections anyway
-          .sort((a, b) => (a.elementId ? 1 : 0) - (b.elementId ? 1 : 0));
-
         const model = await collectModel(page, fs.readFileSync(file, 'utf-8'));
+
+        // Which planes the model has, asked of the model rather than of the output directory: an earlier
+        // run may have left `<baseName>-<id>.svg` files behind for a sub-process since expanded or removed,
+        // and those are stale pictures of a diagram that no longer exists. The file name is still how a
+        // plane is found — it is what `renderBpmnToSvg` writes — but nothing is documented that the model
+        // does not name.
+        const diagrams = [
+          { title: 'Diagram', file: baseName + '.svg', elementId: '' },
+          ...model.collapsed.map((id) => ({
+            title: 'Diagram: ' + id,
+            file: `${baseName}-${id}.svg`,
+            elementId: id
+          }))
+        ].filter(({ file }) => fs.existsSync(path.join(outDir, file)));
 
         const target = path.join(outDir, baseName + '.md');
 
