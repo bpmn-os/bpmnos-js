@@ -1,7 +1,10 @@
 import { collectExecutionData } from './collectExecutionData.js';
 
 // what an element carrying no execution data reports
-const EMPTY = { status: [], data: [], globals: [], conditions: [], timer: [], messages: [], signal: [] };
+const EMPTY = {
+  status: [], data: [], globals: [],
+  conditions: [], timer: [], operators: [], messages: [], signal: []
+};
 
 /**
  * The execution data registry as a diagram-js service: a thin adapter over `collectExecutionData`.

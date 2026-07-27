@@ -17,7 +17,7 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
  * registry holds them.
  */
 export function getAnnotationContent(host, executionData, collapsedGroup = () => false) {
-  const { status, data, globals, conditions, timer, messages, signal } = executionData.get(host);
+  const { status, data, globals, conditions, timer, operators, messages, signal } = executionData.get(host);
 
   // what counts as declared here: the element, and for a pool the process it refers to
   const businessObject = getBusinessObject(host),
@@ -48,14 +48,57 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
     compartment('Globals', 'globals', globals),
     own('Conditions', conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
     own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
-    own('Message', messages.flatMap(definition => exchange(definition, collapsedGroup))),
-    own('Signal', signal.flatMap(definition => exchange(definition, collapsedGroup)))
+    ...exchangeAndOperators(host, operators, messages, signal, collapsedGroup)
   ];
 
   return {
     title: titleOf(host),
     compartments: compartments.filter(compartment => compartment.inherited.length || compartment.own.length)
   };
+}
+
+/**
+ * Operators and the message, in the order the engine applies them.
+ *
+ * A regular or send task applies its operators when the token becomes busy, before the message goes out
+ * (`Token::advanceToBusy`, which excludes receive and decision tasks). A receive task — like a decision task
+ * and the typed start event of an event sub-process — applies them on completion, after the message has
+ * arrived (`Token::advanceToCompleted`). The box is read chronologically, so the two compartments swap
+ * accordingly.
+ */
+function exchangeAndOperators(host, operators, messages, signal, collapsedGroup) {
+  const own = (label, items) => ({ label, key: label.toLowerCase(), inherited: [], own: items });
+
+  const operatorCompartment = own('Operators',
+    operators.map(operator => ({ type: '', text: operator.expression || operator.id })));
+
+  const exchanges = [
+    own('Message', messages.flatMap(definition => exchange(definition, collapsedGroup))),
+    own('Signal', signal.flatMap(definition => exchange(definition, collapsedGroup)))
+  ];
+
+  return appliedOnCompletion(host)
+    ? [ ...exchanges, operatorCompartment ]
+    : [ operatorCompartment, ...exchanges ];
+}
+
+/**
+ * Whether the node applies its operators on completion rather than on becoming busy.
+ */
+function appliedOnCompletion(host) {
+  const businessObject = getBusinessObject(host);
+
+  if (businessObject.$instanceOf('bpmn:ReceiveTask')) {
+    return true;
+  }
+
+  // a decision task is a plain task carrying bpmnos:type="Decision"
+  if (businessObject.get && businessObject.get('type') === 'Decision') {
+    return true;
+  }
+
+  // a catching event receives before anything of its own runs
+  return businessObject.$instanceOf('bpmn:CatchEvent');
 }
 
 /**

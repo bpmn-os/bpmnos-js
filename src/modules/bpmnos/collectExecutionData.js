@@ -103,6 +103,7 @@ function record(registry, businessObject, status, data, globals) {
     // kinds an element carries itself, read straight off it
     conditions: conditionsOf(businessObject),
     timer: timerOf(businessObject),
+    operators: operatorsOf(businessObject),
     messages: messagesOf(businessObject),
     signal: signalOf(businessObject)
   });
@@ -115,6 +116,28 @@ function record(registry, businessObject, status, data, globals) {
     elements.push(businessObject.id);
     registry.elementsById.set(attribute.id, elements);
   });
+}
+
+/**
+ * The operators of an element: `bpmnos:status/operators`, each assigning to a status or data attribute.
+ *
+ * Not inherited — an ancestor's operators run for the ancestor's token, not for this node's.
+ */
+function operatorsOf(businessObject) {
+  const status = getStatus(businessObject);
+
+  if (!status) {
+    return [];
+  }
+
+  return (status.get('operators') || [])
+    .flatMap(operators => operators.get('operator') || [])
+    .map(operator => ({
+      id: operator.get('id'),
+      expression: operator.get('expression'),
+      declaringElement: businessObject.id,
+      moddleElement: operator
+    }));
 }
 
 /**
