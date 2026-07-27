@@ -173,6 +173,7 @@ export default function BPMNOSAnnotationBehavior(
   function isInsideHost(box) {
     const host = getHost(box);
 
+    // a connection has no bounds to sit inside, so the association always shows
     if (!host || !isFinite(host.x) || !isFinite(host.width)) {
       return false;
     }

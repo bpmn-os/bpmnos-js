@@ -95,7 +95,9 @@ export function canHaveAnnotation(element) {
   }
 
   // data object and data store references carry no token, so there is nothing to show for them — the
-  // attributes they hold appear as the data of the scope that owns them
+  // attributes they hold appear as the data of the scope that owns them. A sequence flow does carry one,
+  // and is where a gatekeeper lives.
   return is(element, 'bpmn:FlowNode')
-    || is(element, 'bpmn:Participant');
+    || is(element, 'bpmn:Participant')
+    || is(element, 'bpmn:SequenceFlow');
 }

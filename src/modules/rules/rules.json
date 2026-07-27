@@ -205,7 +205,8 @@
     "severity": "error"
   },
   "engine/inclusive-gateway.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "The execution engine does not run inclusive gateways: it merges only a parallel join and splits only parallel and event-based gateways, and fails when it reaches an inclusive one."
   },
   "bpmnos/default-attributes.js": {
     "severity": "error"
@@ -232,8 +233,16 @@
       }
     }
   },
-  "bpmnos/gatekeeper-restrictions.js": {
-    "severity": "error"
+  "bpmnos/gatekeeper.js": {
+    "severity": "error",
+    "subtypes": {
+      "missing": {
+        "description": "Every non-default outgoing flow of a diverging exclusive or inclusive gateway needs a gatekeeper: it is what decides whether the branch is taken. An exclusive gateway takes the first flow whose conditions hold and fails outright at a flow that states none."
+      },
+      "unused": {
+        "description": "A gatekeeper is consulted only for the non-default outgoing flows of a diverging exclusive or inclusive gateway. Anywhere else the flow is taken without being asked: a single outgoing flow is always taken, the default flow is taken when no other applies, and a parallel or event-based gateway copies the token to all of its flows."
+      }
+    }
   },
   "bpmnos/event-trigger.js": {
     "severity": "error",

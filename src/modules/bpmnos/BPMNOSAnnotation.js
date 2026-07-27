@@ -34,9 +34,11 @@ export default class BPMNOSAnnotation {
       return this.show(existing);
     }
 
-    // a root element has no bounds to place the box against — the context pad never offers it there, and a
-    // programmatic call must not produce a shape at NaN
-    if (!isFinite(host.x) || !isFinite(host.y)) {
+    // where to hang the box: above a shape and left-aligned with it, above the middle of a connection —
+    // a root element has neither, and a programmatic call must not produce a shape at NaN
+    const anchor = anchorOf(host);
+
+    if (!anchor) {
       return;
     }
 
@@ -46,8 +48,8 @@ export default class BPMNOSAnnotation {
 
     // appendShape positions by the new shape's centre
     const position = {
-      x: host.x + DEFAULT_WIDTH / 2,
-      y: host.y - GAP - height / 2
+      x: anchor.x + DEFAULT_WIDTH / 2,
+      y: anchor.y - GAP - height / 2
     };
 
     return this._modeling.appendShape(
@@ -79,3 +81,23 @@ export default class BPMNOSAnnotation {
 }
 
 BPMNOSAnnotation.$inject = [ 'modeling' ];
+
+/**
+ * What the box is placed against: the top left of a shape, or the middle waypoint of a connection — a
+ * gatekeeper's box hangs above the flow it belongs to, wherever that flow runs.
+ */
+function anchorOf(host) {
+  if (isFinite(host.x) && isFinite(host.y)) {
+    return { x: host.x, y: host.y };
+  }
+
+  const waypoints = host.waypoints || [];
+
+  if (!waypoints.length) {
+    return null;
+  }
+
+  const middle = waypoints[Math.floor(waypoints.length / 2)];
+
+  return isFinite(middle.x) && isFinite(middle.y) ? { x: middle.x - DEFAULT_WIDTH / 2, y: middle.y } : null;
+}

@@ -107,6 +107,7 @@ async function collectModel(page, diagram) {
 
         return {
           id: element.id,
+          isSequenceFlow: element.type === 'bpmn:SequenceFlow',
           displayId: processRef || element.id,
           ids: [ element.id, processRef ].filter(Boolean),
           type: element.type.replace('bpmn:', ''),
@@ -193,6 +194,10 @@ function headingText(node) {
 }
 
 function hasContent(node) {
+  if (node.isSequenceFlow) {
+    return !!(node.documentation || node.conditions.length);
+  }
+
   return !!(node.documentation || node.status.length || node.data.length || node.globals.length
     || node.conditions.length || node.timer.length || node.loop.length
     || node.choices.length || node.operators.length
@@ -494,14 +499,19 @@ function render({ baseName, diagrams, model, anchors, register }) {
         lines.push(node.documentation, '');
       }
 
+      // a flow carries nothing but its gatekeeper: the attributes visible at it are those of the scope
+      // around it, documented at its nodes
       lines.push(
-        ...section('Status', node.status, node.ids, 3, anchors, slug),
-        ...section('Data', node.data, node.ids, 3, anchors, slug),
-        ...section('Globals', node.globals, node.ids, 3, anchors, slug),
+        ...(node.isSequenceFlow ? [] : [
+          ...section('Status', node.status, node.ids, 3, anchors, slug),
+          ...section('Data', node.data, node.ids, 3, anchors, slug),
+          ...section('Globals', node.globals, node.ids, 3, anchors, slug)
+        ]),
         ...listSection(loopTitle(node), loopLines(node), 3, slug),
-        ...listSection('Conditions', conditionLines(node), 3, slug),
+        ...listSection(node.isSequenceFlow ? 'Gatekeeper' : 'Conditions', conditionLines(node), 3, slug),
         ...listSection('Timer', timerLines(node), 3, slug),
-        ...restrictionSection('Entry restrictions', node.entryRestrictions, node.ids, 3, anchors, slug),
+        ...(node.isSequenceFlow ? [] :
+          restrictionSection('Entry restrictions', node.entryRestrictions, node.ids, 3, anchors, slug)),
         ...(node.operatorsOnCompletion ? [] : [
           ...listSection('Choices', choiceLines(node), 3, slug),
           ...listSection('Operators', operatorLines(node), 3, slug)
@@ -512,8 +522,10 @@ function render({ baseName, diagrams, model, anchors, register }) {
           ...listSection('Choices', choiceLines(node), 3, slug),
           ...listSection('Operators', operatorLines(node), 3, slug)
         ] : []),
-        ...restrictionSection('Completion restrictions', node.completionRestrictions, node.ids, 3, anchors, slug),
-        ...restrictionSection('Exit restrictions', node.exitRestrictions, node.ids, 3, anchors, slug),
+        ...(node.isSequenceFlow ? [] : [
+          ...restrictionSection('Completion restrictions', node.completionRestrictions, node.ids, 3, anchors, slug),
+          ...restrictionSection('Exit restrictions', node.exitRestrictions, node.ids, 3, anchors, slug)
+        ]),
         ...guidanceSections(node, 3, slug)
       );
     });

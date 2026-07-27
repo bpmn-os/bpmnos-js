@@ -1,4 +1,4 @@
-import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
+import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 /**
  * The content of an element's annotation box, as plain data:
@@ -25,6 +25,11 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
   // what counts as declared here: the element, and for a pool the process it refers to
   const businessObject = getBusinessObject(host),
         processRef = businessObject.get && businessObject.get('processRef');
+
+  // A sequence flow is not entered, completed or exited: the engine evaluates its gatekeeper and moves the
+  // token on (`Token.cpp:1124-1138`, `advanceToDeparted`), so the checkpoints of the scope around it are
+  // checked at its nodes, never here.
+  const isFlow = is(businessObject, 'bpmn:SequenceFlow');
 
   const ownIds = [ host.id, processRef && processRef.id ].filter(Boolean);
 
@@ -78,12 +83,15 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
     compartment('Data', 'dataInherited', data),
     compartment('Globals', 'globals', globals),
     loopBand,
-    own('Conditions', conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
+    own(isFlow ? 'Gatekeeper' : 'Conditions',
+      conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
     own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
-    checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions),
+    ...(isFlow ? [] : [ checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions) ]),
     ...exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup),
-    checkpoint('Completion restrictions', 'completionRestrictions', completionRestrictions),
-    checkpoint('Exit restrictions', 'exitRestrictions', exitRestrictions),
+    ...(isFlow ? [] : [
+      checkpoint('Completion restrictions', 'completionRestrictions', completionRestrictions),
+      checkpoint('Exit restrictions', 'exitRestrictions', exitRestrictions)
+    ]),
     ...guidanceCompartments(guidance)
   ];
 
