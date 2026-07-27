@@ -152,20 +152,54 @@ export default function BPMNOSAnnotationBehavior(
     }
   }
 
+  function setHidden(element, hidden) {
+    if (element.hidden !== hidden) {
+      element.hidden = hidden;
+      redraw(element);
+    }
+
+    // a hidden element stays selected otherwise, leaving its outline and handles floating on the canvas
+    if (hidden && selection.isSelected(element)) {
+      selection.deselect(element);
+    }
+  }
+
+  /**
+   * Whether the box has been moved into the element it describes — a pool, a sub-process.
+   *
+   * Judged by where the box sits, not by its parent: dropping it into a pool does not necessarily
+   * reparent it, and what matters is what the reader sees.
+   */
+  function isInsideHost(box) {
+    const host = getHost(box);
+
+    if (!host || !isFinite(host.x) || !isFinite(host.width)) {
+      return false;
+    }
+
+    for (let parent = box.parent; parent; parent = parent.parent) {
+      if (parent === host) {
+        return true;
+      }
+    }
+
+    const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+
+    return centre.x >= host.x && centre.x <= host.x + host.width
+      && centre.y >= host.y && centre.y <= host.y + host.height;
+  }
+
   function applyVisibility(box) {
     const hidden = isHidden(box);
 
-    [ box ].concat(box.incoming || []).forEach(function(element) {
-      if (element.hidden !== hidden) {
-        element.hidden = hidden;
-        redraw(element);
-      }
+    setHidden(box, hidden);
 
-      // a hidden element stays selected otherwise, leaving its outline and handles floating on the canvas
-      if (hidden && selection.isSelected(element)) {
-        selection.deselect(element);
-      }
-    });
+    // Inside its host the association is both redundant and misleading: bpmn-js cannot crop a connection
+    // against a shape that contains it, so the line docks to the host's centre and is drawn over
+    // everything in it. Containment says what the association would.
+    const associationHidden = hidden || isInsideHost(box);
+
+    (box.incoming || []).forEach(association => setHidden(association, associationHidden));
   }
 
   eventBus.on([ 'connection.added', 'connection.changed', 'connection.removed' ], function(event) {
