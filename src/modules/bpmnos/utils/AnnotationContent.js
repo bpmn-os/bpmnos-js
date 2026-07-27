@@ -16,8 +16,8 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
  * this is the only file to change when the box is to show more, such as operators and restrictions once the
  * registry holds them.
  */
-export function getAnnotationContent(host, executionData) {
-  const { status, data, globals, conditions, timer } = executionData.get(host);
+export function getAnnotationContent(host, executionData, collapsedGroup = () => false) {
+  const { status, data, globals, conditions, timer, messages, signal } = executionData.get(host);
 
   // what counts as declared here: the element, and for a pool the process it refers to
   const businessObject = getBusinessObject(host),
@@ -47,13 +47,55 @@ export function getAnnotationContent(host, executionData) {
     compartment('Data', 'dataInherited', data),
     compartment('Globals', 'globals', globals),
     own('Conditions', conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
-    own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' })))
+    own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
+    own('Message', messages.flatMap(definition => exchange(definition, collapsedGroup))),
+    own('Signal', signal.flatMap(definition => exchange(definition, collapsedGroup)))
   ];
 
   return {
     title: titleOf(host),
     compartments: compartments.filter(compartment => compartment.inherited.length || compartment.own.length)
   };
+}
+
+/**
+ * A message or signal: its name, then the **header** the engine matches senders and recipients on and the
+ * **content** it carries, each mapping a key to a value or an attribute.
+ *
+ * Both groups are always shown, with their count, so an empty header is visible as `header (0)` rather than
+ * leaving the reader to wonder whether it exists. Both fold, and neither is indented — the entries beneath
+ * them are.
+ */
+function exchange(definition, collapsedGroup) {
+  const name = definition.name || '';
+
+  const group = (label, entries, keys) => {
+    const key = `message:${name}:${label}`,
+          collapsed = collapsedGroup(key);
+
+    const toggle = {
+      kind: 'toggle',
+      key,
+      type: '',
+      text: `${collapsed || !entries.length ? '▸' : '▾'} ${label} (${entries.length})`
+    };
+
+    if (collapsed || !entries.length) {
+      return [ toggle ];
+    }
+
+    return [ toggle, ...entries.map(entry => ({
+      type: entry[keys[0]] || '',
+      text: entry[keys[1]] || '',
+      indent: 1
+    })) ];
+  };
+
+  return [
+    { type: 'Name', text: name },
+    ...group('header', definition.parameters || [], [ 'name', 'value' ]),
+    ...group('content', definition.contents || [], [ 'key', 'attribute' ])
+  ];
 }
 
 // a pool is titled by the process it refers to — a participant id is never shown

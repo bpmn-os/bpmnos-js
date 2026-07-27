@@ -73,6 +73,13 @@ async function collectModel(page, diagram) {
       declaringElement: a.declaringElement
     });
 
+    // a message or signal, flattened: name, header parameters, and the contents mapping attributes to keys
+    const exchange = (definition) => ({
+      name: definition.name,
+      parameters: (definition.parameters || []).map((p) => ({ name: p.name, value: p.value })),
+      contents: (definition.contents || []).map((c) => ({ key: c.key, attribute: c.attribute }))
+    });
+
     const processRefOf = (businessObject) => {
       const processRef = businessObject.get && businessObject.get('processRef');
 
@@ -82,7 +89,7 @@ async function collectModel(page, diagram) {
     const nodes = registry.getAll()
       .filter((element) => element.type !== 'label')
       .map((element) => {
-        const { status, data, globals, conditions, timer } = executionData.get(element);
+        const { status, data, globals, conditions, timer, messages, signal } = executionData.get(element);
 
         // a pool stands for the process it refers to: that process documents it, owns its attributes, and
         // is what gets named — a participant id is never shown
@@ -100,7 +107,9 @@ async function collectModel(page, diagram) {
           data: data.map(attribute),
           globals: globals.map(attribute),
           conditions: conditions.map((c) => ({ id: c.id, expression: c.expression })),
-          timer: timer.map((t) => ({ name: t.name, value: t.value }))
+          timer: timer.map((t) => ({ name: t.name, value: t.value })),
+          messages: messages.map(exchange),
+          signal: signal.map(exchange)
         };
       });
 
@@ -156,7 +165,7 @@ function headingText(node) {
 
 function hasContent(node) {
   return !!(node.documentation || node.status.length || node.data.length || node.globals.length
-    || node.conditions.length || node.timer.length);
+    || node.conditions.length || node.timer.length || node.messages.length || node.signal.length);
 }
 
 /**
@@ -201,6 +210,41 @@ function listSection(title, items, level, slug) {
   slug(title);
 
   return [ '#'.repeat(level) + ' ' + title, '', ...items.map((item) => '- ' + item), '' ];
+}
+
+/**
+ * A message or signal as a subsection of its own: the name as the heading, its parameters and contents as
+ * the list beneath. Markdown gives the nesting, so no indentation is needed.
+ */
+function exchangeSections(title, definitions, level, slug) {
+  if (!definitions.length) {
+    return [];
+  }
+
+  slug(title);
+
+  const out = [ '#'.repeat(level) + ' ' + title, '' ];
+
+  definitions.forEach((definition) => {
+    const heading = definition.name || '(unnamed)';
+
+    slug(heading);
+    out.push('#'.repeat(level + 1) + ' *Name* ' + heading, '');
+
+    // the header the engine matches senders and recipients on, then the content carried; both always
+    // shown with their count, so an empty header reads as such
+    const group = (title, entries, render) => {
+      slug(`${title} (${entries.length})`);
+      out.push(`${'#'.repeat(level + 2)} ${title} (${entries.length})`, '');
+      entries.forEach((entry) => out.push(render(entry)));
+      out.push('');
+    };
+
+    group('Header', definition.parameters, (p) => `- *${p.name}:* \`${p.value}\``);
+    group('Content', definition.contents, (c) => `- *${c.key}:* **${c.attribute}**`);
+  });
+
+  return out;
 }
 
 function conditionLines(node) {
@@ -261,7 +305,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
       ...section('Data', rootNode.data, rootNode.ids, 2, anchors, slug),
       ...section('Globals', rootNode.globals, rootNode.ids, 2, anchors, slug),
       ...listSection('Conditions', conditionLines(rootNode), 2, slug),
-      ...listSection('Timer', timerLines(rootNode), 2, slug)
+      ...listSection('Timer', timerLines(rootNode), 2, slug),
+      ...exchangeSections('Message', rootNode.messages, 2, slug),
+      ...exchangeSections('Signal', rootNode.signal, 2, slug)
     );
   }
 
@@ -283,7 +329,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...section('Data', node.data, node.ids, 3, anchors, slug),
         ...section('Globals', node.globals, node.ids, 3, anchors, slug),
         ...listSection('Conditions', conditionLines(node), 3, slug),
-        ...listSection('Timer', timerLines(node), 3, slug)
+        ...listSection('Timer', timerLines(node), 3, slug),
+        ...exchangeSections('Message', node.messages, 3, slug),
+        ...exchangeSections('Signal', node.signal, 3, slug)
       );
     });
 

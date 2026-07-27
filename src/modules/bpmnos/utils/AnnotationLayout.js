@@ -16,8 +16,13 @@ export const PADDING_X = 8;
  * @returns { rows: [ { kind, text, y, height } ], separators: [ y ], height }
  */
 export function layout(box, executionData) {
+  // the content decides what a fold hides, so it is given the box's fold state
+  const collapsedGroup = key => isCollapsed(box, key);
+
   const host = getHost(box),
-        content = host ? getAnnotationContent(host, executionData) : { title: '', compartments: [] };
+        content = host
+          ? getAnnotationContent(host, executionData, collapsedGroup)
+          : { title: '', compartments: [] };
 
   const rows = [ { kind: 'title', text: content.title, y: 0, height: HEADER_HEIGHT } ],
         separators = [];
@@ -26,7 +31,18 @@ export function layout(box, executionData) {
 
   const items = function(list) {
     list.forEach(function(item) {
-      rows.push({ kind: 'item', type: item.type, text: item.text, y, height: ITEM_HEIGHT });
+
+      // an item may itself be a fold — the header and content of a message, say
+      rows.push({
+        kind: item.kind || 'item',
+        key: item.key,
+        type: item.type,
+        text: item.text,
+        indent: item.indent || 0,
+        y,
+        height: ITEM_HEIGHT
+      });
+
       y += ITEM_HEIGHT;
     });
   };

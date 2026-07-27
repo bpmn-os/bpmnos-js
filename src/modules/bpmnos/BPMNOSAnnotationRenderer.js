@@ -22,6 +22,9 @@ const STYLES = {
 // between the type and the name it qualifies
 const TYPE_GAP = 4;
 
+// how far a nested item — a message content, a signal content — sits in from its parent line
+const INDENT = 10;
+
 // wide enough that the text renderer never breaks a line; the box clips instead
 const NO_WRAP_WIDTH = 10000;
 
@@ -101,13 +104,15 @@ export default function BPMNOSAnnotationRenderer(
         }));
       };
 
+      const left = PADDING_X + (row.indent || 0) * INDENT;
+
       // an item is drawn as two runs, so the type can be set apart from the name it qualifies
       if (row.kind === 'item' && row.type) {
-        draw(row.type, STYLES.type, PADDING_X);
+        draw(row.type, STYLES.type, left);
 
         const { width } = textRenderer.getDimensions(row.type, { style: STYLES.type });
 
-        draw(row.text || '', STYLES.item, PADDING_X + width + TYPE_GAP);
+        draw(row.text || '', STYLES.item, left + width + TYPE_GAP);
       } else if (row.kind === 'title') {
 
         // the header is centred, which the left-aligned no-wrap box cannot do by itself
@@ -115,7 +120,7 @@ export default function BPMNOSAnnotationRenderer(
 
         draw(row.text || '', STYLES.title, Math.max(PADDING_X, (shape.width - width) / 2));
       } else {
-        draw(row.text || '', STYLES[row.kind], PADDING_X);
+        draw(row.text || '', STYLES[row.kind], left);
       }
 
       svgAppend(parentNode, group);

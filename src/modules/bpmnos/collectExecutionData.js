@@ -102,7 +102,9 @@ function record(registry, businessObject, status, data, globals) {
 
     // kinds an element carries itself, read straight off it
     conditions: conditionsOf(businessObject),
-    timer: timerOf(businessObject)
+    timer: timerOf(businessObject),
+    messages: messagesOf(businessObject),
+    signal: signalOf(businessObject)
   });
 
   [ ...status, ...data, ...globals ].forEach(attribute => {
@@ -154,6 +156,66 @@ function timerOf(businessObject) {
     value: parameter.get('value'),
     declaringElement: businessObject.id,
     moddleElement: parameter
+  }));
+}
+
+/**
+ * The messages an element defines, each with a name, its header parameters and its contents.
+ *
+ * Two spellings, both in use: a message **event** carries `bpmnos:message` directly under
+ * `extensionElements`, while a send or receive **task** wraps it in `bpmnos:messages`, which is what allows
+ * several. Both are read here.
+ *
+ * A `content` maps a status or data attribute to a key in the message, in one direction or the other
+ * depending on whether the node sends or receives; a `parameter` is the message header the engine matches
+ * senders and recipients on.
+ */
+function messagesOf(businessObject) {
+  const wrapped = getExtensionElementsList(businessObject, 'bpmnos:Messages')
+    .flatMap(messages => messages.get('message') || []);
+
+  const direct = getExtensionElementsList(businessObject, 'bpmnos:Message');
+
+  return [ ...direct, ...wrapped ].map(message => ({
+    name: message.get('name'),
+    parameters: parametersOf(message),
+    contents: contentsOf(message),
+    declaringElement: businessObject.id,
+    moddleElement: message
+  }));
+}
+
+/**
+ * The signal an element throws or catches: `bpmnos:signal`, a name and its contents.
+ */
+function signalOf(businessObject) {
+  const signal = getExtensionElementsList(businessObject, 'bpmnos:Signal')[0];
+
+  if (!signal) {
+    return [];
+  }
+
+  return [ {
+    name: signal.get('name'),
+    contents: contentsOf(signal),
+    declaringElement: businessObject.id,
+    moddleElement: signal
+  } ];
+}
+
+function parametersOf(holder) {
+  return (holder.get('parameter') || []).map(parameter => ({
+    name: parameter.get('name'),
+    value: parameter.get('value'),
+    moddleElement: parameter
+  }));
+}
+
+function contentsOf(holder) {
+  return (holder.get('content') || []).map(content => ({
+    key: content.get('key'),
+    attribute: content.get('attribute'),
+    moddleElement: content
   }));
 }
 
