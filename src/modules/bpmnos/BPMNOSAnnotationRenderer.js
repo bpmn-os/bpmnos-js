@@ -9,7 +9,7 @@ import {
 import BpmnRenderer from 'bpmn-js/lib/draw/BpmnRenderer';
 
 import { isAnnotation } from './utils/AnnotationUtil';
-import { layout, PADDING_X } from './utils/AnnotationLayout';
+import { layout, DOUBLE_GAP, PADDING_X } from './utils/AnnotationLayout';
 
 const STYLES = {
   title: { fontSize: 12, fontWeight: 'bold' },
@@ -65,7 +65,7 @@ export default function BPMNOSAnnotationRenderer(
 
     const { rows, separators } = layout(shape, executionData);
 
-    separators.forEach(function(y) {
+    const rule = function(y) {
       const separator = svgCreate('path');
 
       svgAttr(separator, {
@@ -75,6 +75,14 @@ export default function BPMNOSAnnotationRenderer(
       });
 
       svgAppend(parentNode, separator);
+    };
+
+    separators.forEach(function(separator) {
+      rule(separator.y);
+
+      if (separator.double) {
+        rule(separator.y + DOUBLE_GAP);
+      }
     });
 
     // Nothing wraps: a row is one line, cut off at the box edge. The width is the user's — annotations

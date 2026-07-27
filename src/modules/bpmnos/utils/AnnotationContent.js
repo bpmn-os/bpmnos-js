@@ -32,6 +32,7 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
   const compartment = (label, key, attributes) => ({
     label,
     key,
+    group: 'declared',
     inherited: attributes
       .filter(attribute => !ownIds.includes(attribute.declaringElement))
       .map(attribute => item(attribute, ownIds)),
@@ -41,9 +42,10 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
   });
 
   // kinds the element carries itself: nothing to fold, so they have no inherited half
-  const own = (label, items) => ({ label, key: label.toLowerCase(), inherited: [], own: items });
+  const own = (label, items) => ({ label, key: label.toLowerCase(), group: 'sequence', inherited: [], own: items });
 
-  // the order is the token's passage through the node: what exists, then what makes the node happen at all
+  // Two halves, told apart by a double rule: what a token here carries — a set, in declaration order — and
+  // then what happens at the node, read top to bottom as the token's passage through it.
   const compartments = [
     compartment('Status', 'statusInherited', status),
     compartment('Data', 'dataInherited', data),
@@ -70,7 +72,7 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
  * accordingly.
  */
 function exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup) {
-  const own = (label, items) => ({ label, key: label.toLowerCase(), inherited: [], own: items });
+  const own = (label, items) => ({ label, key: label.toLowerCase(), group: 'sequence', inherited: [], own: items });
 
   // a choice is made before the operators that use what was chosen
   const applied = [

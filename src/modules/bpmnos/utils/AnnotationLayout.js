@@ -9,11 +9,15 @@ export const ITEM_HEIGHT = 15;
 export const COMPARTMENT_PADDING = 5;
 export const PADDING_X = 8;
 
+// the gap between the two rules that separate the declarations from the sequence; two hairlines rather than
+// one thicker rule, since a gap survives zooming out and a weight difference does not
+export const DOUBLE_GAP = 3;
+
 /**
  * Turn a box into rows to draw and a height to fit. The content is derived from the host through the
  * execution data registry; the box itself stores none of it.
  *
- * @returns { rows: [ { kind, text, y, height } ], separators: [ y ], height }
+ * @returns { rows: [ { kind, text, y, height } ], separators: [ { y, double } ], height }
  */
 export function layout(box, executionData) {
   // the content decides what a fold hides, so it is given the box's fold state
@@ -27,7 +31,8 @@ export function layout(box, executionData) {
   const rows = [ { kind: 'title', text: content.title, y: 0, height: HEADER_HEIGHT } ],
         separators = [];
 
-  let y = HEADER_HEIGHT;
+  let y = HEADER_HEIGHT,
+      previousGroup = null;
 
   const items = function(list) {
     list.forEach(function(item) {
@@ -48,8 +53,17 @@ export function layout(box, executionData) {
   };
 
   (content.compartments || []).forEach(function(compartment) {
-    separators.push(y);
 
+    // the boundary between the declarations and the execution sequence is drawn twice; it exists only where
+    // both halves do, and never right below the header
+    const group = compartment.group || 'declared',
+          double = Boolean(previousGroup) && previousGroup !== group;
+
+    separators.push({ y, double });
+
+    previousGroup = group;
+
+    y += double ? DOUBLE_GAP : 0;
     y += COMPARTMENT_PADDING / 2;
 
     // Globals are inherited by everything, so the compartment folds as a whole and its label is the
