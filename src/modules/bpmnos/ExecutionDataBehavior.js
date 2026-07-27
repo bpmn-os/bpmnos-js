@@ -2,11 +2,20 @@ import inherits from 'inherits';
 
 import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
 
-import { isExecutionData, isHidden, getExecutionData, getHost } from './utils/ExecutionDataUtil';
+import {
+  isExecutionData,
+  isHidden,
+  getExecutionData,
+  getHost,
+  isProtectedAssociation
+} from './utils/ExecutionDataUtil';
 import { layout } from './utils/ExecutionDataLayout';
 
 // runs after bpmn-js's TextAnnotationBehavior, which would otherwise derive the height from the (empty) text
 const RESIZE_PRIORITY = 500;
+
+// runs before bpmn-js's own delete behaviours
+const HIGH_PRIORITY = 1500;
 
 // tolerance when deciding which edge a growing box is anchored to
 const TOLERANCE = 2;
@@ -38,7 +47,61 @@ export default function ExecutionDataBehavior(
     modeling.updateProperties(context.shape, { executionData: hints.executionData });
   }, true);
 
-  // (2) height follows the content ------------------------------------------------------------------
+  // (2) a box lives and dies with its element --------------------------------------------------------
+
+  this.preExecute('elements.delete', HIGH_PRIORITY, function(context) {
+    const elements = context.elements.slice();
+
+    // a box describes exactly one element, so deleting that element takes the box with it. The
+    // association needs no mention: removing the box removes what is attached to it.
+    elements.forEach(function(element) {
+      const box = element.outgoing && getExecutionData(element);
+
+      if (box && elements.indexOf(box) === -1) {
+        elements.push(box);
+      }
+    });
+
+    // and the association may not go on its own — a backstop below the rule in ExecutionDataRules, which
+    // programmatic deletion never consults
+    context.elements = elements.filter(element => !isProtectedAssociation(element, elements));
+  }, true);
+
+  // (3) a box travels with its element ---------------------------------------------------------------
+
+  // the boxes of the given shapes, minus those already among them
+  function boxesOf(shapes) {
+    return shapes.reduce(function(boxes, shape) {
+      const box = shape.outgoing && getExecutionData(shape);
+
+      if (box && shapes.indexOf(box) === -1 && boxes.indexOf(box) === -1) {
+        boxes.push(box);
+      }
+
+      return boxes;
+    }, []);
+  }
+
+  // dragging: the box joins the drag, so it is previewed and moved with its element
+  eventBus.on('shape.move.start', HIGH_PRIORITY, function(event) {
+    const context = event.context,
+          boxes = boxesOf(context.shapes);
+
+    if (boxes.length) {
+      context.shapes = context.shapes.concat(boxes);
+    }
+  });
+
+  // and the same for a programmatic move, which never starts a drag
+  this.preExecute('elements.move', HIGH_PRIORITY, function(context) {
+    const boxes = boxesOf(context.shapes);
+
+    if (boxes.length) {
+      context.shapes = context.shapes.concat(boxes);
+    }
+  }, true);
+
+  // (4) height follows the content ------------------------------------------------------------------
 
   this.preExecute('shape.resize', RESIZE_PRIORITY, function(context) {
     const shape = context.shape;
@@ -78,7 +141,7 @@ export default function ExecutionDataBehavior(
     return true;
   }
 
-  // (3) redraw and visibility ------------------------------------------------------------------------
+  // (5) redraw and visibility ------------------------------------------------------------------------
 
   function redraw(element) {
     const gfx = element && elementRegistry.getGraphics(element);

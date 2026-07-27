@@ -31,6 +31,26 @@ export function getHost(box) {
 }
 
 /**
+ * The association attaching an execution data box to the element it describes.
+ */
+export function isExecutionDataAssociation(element) {
+  return !!element.waypoints && !!element.target && isExecutionData(element.target);
+}
+
+/**
+ * Such an association may not be deleted on its own — that would leave a box describing nothing. It goes
+ * only with the box or with the host, so deleting either of those is allowed to take it along.
+ */
+export function isProtectedAssociation(element, elements) {
+  if (!isExecutionDataAssociation(element)) {
+    return false;
+  }
+
+  return elements.indexOf(element.target) === -1
+    && elements.indexOf(getHost(element.target)) === -1;
+}
+
+/**
  * Elements that may carry execution data. Labels, the root, other annotations and connections may not.
  */
 export function canHaveExecutionData(element) {
