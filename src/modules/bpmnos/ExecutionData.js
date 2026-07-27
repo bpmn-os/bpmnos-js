@@ -56,6 +56,14 @@ export default class ExecutionData {
   }
 
   /**
+   * The lookup tables the model declares, in document order. Model-level: a table's name is a callable in
+   * expressions, not something a node declares or inherits.
+   */
+  getTables() {
+    return this._registry.tables || [];
+  }
+
+  /**
    * The attribute with the given id, ids being unique model-wide.
    */
   getAttribute(id) {

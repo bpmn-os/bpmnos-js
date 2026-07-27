@@ -32,7 +32,8 @@ export function collectExecutionData(definitions) {
   const registry = {
     byElement: new Map(),
     byId: new Map(),
-    elementsById: new Map()
+    elementsById: new Map(),
+    tables: []
   };
 
   if (!definitions) {
@@ -40,6 +41,8 @@ export function collectExecutionData(definitions) {
   }
 
   const rootElements = definitions.get('rootElements') || [];
+
+  registry.tables = tablesOf(rootElements);
 
   // globals are declared on the collaboration and seen everywhere
   const globals = rootElements
@@ -260,6 +263,43 @@ function operatorEntries(holder, declaringElementId) {
       declaringElement: declaringElementId,
       moddleElement: operator
     }));
+}
+
+/**
+ * The lookup tables a model declares: `bpmnos:tables/table` on the data store references it holds, each a
+ * name, the file it is read from and its column header.
+ *
+ * Model-level rather than per element: a table's name becomes a callable in expressions, so
+ * `durations(current_location,next_location)` in an operator is a lookup wherever it is written, whichever
+ * data store reference declares it. Kept in document order, naming the reference that declares it.
+ */
+function tablesOf(rootElements) {
+  const references = rootElements
+    .filter(rootElement => is(rootElement, 'bpmn:Process'))
+    .flatMap(process => dataStoreReferences(process));
+
+  return references.flatMap(reference =>
+    getExtensionElementsList(reference, 'bpmnos:Tables')
+      .flatMap(tables => tables.get('table') || [])
+      .map(table => ({
+        id: table.get('id'),
+        name: table.get('name'),
+        source: table.get('source'),
+        header: table.get('header'),
+        declaringElement: reference.id,
+        moddleElement: table
+      })));
+}
+
+// data store references sit among the flow elements of a scope, at any depth
+function dataStoreReferences(scope) {
+  return (scope.get('flowElements') || []).flatMap(flowElement => {
+    if (is(flowElement, 'bpmn:DataStoreReference')) {
+      return [ flowElement ];
+    }
+
+    return isScope(flowElement) ? dataStoreReferences(flowElement) : [];
+  });
 }
 
 /**

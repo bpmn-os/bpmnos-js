@@ -143,6 +143,13 @@ async function collectModel(page, diagram) {
         };
       });
 
+    const tables = executionData.getTables().map((t) => ({
+      id: t.id,
+      name: t.name,
+      source: t.source,
+      header: t.header
+    }));
+
     const root = registry.getAll().find((element) => element.type === 'bpmn:Process')
       || registry.getAll().find((element) => element.type === 'bpmn:Collaboration');
 
@@ -156,7 +163,8 @@ async function collectModel(page, diagram) {
         processRef: processRefOf(root.businessObject),
         documentation: documentationOf(root.businessObject)
       },
-      nodes
+      nodes,
+      tables
     };
   });
 }
@@ -413,6 +421,40 @@ function guidanceSections(node, level, slug) {
   });
 }
 
+/**
+ * The lookup tables the model declares, at model level: a table's name is a callable in expressions, so
+ * `durations(current_location,next_location)` in an operator reads the table named there — which is the one
+ * thing the expression itself does not say.
+ */
+function tableSection(tables, slug) {
+  if (!tables.length) {
+    return [];
+  }
+
+  slug('Lookup tables');
+
+  return [
+    '## Lookup tables',
+    '',
+    ...tables.map((table) => {
+      const columns = (table.header || '').split(';').map((column) => column.trim()).filter(Boolean);
+
+      const parts = [ `- **${table.name || table.id}**` ];
+
+      if (table.source) {
+        parts.push('(from `' + table.source + '`)');
+      }
+
+      if (columns.length) {
+        parts.push('with columns ' + columns.map((column) => '`' + column + '`').join(', '));
+      }
+
+      return parts.join(' ');
+    }),
+    ''
+  ];
+}
+
 function loopTitle(node) {
   return node.loopKind === 'multiInstance' ? 'Multi-instance' : 'Loop';
 }
@@ -439,7 +481,7 @@ function section(title, attributes, ownIds, level, anchors, slug) {
  * heading and the slugs come out the same both times.
  */
 function render({ baseName, diagrams, model, anchors, register }) {
-  const { root, nodes } = model,
+  const { root, nodes, tables } = model,
         slug = createSlugger();
 
   const titleText = root ? headingText(root) : baseName,
@@ -485,6 +527,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
       ...guidanceSections(rootNode, 2, slug)
     );
   }
+
+  // model-level, after what the model itself declares and before the nodes
+  lines.push(...tableSection(tables || [], slug));
 
   nodes
     .filter((node) => (!root || node.id !== root.id) && hasContent(node))
