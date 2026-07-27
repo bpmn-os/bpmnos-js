@@ -17,13 +17,8 @@ function requiresCheck(node) {
   }
   while ( node ) {
     node = node.$parent;
-    if ( node && is(node, 'bpmn:SubProcess') ) {
-      if (node.type == "Resource" || node.type == "Request" || node.type == "Release" ) {
-        return false;
-      }
-      else if ( node.isExpanded == false ) {
-        return true;
-      }
+    if ( node && is(node, 'bpmn:SubProcess') && node.isExpanded == false ) {
+      return true;
     }
   }
   return true;

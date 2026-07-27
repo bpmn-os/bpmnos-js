@@ -30,9 +30,6 @@ export function attributeHandler({ element, injector }) {
   if ( !is(businessObject, 'bpmn:Process') && !is(businessObject, 'bpmn:Activity') && !is(businessObject, 'bpmn:DataObjectReference') && !is(businessObject, 'bpmn:Collaboration') ) {
     return;
   }
-  if ( is(businessObject, 'bpmn:Activity') && ( businessObject.type == "Request" || businessObject.type == "Release") ) {
-    return;
-  }
 
   let dataElement = undefined;
   let collaboration = is(businessObject, 'bpmn:Collaboration');

@@ -21,7 +21,6 @@ import * as defaultAttributes from "./bpmnos/default-attributes.js";
 import * as attributeRedeclared from "./bpmnos/attribute-redeclared.js";
 import * as attributeUndeclared from "./bpmnos/attribute-undeclared.js";
 import * as gatekeeperRestrictions from "./bpmnos/gatekeeper-restrictions.js";
-import * as allocation from "./bpmnos/allocation.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
 import * as loopParameters from "./bpmnos/loop-parameters.js";
 
@@ -40,7 +39,6 @@ const sources = {
     "./bpmnos/attribute-redeclared.js": attributeRedeclared,
     "./bpmnos/attribute-undeclared.js": attributeUndeclared,
     "./bpmnos/gatekeeper-restrictions.js": gatekeeperRestrictions,
-    "./bpmnos/allocation.js": allocation,
     "./bpmnos/event-trigger.js": eventTrigger,
     "./bpmnos/loop-parameters.js": loopParameters
   }),

@@ -9,7 +9,9 @@
   "types": [
     {
       "name": "ExecutionExtension",
-      "extends": [ "bpmn:Activity" ],
+      "extends": [
+        "bpmn:Activity"
+      ],
       "properties": [
         {
           "name": "type",
@@ -20,7 +22,9 @@
     },
     {
       "name": "AnnotationExtension",
-      "extends": [ "bpmn:TextAnnotation" ],
+      "extends": [
+        "bpmn:TextAnnotation"
+      ],
       "properties": [
         {
           "name": "annotation",
@@ -31,7 +35,9 @@
     },
     {
       "name": "Decisions",
-      "superClass": [ "Element" ],
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "decision",
@@ -41,8 +47,10 @@
       ]
     },
     {
-      "name": "Decision", 
-      "superClass": [ "Element" ],
+      "name": "Decision",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",
@@ -57,8 +65,10 @@
       ]
     },
     {
-      "name": "LoopCharacteristics", 
-      "superClass": [ "Element" ],
+      "name": "LoopCharacteristics",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "parameter",
@@ -68,8 +78,10 @@
       ]
     },
     {
-      "name": "Status", 
-      "superClass": [ "Element" ],
+      "name": "Status",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "attributes",
@@ -96,11 +108,13 @@
           "type": "Messages",
           "isMany": true
         }
-       ]
+      ]
     },
     {
       "name": "Guidance",
-      "superClass": [ "Element" ],
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "type",
@@ -122,22 +136,26 @@
           "type": "Operators",
           "isMany": true
         }
-       ]
+      ]
     },
     {
-      "name": "Attributes", 
-      "superClass": [ "Element" ],
+      "name": "Attributes",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "attribute",
           "type": "Attribute",
           "isMany": true
         }
-       ]
+      ]
     },
     {
       "name": "Attribute",
-      "superClass": [ "Element" ],
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",
@@ -167,8 +185,10 @@
       ]
     },
     {
-      "name": "Operators", 
-      "superClass": [ "Element" ],
+      "name": "Operators",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "operator",
@@ -178,8 +198,10 @@
       ]
     },
     {
-      "name": "Operator", 
-      "superClass": [ "Element" ],
+      "name": "Operator",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",
@@ -191,11 +213,13 @@
           "type": "String",
           "isAttr": true
         }
-       ]
+      ]
     },
     {
       "name": "Parameter",
-      "superClass": [ "Element" ],
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "name",
@@ -210,8 +234,10 @@
       ]
     },
     {
-      "name": "Restrictions", 
-      "superClass": [ "Element" ],
+      "name": "Restrictions",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "restriction",
@@ -221,8 +247,10 @@
       ]
     },
     {
-      "name": "Restriction", 
-      "superClass": [ "Element" ],
+      "name": "Restriction",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",
@@ -242,8 +270,10 @@
       ]
     },
     {
-      "name": "Timer", 
-      "superClass": [ "Element" ],
+      "name": "Timer",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "parameter",
@@ -253,8 +283,10 @@
       ]
     },
     {
-      "name": "Messages", 
-      "superClass": [ "Element" ],
+      "name": "Messages",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "message",
@@ -264,8 +296,10 @@
       ]
     },
     {
-      "name": "Message", 
-      "superClass": [ "Element" ],
+      "name": "Message",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",
@@ -287,11 +321,13 @@
           "type": "Content",
           "isMany": true
         }
-       ]
+      ]
     },
     {
-      "name": "Signal", 
-      "superClass": [ "Element" ],
+      "name": "Signal",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",
@@ -308,11 +344,13 @@
           "type": "Content",
           "isMany": true
         }
-       ]
+      ]
     },
     {
       "name": "Content",
-      "superClass": [ "Element" ],
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "key",
@@ -327,32 +365,12 @@
       ]
     },
     {
-      "name": "Allocations", 
-      "superClass": [ "Element" ],
-      "properties": [
-         {
-          "name": "allocation",
-          "type": "Allocation",
-          "isMany": true
-        }
-      ]
-    },
-    {
-      "name": "Allocation", 
-      "superClass": [ "Element" ],
+      "name": "Tables",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
-          "name": "id",
-          "type": "String",
-          "isAttr": true
-        }
-       ]
-    },
-    {
-      "name": "Tables", 
-      "superClass": [ "Element" ],
-      "properties": [
-         {
           "name": "table",
           "type": "Table",
           "isMany": true
@@ -360,8 +378,10 @@
       ]
     },
     {
-      "name": "Table", 
-      "superClass": [ "Element" ],
+      "name": "Table",
+      "superClass": [
+        "Element"
+      ],
       "properties": [
         {
           "name": "id",

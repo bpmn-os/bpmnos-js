@@ -35,9 +35,6 @@ export function operatorHandler({ element, injector }) {
   if ( !is(businessObject, 'bpmn:Process') && !is(businessObject, 'bpmn:Activity') ) {
     return;
   }
-  if ( is(element, 'bpmn:Activity') && ( businessObject.type == "Request" || businessObject.type == "Release") ) {
-    return;
-  }
 
   const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');

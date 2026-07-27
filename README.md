@@ -11,7 +11,7 @@ The BPMNOS extension is three reusable modules, importable individually or toget
 bundles all three):
 
 - **`bpmnos-js/moddle`**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
-  operators, messages, guidance, allocations, and lookup tables.
+  operators, messages, guidance, and lookup tables.
 - **`bpmnos-js/decision-task`**: draws the decision-task glyph and provides the activity replace menu
   (the context-pad wrench). The menu adds the decision task and keeps type changes consistent: a task,
   a typed task (user task, decision task, ...), and a sub-process convert only through an untyped task,

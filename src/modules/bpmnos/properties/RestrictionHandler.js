@@ -30,9 +30,6 @@ export function restrictionHandler({ element, injector }) {
   if ( !isAny(businessObject, [ 'bpmn:Process', 'bpmn:Activity' ]) ) {
     return;
   }
-  if ( is(businessObject, 'bpmn:Activity') && ( businessObject.type == "Request" || businessObject.type == "Release") ) {
-    return;
-  }
 
   const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');

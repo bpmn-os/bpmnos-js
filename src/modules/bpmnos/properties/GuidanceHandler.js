@@ -40,9 +40,6 @@ export function guidanceHandler({ element, injector }) {
   if ( is(businessObject, 'bpmn:Activity') && businessObject.isForCompensation ) {
     return;
   }
-  if ( is(businessObject, 'bpmn:Activity') && ( businessObject.type == "Request" || businessObject.type == "Release") ) {
-    return;
-  }
   if ( is(businessObject, 'bpmn:CatchEvent') && !isMessageSupported(element) ) {
     return;
   }

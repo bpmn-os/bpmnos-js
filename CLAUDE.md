@@ -48,7 +48,7 @@ for optimization and simulation), for any bpmn-js host. Exposed via the package 
 - **`.`** — the full BPMNOS DI module: the decision-task decorator + activity replace menu, the
   properties panel, and the extension-element id replacer (`ReplaceIds`).
 - **`./moddle`** (`bpmnos.json`) — the `bpmnos:` moddle extension (decisions, attributes, restrictions,
-  operators, messages, guidance, allocations, lookup tables, etc.).
+  operators, messages, guidance, lookup tables, etc.).
 - **`./decision-task`** — the decision-task renderer + `ActivityPopupMenu` (the type-change funnel and the
   decision task).
 - **`./properties`** — a `@bpmn-io/properties-panel` provider (`BPMNOSPropertiesProvider` + updater),

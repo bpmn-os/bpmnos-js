@@ -21,7 +21,6 @@ import { multiMessageHandler } from './properties/MultiMessageHandler';
 import { messageHandler } from './properties/MessageHandler';
 import { signalHandler } from './properties/SignalHandler';
 import { timerHandler } from './properties/TimerHandler';
-import { allocationHandler } from './properties/AllocationHandler';
 import { guidanceHandler } from './properties/GuidanceHandler';
 import { tableHandler } from './properties/TableHandler';
 
@@ -38,7 +37,6 @@ const EXECUTION_GROUPS = [
 { label: 'Message', id: 'message', handler: messageHandler},
 { label: 'Signal', id: 'signal', handler: signalHandler},
 { label: 'Timer', id: 'attribute', component: Group, handler: timerHandler},
-{ label: 'Allocations', id: 'allocations', component: ListGroup, handler: allocationHandler},
 { label: 'Guidance', id: 'guidance', component: ListGroup, handler: guidanceHandler},
 { label: 'Lookup table', id: 'table', component: ListGroup, handler: tableHandler}
 ];

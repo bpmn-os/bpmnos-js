@@ -221,9 +221,6 @@
   "bpmnos/gatekeeper-restrictions.js": {
     "severity": "error"
   },
-  "bpmnos/allocation.js": {
-    "severity": "error"
-  },
   "bpmnos/event-trigger.js": {
     "severity": "error",
     "subtypes": {
