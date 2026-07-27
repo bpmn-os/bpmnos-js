@@ -424,7 +424,7 @@ function guidanceSections(node, level, slug) {
 /**
  * The lookup tables the model declares, at model level: a table's name is a callable in expressions, so
  * `durations(current_location,next_location)` in an operator reads the table named there — which is the one
- * thing the expression itself does not say.
+ * thing the expression itself does not say. Written as the call it is, and followed by its columns.
  */
 function tableSection(tables, slug) {
   if (!tables.length) {
@@ -439,7 +439,7 @@ function tableSection(tables, slug) {
     ...tables.map((table) => {
       const columns = (table.header || '').split(';').map((column) => column.trim()).filter(Boolean);
 
-      const parts = [ `- **${table.name || table.id}**` ];
+      const parts = [ `- **${table.name || table.id}(…)**` ];
 
       if (table.source) {
         parts.push('(from `' + table.source + '`)');
