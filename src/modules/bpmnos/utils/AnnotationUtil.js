@@ -58,8 +58,8 @@ export function canHaveAnnotation(element) {
     return false;
   }
 
+  // data object and data store references carry no token, so there is nothing to show for them — the
+  // attributes they hold appear as the data of the scope that owns them
   return is(element, 'bpmn:FlowNode')
-    || is(element, 'bpmn:Participant')
-    || is(element, 'bpmn:DataObjectReference')
-    || is(element, 'bpmn:DataStoreReference');
+    || is(element, 'bpmn:Participant');
 }

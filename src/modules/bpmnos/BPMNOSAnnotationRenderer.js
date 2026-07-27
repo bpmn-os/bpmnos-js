@@ -14,8 +14,12 @@ import { layout, PADDING_X } from './utils/AnnotationLayout';
 const STYLES = {
   title: { fontSize: 12, fontWeight: 'bold' },
   label: { fontSize: 9, fill: '#777' },
-  item: { fontSize: 11 }
+  item: { fontSize: 11 },
+  type: { fontSize: 11, fontStyle: 'italic', fill: '#8a8a8a' }
 };
+
+// between the type and the name it qualifies
+const TYPE_GAP = 4;
 
 /**
  * Draws the execution data box: a header naming the element, then one compartment per kind of declaration,
@@ -71,12 +75,25 @@ export default function BPMNOSAnnotationRenderer(
 
       svgAttr(group, { transform: `translate(0, ${row.y})` });
 
-      svgAppend(group, textRenderer.createText(row.text || '', {
-        box: { width: shape.width, height: row.height },
-        align: row.kind === 'title' ? 'center-middle' : 'left-middle',
-        padding: { left: PADDING_X, right: PADDING_X, top: 0, bottom: 0 },
-        style: STYLES[row.kind]
-      }));
+      const draw = function(text, style, left) {
+        svgAppend(group, textRenderer.createText(text, {
+          box: { width: shape.width, height: row.height },
+          align: row.kind === 'title' ? 'center-middle' : 'left-middle',
+          padding: { left, right: PADDING_X, top: 0, bottom: 0 },
+          style
+        }));
+      };
+
+      // an item is drawn as two runs, so the type can be set apart from the name it qualifies
+      if (row.kind === 'item' && row.type) {
+        draw(row.type, STYLES.type, PADDING_X);
+
+        const { width } = textRenderer.getDimensions(row.type, { style: STYLES.type });
+
+        draw(row.text || '', STYLES.item, PADDING_X + width + TYPE_GAP);
+      } else {
+        draw(row.text || '', STYLES[row.kind], PADDING_X);
+      }
 
       svgAppend(parentNode, group);
     });

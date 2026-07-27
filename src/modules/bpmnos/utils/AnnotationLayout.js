@@ -35,7 +35,7 @@ export function layout(box, executionData) {
     }
 
     (compartment.items || []).forEach(function(item) {
-      rows.push({ kind: 'item', text: item, y, height: ITEM_HEIGHT });
+      rows.push({ kind: 'item', type: item.type, text: item.text, y, height: ITEM_HEIGHT });
       y += ITEM_HEIGHT;
     });
 

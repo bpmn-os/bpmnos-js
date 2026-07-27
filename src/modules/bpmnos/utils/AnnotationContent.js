@@ -19,10 +19,21 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 export function getAnnotationContent(host, executionData) {
   const { status, data, globals } = executionData.get(host);
 
+  // what counts as declared here: the element, and for a pool the process it refers to
+  const businessObject = getBusinessObject(host),
+        processRef = businessObject.get && businessObject.get('processRef');
+
+  const ownIds = [ host.id, processRef && processRef.id ].filter(Boolean);
+
+  const compartment = (label, attributes) => ({
+    label,
+    items: attributes.map(attribute => item(attribute, ownIds))
+  });
+
   const compartments = [
-    { label: 'Status', items: status.map(item) },
-    { label: 'Data', items: data.map(item) },
-    { label: 'Globals', items: globals.map(item) }
+    compartment('Status', status),
+    compartment('Data', data),
+    compartment('Globals', globals)
   ];
 
   return {
@@ -40,14 +51,21 @@ function titleOf(host) {
 }
 
 /**
- * `name : type`. The model keeps name and initialization in one string, `name := expression`, as the
- * properties panel edits them ("Name (and initial value)"); the box shows the name alone.
+ * An item is `{ type, text }`, drawn as the type followed by the name — and by the initialization when the
+ * attribute is declared here, since an inherited attribute is not reinitialized and its initial value
+ * belongs to the element declaring it.
+ *
+ * The model keeps name and initialization in one string, as the properties panel edits them ("Name (and
+ * initial value)").
  */
-function item(attribute) {
-  const raw = attribute.name || attribute.id,
+function item(attribute, ownIds) {
+  const raw = (attribute.name || attribute.id).trim(),
         separator = raw.indexOf(':=');
 
-  const name = separator === -1 ? raw.trim() : raw.slice(0, separator).trim();
+  const initialized = separator !== -1 && ownIds.includes(attribute.declaringElement);
 
-  return attribute.type ? `${name} : ${attribute.type}` : name;
+  return {
+    type: attribute.type || '',
+    text: initialized ? raw : (separator === -1 ? raw : raw.slice(0, separator).trim())
+  };
 }

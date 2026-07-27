@@ -34,6 +34,12 @@ export default class BPMNOSAnnotation {
       return this.show(existing);
     }
 
+    // a root element has no bounds to place the box against — the context pad never offers it there, and a
+    // programmatic call must not produce a shape at NaN
+    if (!isFinite(host.x) || !isFinite(host.y)) {
+      return;
+    }
+
     // the host is only reachable through the association, which does not exist yet, so the content height
     // cannot be measured here; BPMNOSAnnotationBehavior fits it once the box is attached
     const height = layout({ incoming: [] }).height;
