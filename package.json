@@ -9,6 +9,7 @@
     "./decision-task": "./src/modules/bpmnos/decision-task.js",
     "./properties": "./src/modules/bpmnos/properties.js",
     "./annotation": "./src/modules/bpmnos/annotation.js",
+    "./execution-data": "./src/modules/bpmnos/execution-data.js",
     "./rules": "./src/modules/rules/index.js",
     "./rules/*": "./src/modules/rules/*",
     "./newDiagram.bpmn": "./src/newDiagram.bpmn"
@@ -20,7 +21,8 @@
     "test": "node --test test/*.test.mjs"
   },
   "bin": {
-    "bpmnos2svg": "./bpmnos2svg.mjs"
+    "bpmnos2svg": "./bpmnos2svg.mjs",
+    "bpmnosdoc": "./bpmnosdoc.mjs"
   },
   "author": {
     "name": "Asvin Goel"
