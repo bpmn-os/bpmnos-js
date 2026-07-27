@@ -31,6 +31,32 @@ export function getHost(box) {
 }
 
 /**
+ * Groups of the box that can be collapsed, and whether they start collapsed: what the element inherits is
+ * folded away, what it declares itself is not. Globals are inherited by every element, so the whole
+ * compartment folds.
+ *
+ * The state is session-only, kept on the element rather than in the file — whether it should persist is
+ * still open, and an element is rebuilt on import, so a reload starts from these defaults.
+ */
+const COLLAPSED_BY_DEFAULT = {
+  statusInherited: true,
+  dataInherited: true,
+  globals: true
+};
+
+export function isCollapsed(box, key) {
+  const state = box.collapsedGroups || {};
+
+  return key in state ? state[key] : !!COLLAPSED_BY_DEFAULT[key];
+}
+
+export function toggleCollapsed(box, key) {
+  const state = box.collapsedGroups = box.collapsedGroups || {};
+
+  state[key] = !isCollapsed(box, key);
+}
+
+/**
  * The association attaching an execution data box to the element it describes.
  */
 export function isAnnotationAssociation(element) {

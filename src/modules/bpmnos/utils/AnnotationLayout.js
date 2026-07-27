@@ -1,5 +1,5 @@
 import { getAnnotationContent } from './AnnotationContent';
-import { getHost } from './AnnotationUtil';
+import { getHost, isCollapsed } from './AnnotationUtil';
 
 // Row metrics of the box. A UML-class-diagram shape in spirit: the header names the element, then one
 // compartment per kind of declaration, separated by full-width rules.
@@ -24,20 +24,57 @@ export function layout(box, executionData) {
 
   let y = HEADER_HEIGHT;
 
+  const items = function(list) {
+    list.forEach(function(item) {
+      rows.push({ kind: 'item', type: item.type, text: item.text, y, height: ITEM_HEIGHT });
+      y += ITEM_HEIGHT;
+    });
+  };
+
   (content.compartments || []).forEach(function(compartment) {
     separators.push(y);
 
     y += COMPARTMENT_PADDING / 2;
 
-    if (compartment.label) {
+    // Globals are inherited by everything, so the compartment folds as a whole and its label is the
+    // toggle; Status and Data list what the element declares and fold only what it inherits.
+    const foldsWhole = !compartment.own.length && compartment.inherited.length && compartment.key === 'globals',
+          collapsed = isCollapsed(box, compartment.key);
+
+    if (foldsWhole) {
+      rows.push({
+        kind: 'toggle',
+        key: compartment.key,
+        text: `${collapsed ? '▸' : '▾'} ${compartment.label} (${compartment.inherited.length})`,
+        y,
+        height: LABEL_HEIGHT
+      });
+      y += LABEL_HEIGHT;
+
+      if (!collapsed) {
+        items(compartment.inherited);
+      }
+    } else {
       rows.push({ kind: 'label', text: compartment.label, y, height: LABEL_HEIGHT });
       y += LABEL_HEIGHT;
-    }
 
-    (compartment.items || []).forEach(function(item) {
-      rows.push({ kind: 'item', type: item.type, text: item.text, y, height: ITEM_HEIGHT });
-      y += ITEM_HEIGHT;
-    });
+      if (compartment.inherited.length) {
+        rows.push({
+          kind: 'toggle',
+          key: compartment.key,
+          text: `${collapsed ? '▸' : '▾'} inherited (${compartment.inherited.length})`,
+          y,
+          height: ITEM_HEIGHT
+        });
+        y += ITEM_HEIGHT;
+
+        if (!collapsed) {
+          items(compartment.inherited);
+        }
+      }
+
+      items(compartment.own);
+    }
 
     y += COMPARTMENT_PADDING / 2;
   });

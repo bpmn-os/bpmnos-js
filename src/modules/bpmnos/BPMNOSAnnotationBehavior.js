@@ -7,11 +7,12 @@ import {
   isHidden,
   getAnnotation,
   getHost,
-  isProtectedAssociation
+  isProtectedAssociation,
+  toggleCollapsed
 } from './utils/AnnotationUtil';
-import { layout } from './utils/AnnotationLayout';
+import { layout, HEADER_HEIGHT } from './utils/AnnotationLayout';
 
-// runs after bpmn-js's TextBPMNOSAnnotationBehavior, which would otherwise derive the height from the (empty) text
+// runs after bpmn-js's TextAnnotationBehavior, which would otherwise derive the height from the (empty) text
 const RESIZE_PRIORITY = 500;
 
 // runs before bpmn-js's own delete behaviours
@@ -30,7 +31,7 @@ const TOLERANCE = 2;
  * - applies the persisted `visible`/`hidden` state to the box and its association.
  */
 export default function BPMNOSAnnotationBehavior(
-    eventBus, modeling, elementRegistry, graphicsFactory, selection, executionData) {
+    eventBus, modeling, elementRegistry, graphicsFactory, selection, executionData, canvas) {
 
   CommandInterceptor.call(this, eventBus);
 
@@ -114,7 +115,7 @@ export default function BPMNOSAnnotationBehavior(
           height = layout(shape, executionData).height;
 
     // Only the width is the user's — bpmn-js restricts annotations to the west/east handles. Its
-    // TextBPMNOSAnnotationBehavior has already rewritten newBounds.height to the height of the (empty) text, so
+    // TextAnnotationBehavior has already rewritten newBounds.height to the height of the (empty) text, so
     // the vertical anchor is taken from the shape as it stands, not from those bounds.
     context.newBounds = {
       x: bounds.x,
@@ -203,6 +204,81 @@ export default function BPMNOSAnnotationBehavior(
     }
   });
 
+  // (6) folding what the element inherits ------------------------------------------------------------
+
+  // A click on a toggle row folds or unfolds that group. The box is one shape, so the row is found by
+  // hit-testing the click against the layout — `element.click` fires only when the click was not a drag,
+  // which keeps this out of the way of moving and resizing.
+  // interaction events carry no diagram coordinates, so a mouse position is converted through the viewbox
+  function localY(originalEvent, box) {
+    const viewbox = canvas.viewbox(),
+          bounds = canvas.getContainer().getBoundingClientRect();
+
+    return viewbox.y + (originalEvent.clientY - bounds.top) / viewbox.scale - box.y;
+  }
+
+  // Only the header drags the box. Everywhere else a press would start a move and swallow the click that
+  // folds a group, so the drag is suppressed before diagram-js's Move sees the event.
+  function onHeader(originalEvent, box) {
+    return localY(originalEvent, box) <= HEADER_HEIGHT;
+  }
+
+  eventBus.on('element.mousedown', HIGH_PRIORITY, function(event) {
+    const box = event.element,
+          originalEvent = event.originalEvent;
+
+    if (!isAnnotation(box) || !originalEvent) {
+      return;
+    }
+
+    if (!onHeader(originalEvent, box)) {
+      return false;
+    }
+  });
+
+  // and the pointer says so: a move cursor over the header, the default cursor over the content
+  eventBus.on('element.mousemove', function(event) {
+    const box = event.element,
+          originalEvent = event.originalEvent,
+          gfx = event.gfx;
+
+    if (!isAnnotation(box) || !originalEvent || !gfx) {
+      return;
+    }
+
+    const cursor = onHeader(originalEvent, box) ? 'move' : 'default';
+
+    // the cursor belongs on the hit area: `.djs-element .djs-hit-all { cursor: move }` would otherwise win
+    // over anything inherited from the group
+    [ gfx, ...gfx.querySelectorAll('.djs-hit, .djs-hit-all, .djs-hit-click-stroke, .djs-hit-stroke') ]
+      .forEach(node => { node.style.cursor = cursor; });
+  });
+
+  eventBus.on('element.click', function(event) {
+    const box = event.element,
+          originalEvent = event.originalEvent;
+
+    if (!isAnnotation(box) || !originalEvent) {
+      return;
+    }
+
+    const local = localY(originalEvent, box);
+
+    const row = layout(box, executionData).rows.find(
+      row => row.kind === 'toggle' && local >= row.y && local < row.y + row.height
+    );
+
+    if (!row) {
+      return;
+    }
+
+    toggleCollapsed(box, row.key);
+
+    if (!fitHeight(box)) {
+      redraw(box);
+    }
+  });
+
   // a hidden box must come back hidden
   eventBus.on('import.done', function() {
     elementRegistry.filter(isAnnotation).forEach(applyVisibility);
@@ -240,7 +316,8 @@ BPMNOSAnnotationBehavior.$inject = [
   'elementRegistry',
   'graphicsFactory',
   'selection',
-  'executionData'
+  'executionData',
+  'canvas'
 ];
 
 /**

@@ -25,20 +25,28 @@ export function getAnnotationContent(host, executionData) {
 
   const ownIds = [ host.id, processRef && processRef.id ].filter(Boolean);
 
-  const compartment = (label, attributes) => ({
+  // inherited and own are kept apart: what the element inherits can be folded away, what it declares
+  // itself is always in view
+  const compartment = (label, key, attributes) => ({
     label,
-    items: attributes.map(attribute => item(attribute, ownIds))
+    key,
+    inherited: attributes
+      .filter(attribute => !ownIds.includes(attribute.declaringElement))
+      .map(attribute => item(attribute, ownIds)),
+    own: attributes
+      .filter(attribute => ownIds.includes(attribute.declaringElement))
+      .map(attribute => item(attribute, ownIds))
   });
 
   const compartments = [
-    compartment('Status', status),
-    compartment('Data', data),
-    compartment('Globals', globals)
+    compartment('Status', 'statusInherited', status),
+    compartment('Data', 'dataInherited', data),
+    compartment('Globals', 'globals', globals)
   ];
 
   return {
     title: titleOf(host),
-    compartments: compartments.filter(compartment => compartment.items.length)
+    compartments: compartments.filter(compartment => compartment.inherited.length || compartment.own.length)
   };
 }
 

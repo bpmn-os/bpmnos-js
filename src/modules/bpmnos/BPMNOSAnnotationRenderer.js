@@ -15,7 +15,8 @@ const STYLES = {
   title: { fontSize: 12, fontWeight: 'bold' },
   label: { fontSize: 9, fill: '#777' },
   item: { fontSize: 11 },
-  type: { fontSize: 11, fontStyle: 'italic', fill: '#8a8a8a' }
+  type: { fontSize: 11, fontStyle: 'italic', fill: '#8a8a8a' },
+  toggle: { fontSize: 10, fill: '#555' }
 };
 
 // between the type and the name it qualifies
