@@ -189,16 +189,20 @@ function createSlugger() {
 
 /**
  * A process is titled by its name — a pool counting as the process it refers to — and everything else by
- * type and id, since only processes are things a reader knows by name.
+ * type, the id following in parentheses since only processes are things a reader knows by name.
+ *
+ * The id is not set in code: doxygen turns a code span into `<tt>` and then escapes it wherever it flattens
+ * a heading to plain text — the page title and the search index — where it would read `&lt;tt&gt;`. The
+ * slugger drops parentheses and backticks alike, so the anchors are the same either way.
  */
 function headingText(node) {
   const id = node.displayId || node.id;
 
   if (node.type === 'Process' || node.processRef) {
-    return (node.name ? node.name + ' ' : '') + '`' + id + '`';
+    return `${node.name || 'Process'} (${id})`;
   }
 
-  return `${node.type} \`${id}\``;
+  return `${node.type} (${id})`;
 }
 
 function hasContent(node) {
@@ -288,6 +292,34 @@ function restrictionItem(restriction, ownIds, anchors) {
   return '- ' + parts.join(' ');
 }
 
+/**
+ * What the node inherits behind a `<details>` fold, what it declares itself beneath it in plain view — the
+ * same split the annotation box makes (`AnnotationContent.js`), and collapsed by default as the box's
+ * chevron is.
+ *
+ * Both GitHub and doxygen render markdown inside `<details>` as long as a blank line follows the summary and
+ * precedes the closing tag, so the entries stay ordinary list items with their links intact. Inherited come
+ * first, as they do in the registry and in the box.
+ */
+function foldedList(entries, isOwn, render) {
+  const inherited = entries.filter((entry) => !isOwn(entry)),
+        own = entries.filter(isOwn).flatMap(render);
+
+  if (!inherited.length) {
+    return own;
+  }
+
+  return [
+    '<details>',
+    `<summary>Inherited (${inherited.length})</summary>`,
+    '',
+    ...inherited.flatMap(render),
+    '',
+    '</details>',
+    ...(own.length ? [ '', ...own ] : [])
+  ];
+}
+
 function restrictionSection(title, restrictions, ownIds, level, anchors, slug) {
   if (!restrictions.length) {
     return [];
@@ -298,7 +330,11 @@ function restrictionSection(title, restrictions, ownIds, level, anchors, slug) {
   return [
     '#'.repeat(level) + ' ' + title,
     '',
-    ...restrictions.map((r) => restrictionItem(r, ownIds, anchors)),
+    ...foldedList(
+      restrictions,
+      (r) => ownIds.includes(r.declaringElement),
+      (r) => [ restrictionItem(r, ownIds, anchors) ]
+    ),
     ''
   ];
 }
@@ -469,7 +505,11 @@ function section(title, attributes, ownIds, level, anchors, slug) {
   return [
     '#'.repeat(level) + ' ' + title,
     '',
-    ...attributes.flatMap((attribute) => attributeItem(attribute, ownIds, anchors)),
+    ...foldedList(
+      attributes,
+      (attribute) => ownIds.includes(attribute.declaringElement),
+      (attribute) => attributeItem(attribute, ownIds, anchors)
+    ),
     ''
   ];
 }
