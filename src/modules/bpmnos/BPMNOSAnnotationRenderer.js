@@ -22,6 +22,9 @@ const STYLES = {
 // between the type and the name it qualifies
 const TYPE_GAP = 4;
 
+// wide enough that the text renderer never breaks a line; the box clips instead
+const NO_WRAP_WIDTH = 10000;
+
 /**
  * Draws the execution data box: a header naming the element, then one compartment per kind of declaration,
  * separated by full-width rules. Everything shown is derived from the host at draw time.
@@ -71,16 +74,29 @@ export default function BPMNOSAnnotationRenderer(
       svgAppend(parentNode, separator);
     });
 
+    // Nothing wraps: a row is one line, cut off at the box edge. The width is the user's — annotations
+    // resize east and west — so an expression too long for the box is a matter of widening it.
+    const clipId = 'bpmnos-annotation-clip-' + shape.id,
+          clipPath = svgCreate('clipPath'),
+          clipRect = svgCreate('rect');
+
+    svgAttr(clipPath, { id: clipId });
+    svgAttr(clipRect, { x: 0, y: 0, width: shape.width, height: shape.height });
+    svgAppend(clipPath, clipRect);
+    svgAppend(parentNode, clipPath);
+
     rows.forEach(function(row) {
       const group = svgCreate('g');
 
-      svgAttr(group, { transform: `translate(0, ${row.y})` });
+      svgAttr(group, { transform: `translate(0, ${row.y})`, 'clip-path': `url(#${clipId})` });
 
       const draw = function(text, style, left) {
         svgAppend(group, textRenderer.createText(text, {
-          box: { width: shape.width, height: row.height },
-          align: row.kind === 'title' ? 'center-middle' : 'left-middle',
-          padding: { left, right: PADDING_X, top: 0, bottom: 0 },
+
+          // a box far wider than the shape, so the text renderer never breaks the line
+          box: { width: NO_WRAP_WIDTH, height: row.height },
+          align: 'left-middle',
+          padding: { left, right: 0, top: 0, bottom: 0 },
           style
         }));
       };
@@ -92,6 +108,12 @@ export default function BPMNOSAnnotationRenderer(
         const { width } = textRenderer.getDimensions(row.type, { style: STYLES.type });
 
         draw(row.text || '', STYLES.item, PADDING_X + width + TYPE_GAP);
+      } else if (row.kind === 'title') {
+
+        // the header is centred, which the left-aligned no-wrap box cannot do by itself
+        const { width } = textRenderer.getDimensions(row.text || '', { style: STYLES.title });
+
+        draw(row.text || '', STYLES.title, Math.max(PADDING_X, (shape.width - width) / 2));
       } else {
         draw(row.text || '', STYLES[row.kind], PADDING_X);
       }

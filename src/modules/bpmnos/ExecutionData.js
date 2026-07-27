@@ -167,16 +167,24 @@ export default class ExecutionData {
     this._elementsById = new Map();
   }
 
+  /**
+   * The definitions, reached by walking up from any element that has a business object.
+   *
+   * Not from the first element in the registry: after a re-import that is a root without a business
+   * object, and the walk would end there — leaving the whole registry empty until the page was reloaded.
+   */
   _getDefinitions() {
-    const [ element ] = this._elementRegistry.getAll();
+    for (const element of this._elementRegistry.getAll()) {
+      let businessObject = getBusinessObject(element);
 
-    let businessObject = element && getBusinessObject(element);
+      while (businessObject && !is(businessObject, 'bpmn:Definitions')) {
+        businessObject = businessObject.$parent;
+      }
 
-    while (businessObject && !is(businessObject, 'bpmn:Definitions')) {
-      businessObject = businessObject.$parent;
+      if (businessObject) {
+        return businessObject;
+      }
     }
-
-    return businessObject;
   }
 }
 
