@@ -23,7 +23,7 @@ const STYLES = {
  */
 export default function BPMNOSAnnotationRenderer(
     config, eventBus, styles,
-    pathMap, canvas, textRenderer) {
+    pathMap, canvas, textRenderer, executionData) {
 
   BpmnRenderer.call(
     this,
@@ -52,7 +52,7 @@ export default function BPMNOSAnnotationRenderer(
 
     svgAppend(parentNode, box);
 
-    const { rows, separators } = layout(shape);
+    const { rows, separators } = layout(shape, executionData);
 
     separators.forEach(function(y) {
       const separator = svgCreate('path');
@@ -93,5 +93,6 @@ BPMNOSAnnotationRenderer.$inject = [
   'styles',
   'pathMap',
   'canvas',
-  'textRenderer'
+  'textRenderer',
+  'executionData'
 ];

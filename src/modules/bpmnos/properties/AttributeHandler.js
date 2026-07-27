@@ -50,7 +50,7 @@ export function attributeHandler({ element, injector }) {
   }
   else {
     const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-    attributes = parent.attributes ? parent.get('attributes')[0] : {};
+    attributes = ( parent.get ? parent.get('attributes') || [] : [] )[0] || {};
   }
   
   const items = ( attributes.attribute || []).map((attribute, index) => {
@@ -136,7 +136,7 @@ function removeFactory({ commandStack, element, attribute, dataElement, collabor
     }
     else {
       parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-      attributes = parent.attributes ? parent.get('attributes')[0] : {};
+      attributes = ( parent.get ? parent.get('attributes') || [] : [] )[0] || {};
     }
 
     if (!attributes) {

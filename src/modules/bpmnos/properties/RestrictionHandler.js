@@ -37,7 +37,7 @@ export function restrictionHandler({ element, injector }) {
   const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');
   let parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-  let restrictions = parent.restrictions ? parent.get('restrictions')[0] : {};
+  let restrictions = ( parent.get ? parent.get('restrictions') || [] : [] )[0] || {};
 
   const items = ( restrictions.restriction || []).map((restriction, index) => {
     const id = element.id + '-restriction-' + index;
@@ -118,7 +118,7 @@ function removeFactory({ commandStack, element, restriction }) {
     const businessObject = getRelevantBusinessObject(element);
 
     let parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-    let restrictions = parent.restrictions ? parent.get('restrictions')[0] : {};
+    let restrictions = ( parent.get ? parent.get('restrictions') || [] : [] )[0] || {};
 
     if (!restrictions) {
       return;

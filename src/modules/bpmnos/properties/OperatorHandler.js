@@ -43,7 +43,7 @@ export function operatorHandler({ element, injector }) {
         commandStack = injector.get('commandStack');
 
   const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-  const operators = parent.operators ? parent.get('operators')[0] : {};
+  const operators = ( parent.get ? parent.get('operators') || [] : [] )[0] || {};
 
 
   const items = ( operators.operator || []).map((operator, index) => {
@@ -112,7 +112,7 @@ function removeFactory({ commandStack, element, operator }) {
     const businessObject = getRelevantBusinessObject(element);
 
     const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-    let operators = parent.operators ? parent.get('operators')[0] : {};
+    let operators = ( parent.get ? parent.get('operators') || [] : [] )[0] || {};
 
     if (!operators) {
       return;

@@ -10,14 +10,14 @@ export const COMPARTMENT_PADDING = 5;
 export const PADDING_X = 8;
 
 /**
- * Turn a box into rows to draw and a height to fit. The content is derived from the host; the box itself
- * stores none of it.
+ * Turn a box into rows to draw and a height to fit. The content is derived from the host through the
+ * execution data registry; the box itself stores none of it.
  *
  * @returns { rows: [ { kind, text, y, height } ], separators: [ y ], height }
  */
-export function layout(box) {
+export function layout(box, executionData) {
   const host = getHost(box),
-        content = host ? getAnnotationContent(host) : { title: '', compartments: [] };
+        content = host ? getAnnotationContent(host, executionData) : { title: '', compartments: [] };
 
   const rows = [ { kind: 'title', text: content.title, y: 0, height: HEADER_HEIGHT } ],
         separators = [];

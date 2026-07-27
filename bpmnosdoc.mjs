@@ -138,8 +138,18 @@ function createSlugger() {
   };
 }
 
+/**
+ * A process is titled by its name — a pool counting as the process it refers to — and everything else by
+ * type and id, since only processes are things a reader knows by name.
+ */
 function headingText(node) {
-  return `${node.name || node.type} (\`${node.displayId || node.id}\`)`;
+  const id = node.displayId || node.id;
+
+  if (node.type === 'Process' || node.processRef) {
+    return (node.name ? node.name + ' ' : '') + '`' + id + '`';
+  }
+
+  return `${node.type} \`${id}\``;
 }
 
 function hasContent(node) {

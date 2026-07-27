@@ -30,7 +30,7 @@ const TOLERANCE = 2;
  * - applies the persisted `visible`/`hidden` state to the box and its association.
  */
 export default function BPMNOSAnnotationBehavior(
-    eventBus, modeling, elementRegistry, graphicsFactory, selection) {
+    eventBus, modeling, elementRegistry, graphicsFactory, selection, executionData) {
 
   CommandInterceptor.call(this, eventBus);
 
@@ -111,7 +111,7 @@ export default function BPMNOSAnnotationBehavior(
     }
 
     const bounds = context.newBounds,
-          height = layout(shape).height;
+          height = layout(shape, executionData).height;
 
     // Only the width is the user's — bpmn-js restricts annotations to the west/east handles. Its
     // TextBPMNOSAnnotationBehavior has already rewritten newBounds.height to the height of the (empty) text, so
@@ -125,7 +125,7 @@ export default function BPMNOSAnnotationBehavior(
   }, true);
 
   function fitHeight(box) {
-    const height = layout(box).height;
+    const height = layout(box, executionData).height;
 
     if (Math.abs(height - box.height) < 0.5) {
       return false;
@@ -207,11 +207,41 @@ export default function BPMNOSAnnotationBehavior(
   eventBus.on('import.done', function() {
     elementRegistry.filter(isAnnotation).forEach(applyVisibility);
   });
+
+  // A box shows what its host declares and inherits, so it changes when the declarations do — and those may
+  // be edited on another element entirely (a data object, or the collaboration holding the globals). The
+  // registry announces the rebuild; every box redraws and refits.
+  let updating = false;
+
+  eventBus.on('executionData.changed', function() {
+    if (updating) {
+      return;
+    }
+
+    updating = true;
+
+    try {
+      elementRegistry.filter(isAnnotation).forEach(function(box) {
+        if (!fitHeight(box)) {
+          redraw(box);
+        }
+      });
+    } finally {
+      updating = false;
+    }
+  });
 }
 
 inherits(BPMNOSAnnotationBehavior, CommandInterceptor);
 
-BPMNOSAnnotationBehavior.$inject = [ 'eventBus', 'modeling', 'elementRegistry', 'graphicsFactory', 'selection' ];
+BPMNOSAnnotationBehavior.$inject = [
+  'eventBus',
+  'modeling',
+  'elementRegistry',
+  'graphicsFactory',
+  'selection',
+  'executionData'
+];
 
 /**
  * The box grows away from its host: anchored at the bottom when it sits above, at the top when it sits
