@@ -535,10 +535,23 @@ function render({ baseName, diagrams, model, anchors, register }) {
     lines.push(root.documentation, '');
   }
 
-  diagrams.forEach(({ title, file }) => {
-    slug(title);
-    lines.push(`## ${title}`, '', `![${title}](${file})`, '');
-  });
+  // A collapsed sub-process is drawn on a plane of its own, which belongs in that sub-process's section
+  // rather than among the diagrams at the top: the reader meets the picture where they meet what it shows.
+  const diagramOf = new Map(diagrams.filter((d) => d.elementId).map((d) => [ d.elementId, d ]));
+
+  // a node is documented when it declares something or when it has a plane to show
+  const sectionNodes = nodes.filter((node) =>
+    (!root || node.id !== root.id) && (hasContent(node) || diagramOf.has(node.id)));
+
+  const documented = new Set(sectionNodes.map((node) => node.id));
+
+  // the root plane, and any plane whose element gets no section of its own — better shown here than dropped
+  diagrams
+    .filter(({ elementId }) => !elementId || !documented.has(elementId))
+    .forEach(({ title, file }) => {
+      slug(title);
+      lines.push(`## ${title}`, '', `![${title}](${file})`, '');
+    });
 
   // what the root itself declares — the heading above already names it, so only its sections follow
   const rootNode = root && nodes.find((node) => node.id === root.id);
@@ -571,10 +584,10 @@ function render({ baseName, diagrams, model, anchors, register }) {
   // model-level, after what the model itself declares and before the nodes
   lines.push(...tableSection(tables || [], slug));
 
-  nodes
-    .filter((node) => (!root || node.id !== root.id) && hasContent(node))
+  sectionNodes
     .forEach((node) => {
-      const text = headingText(node);
+      const text = headingText(node),
+            diagram = diagramOf.get(node.id);
 
       register(node.ids, slug(text));
 
@@ -582,6 +595,12 @@ function render({ baseName, diagrams, model, anchors, register }) {
 
       if (node.documentation) {
         lines.push(node.documentation, '');
+      }
+
+      // the plane the node holds, ahead of what it declares: the picture is what the rest describes
+      if (diagram) {
+        slug('Diagram');
+        lines.push('### Diagram', '', `![${diagram.title}](${diagram.file})`, '');
       }
 
       // a flow carries nothing but its gatekeeper: the attributes visible at it are those of the scope
@@ -670,10 +689,20 @@ async function main() {
           .filter((name) => name === baseName + '.svg' || name.startsWith(baseName + '-'))
           .filter((name) => name.endsWith('.svg'))
           .sort()
-          .map((name) => ({
-            title: name === baseName + '.svg' ? 'Diagram' : 'Diagram: ' + name.slice(baseName.length + 1, -4),
-            file: name
-          }));
+          .map((name) => {
+            // `<baseName>-<element id>.svg` is the plane of a collapsed sub-process, `<baseName>.svg` the
+            // root plane; the id is what puts the diagram in that sub-process's section
+            const elementId = name === baseName + '.svg' ? '' : name.slice(baseName.length + 1, -4);
+
+            return {
+              title: elementId ? 'Diagram: ' + elementId : 'Diagram',
+              file: name,
+              elementId
+            };
+          })
+
+          // the root plane leads, whatever the file names sort like; the rest go to their sections anyway
+          .sort((a, b) => (a.elementId ? 1 : 0) - (b.elementId ? 1 : 0));
 
         const model = await collectModel(page, fs.readFileSync(file, 'utf-8'));
 
