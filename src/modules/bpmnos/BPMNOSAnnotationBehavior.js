@@ -288,7 +288,9 @@ export default function BPMNOSAnnotationBehavior(
       .forEach(node => { node.style.cursor = cursor; });
   });
 
-  eventBus.on('element.click', function(event) {
+  // above diagram-js's SelectionBehavior, which takes a click on an already selected element as a request
+  // to deselect it: a fold is a control on the box, not a click on it, so it leaves the selection alone
+  eventBus.on('element.click', HIGH_PRIORITY, function(event) {
     const box = event.element,
           originalEvent = event.originalEvent;
 
@@ -311,6 +313,8 @@ export default function BPMNOSAnnotationBehavior(
     if (!fitHeight(box)) {
       redraw(box);
     }
+
+    return false;
   });
 
   // a hidden box must come back hidden
