@@ -218,6 +218,20 @@
     "severity": "error",
     "description": "An attribute named by a message or signal content must be declared at the node or inherited by it. Attributes used inside expressions (restrictions, operators, conditions, parameter values) are not checked here: the engine compiles those and rejects unknown names itself."
   },
+  "bpmnos/attribute-objective.js": {
+    "severity": "error",
+    "subtypes": {
+      "objectiveWithoutWeight": {
+        "description": "An attribute contributing to the objective needs a weight: the weight is the factor of its term, the objective its sign. The engine rejects the model without one."
+      },
+      "weightWithoutObjective": {
+        "description": "A weight without an objective has nothing to scale. The engine rejects the model; state minimize or maximize, or drop the weight."
+      },
+      "unknownObjective": {
+        "description": "An objective must be minimize, maximize or none. The engine rejects anything else."
+      }
+    }
+  },
   "bpmnos/gatekeeper-restrictions.js": {
     "severity": "error"
   },

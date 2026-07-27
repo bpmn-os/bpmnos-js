@@ -20,6 +20,7 @@ import * as inclusiveGateway from "./engine/inclusive-gateway.js";
 import * as defaultAttributes from "./bpmnos/default-attributes.js";
 import * as attributeRedeclared from "./bpmnos/attribute-redeclared.js";
 import * as attributeUndeclared from "./bpmnos/attribute-undeclared.js";
+import * as attributeObjective from "./bpmnos/attribute-objective.js";
 import * as gatekeeperRestrictions from "./bpmnos/gatekeeper-restrictions.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
 import * as loopParameters from "./bpmnos/loop-parameters.js";
@@ -38,6 +39,7 @@ const sources = {
     "./bpmnos/default-attributes.js": defaultAttributes,
     "./bpmnos/attribute-redeclared.js": attributeRedeclared,
     "./bpmnos/attribute-undeclared.js": attributeUndeclared,
+    "./bpmnos/attribute-objective.js": attributeObjective,
     "./bpmnos/gatekeeper-restrictions.js": gatekeeperRestrictions,
     "./bpmnos/event-trigger.js": eventTrigger,
     "./bpmnos/loop-parameters.js": loopParameters

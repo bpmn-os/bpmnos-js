@@ -66,23 +66,33 @@ export function layout(box, executionData) {
     y += double ? DOUBLE_GAP : 0;
     y += COMPARTMENT_PADDING / 2;
 
-    // Globals are inherited by everything, so the compartment folds as a whole and its label is the
-    // toggle; Status and Data list what the element declares and fold only what it inherits.
-    const foldsWhole = !compartment.own.length && compartment.inherited.length && compartment.key === 'globals',
-          collapsed = isCollapsed(box, compartment.key);
+    // A compartment either folds as a whole, its label being the toggle — globals, which are inherited by
+    // everything, and guidance, which is bulky and rarely what a reader is after — or lists what the
+    // element declares and folds only what it inherits, as Status and Data do.
+    const foldsWhole = compartment.foldsWhole
+      || (!compartment.own.length && compartment.inherited.length && compartment.key === 'globals');
+
+    const collapsed = isCollapsed(box, compartment.key);
 
     if (foldsWhole) {
+      const folded = compartment.own.length ? compartment.own : compartment.inherited,
+            count = compartment.count === undefined ? folded.length : compartment.count;
+
+      // a count where the entries are of one kind and countable; none where they are not, as in guidance,
+      // which holds attributes, operators and restrictions at once
+      const label = count === null ? compartment.label : `${compartment.label} (${count})`;
+
       rows.push({
         kind: 'toggle',
         key: compartment.key,
-        text: `${collapsed ? '▸' : '▾'} ${compartment.label} (${compartment.inherited.length})`,
+        text: `${collapsed ? '▸' : '▾'} ${label}`,
         y,
         height: LABEL_HEIGHT
       });
       y += LABEL_HEIGHT;
 
       if (!collapsed) {
-        items(compartment.inherited);
+        items(folded);
       }
     } else {
       rows.push({ kind: 'label', text: compartment.label, y, height: LABEL_HEIGHT });

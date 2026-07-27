@@ -138,6 +138,12 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   markdown would make usable golden files.
 - **Collapsed state is session-only** — whether folding should persist in the file is deliberately
   undecided.
+- **How to show `objective` and `weight` is unsettled.** The registry collects both and nothing renders
+  them, so the very thing a model optimizes is invisible in box and documentation alike. A compartment of
+  contributing attributes on the declaring node was proposed and *not* adopted: the open question is
+  globals, which may carry an objective yet belong to no node — `getContributionsToObjective` walks a
+  node's own status and data attributes only, so a global's contribution appears nowhere in that account.
+  Decide where a global's objective is shown before choosing the shape for the rest.
 - **The engine should reject bad loop input rather than ignore it** (a note for `~/Code/bpmnos/engine`, not
   work for this repo). `ExtensionElements.cpp:241-256` assigns the four parameters it knows —
   `cardinality`, `index`, `condition`, `maximum` — and silently drops everything else: an unknown name, a

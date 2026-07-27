@@ -126,7 +126,8 @@ function record(registry, businessObject, status, data, globals, inheritedRestri
     choices: choicesOf(businessObject),
     operators: operatorsOf(businessObject),
     messages: messagesOf(businessObject),
-    signal: signalOf(businessObject)
+    signal: signalOf(businessObject),
+    guidance: guidanceOf(businessObject)
   });
 
   [ ...status, ...data, ...globals ].forEach(attribute => {
@@ -169,11 +170,12 @@ function checkedAt(scope, inheritedRestrictions, ownRestrictions) {
 function restrictionsOf(businessObject) {
   const status = getStatus(businessObject);
 
-  if (!status) {
-    return [];
-  }
+  return status ? restrictionEntries(status, businessObject.id) : [];
+}
 
-  return (status.get('restrictions') || [])
+// the restrictions of anything holding them — a `bpmnos:Status`, a `bpmnos:Guidance`
+function restrictionEntries(holder, declaringElementId) {
+  return (holder.get('restrictions') || [])
     .flatMap(restrictions => restrictions.get('restriction') || [])
     .map(restriction => {
       const scope = restriction.get('scope');
@@ -182,7 +184,7 @@ function restrictionsOf(businessObject) {
         id: restriction.get('id'),
         expression: restriction.get('expression'),
         scope: [ 'entry', 'completion', 'exit' ].includes(scope) ? scope : 'full',
-        declaringElement: businessObject.id,
+        declaringElement: declaringElementId,
         moddleElement: restriction
       };
     });
@@ -245,18 +247,51 @@ function choicesOf(businessObject) {
 function operatorsOf(businessObject) {
   const status = getStatus(businessObject);
 
-  if (!status) {
-    return [];
-  }
+  return status ? operatorEntries(status, businessObject.id) : [];
+}
 
-  return (status.get('operators') || [])
+// the operators of anything holding them — a `bpmnos:Status`, a `bpmnos:Guidance`
+function operatorEntries(holder, declaringElementId) {
+  return (holder.get('operators') || [])
     .flatMap(operators => operators.get('operator') || [])
     .map(operator => ({
       id: operator.get('id'),
       expression: operator.get('expression'),
-      declaringElement: businessObject.id,
+      declaringElement: declaringElementId,
       moddleElement: operator
     }));
+}
+
+/**
+ * The guidance an element carries: `bpmnos:guidance` elements, each typed `entry`, `exit`, `choice` or
+ * `message` (`Guidance.cpp:17-28`) and holding attributes, operators and restrictions of its own.
+ *
+ * Guidance advises the decision maker rather than constraining execution: `Guidance::apply` adds its
+ * attributes and applies its operators to a candidate, `restrictionsSatisfied` discards the candidates it
+ * rules out, and `getObjective` scores what remains. None of it is inherited, and none of it changes the
+ * token that ends up passing the node.
+ *
+ * Reported in the order a token meets the decisions they advise, unknown types last, as declared.
+ */
+function guidanceOf(businessObject) {
+  const order = [ 'entry', 'message', 'choice', 'exit' ];
+
+  return getExtensionElementsList(businessObject, 'bpmnos:Guidance')
+    .map(guidance => ({
+      type: guidance.get('type') || '',
+      attributes: attributesOf(guidance, 'guidance', businessObject),
+      operators: operatorEntries(guidance, businessObject.id),
+      restrictions: restrictionEntries(guidance, businessObject.id),
+      declaringElement: businessObject.id,
+      moddleElement: guidance
+    }))
+    .sort((a, b) => rank(order, a.type) - rank(order, b.type));
+}
+
+function rank(order, type) {
+  const index = order.indexOf(type);
+
+  return index === -1 ? order.length : index;
 }
 
 /**
@@ -430,7 +465,7 @@ function attributesOf(holder, scope, declaringElement) {
     return [];
   }
 
-  const attributes = is(holder, 'bpmnos:Status')
+  const attributes = is(holder, 'bpmnos:Status') || is(holder, 'bpmnos:Guidance')
     ? (holder.get('attributes') || [])[0]
     : getExtensionElementsList(holder, 'bpmnos:Attributes')[0];
 

@@ -47,10 +47,17 @@ const COLLAPSED_BY_DEFAULT = {
   exitRestrictions: true
 };
 
+// every guidance compartment starts folded, whatever its type
+const COLLAPSED_PREFIXES = [ 'guidance:' ];
+
 export function isCollapsed(box, key) {
   const state = box.collapsedGroups || {};
 
-  return key in state ? state[key] : !!COLLAPSED_BY_DEFAULT[key];
+  if (key in state) {
+    return state[key];
+  }
+
+  return !!COLLAPSED_BY_DEFAULT[key] || COLLAPSED_PREFIXES.some(prefix => key.startsWith(prefix));
 }
 
 export function toggleCollapsed(box, key) {

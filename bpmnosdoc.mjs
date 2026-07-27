@@ -98,7 +98,7 @@ async function collectModel(page, diagram) {
       .map((element) => {
         const {
           status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal,
-          entryRestrictions, completionRestrictions, exitRestrictions
+          entryRestrictions, completionRestrictions, exitRestrictions, guidance
         } = executionData.get(element);
 
         // a pool stands for the process it refers to: that process documents it, owns its attributes, and
@@ -127,6 +127,12 @@ async function collectModel(page, diagram) {
           operators: operators.map((o) => ({ id: o.id, expression: o.expression })),
           messages: messages.map(exchange),
           signal: signal.map(exchange),
+          guidance: guidance.map((g) => ({
+            type: g.type,
+            attributes: g.attributes.map(attribute),
+            operators: g.operators.map((o) => ({ id: o.id, expression: o.expression })),
+            restrictions: g.restrictions.map(restriction)
+          })),
 
           // a receive, decision or catching node applies its operators after the message, everything else
           // before it (Token::advanceToBusy / advanceToCompleted)
@@ -191,7 +197,7 @@ function hasContent(node) {
     || node.conditions.length || node.timer.length || node.loop.length
     || node.choices.length || node.operators.length
     || node.entryRestrictions.length || node.completionRestrictions.length || node.exitRestrictions.length
-    || node.messages.length || node.signal.length);
+    || node.messages.length || node.signal.length || node.guidance.length);
 }
 
 /**
@@ -225,7 +231,31 @@ function attributeItem(attribute, ownIds, anchors) {
     parts.push('(initialized by `' + raw.trim() + '`)');
   }
 
-  return '- ' + parts.join(' ');
+  return [ '- ' + parts.join(' '), ...objectiveTerm(attribute, name) ];
+}
+
+/**
+ * The objective term an attribute contributes, as a line beneath its declaration:
+ * `→ minimize 1 * distance`.
+ *
+ * Shown wherever the attribute is listed, as its type is, because the objective belongs to the attribute
+ * rather than to the node reading it — which is what lets a global's objective be seen at all, globals
+ * being declared on the collaboration and inherited everywhere. An objective of `none`, or none at all,
+ * contributes nothing (`Attribute.cpp:48-63`). A weight is required whenever there is an objective; when a
+ * model omits it, the term is shown without one rather than inventing a factor.
+ */
+function objectiveTerm(attribute, name) {
+  const objective = attribute.objective;
+
+  if (!objective || objective === 'none') {
+    return [];
+  }
+
+  const weight = attribute.weight;
+
+  const factor = weight === undefined || weight === null || weight === '' ? '' : `${weight} * `;
+
+  return [ `  - \`→ ${objective} ${factor}${name || attribute.id}\`` ];
 }
 
 /**
@@ -331,6 +361,53 @@ function loopLines(node) {
   return node.loop.map((parameter) => `*${parameter.name}:* \`${parameter.value}\``);
 }
 
+// what each guidance type advises, named as a reader would say it
+const GUIDANCE_LABELS = {
+  entry: 'Entry guidance',
+  message: 'Message guidance',
+  choice: 'Choice guidance',
+  exit: 'Exit guidance'
+};
+
+/**
+ * Guidance: one section per type, after everything the token does, with the attributes, operators and
+ * restrictions it holds beneath it, each present only when the guidance carries it. It advises whoever
+ * decides rather than constraining the execution that follows.
+ */
+function guidanceSections(node, level, slug) {
+  return node.guidance.flatMap((definition) => {
+    const title = GUIDANCE_LABELS[definition.type] || definition.type || 'Guidance';
+
+    const group = (label, entries, render) => {
+      if (!entries.length) {
+        return [];
+      }
+
+      slug(label);
+
+      return [ '#'.repeat(level + 1) + ' ' + label, '', ...entries.flatMap(render), '' ];
+    };
+
+    const groups = [
+      ...group('Attributes', definition.attributes,
+        (a) => [
+          `- ${a.type ? `*${a.type}:* ` : ''}**${(a.name || a.id || '').trim()}**`,
+          ...objectiveTerm(a, (a.name || a.id || '').trim())
+        ]),
+      ...group('Operators', definition.operators, (o) => '- `' + (o.expression || o.id) + '`'),
+      ...group('Restrictions', definition.restrictions, (r) => '- `' + (r.expression || r.id) + '`')
+    ];
+
+    if (!groups.length) {
+      return [];
+    }
+
+    slug(title);
+
+    return [ '#'.repeat(level) + ' ' + title, '', ...groups ];
+  });
+}
+
 function loopTitle(node) {
   return node.loopKind === 'multiInstance' ? 'Multi-instance' : 'Loop';
 }
@@ -345,7 +422,7 @@ function section(title, attributes, ownIds, level, anchors, slug) {
   return [
     '#'.repeat(level) + ' ' + title,
     '',
-    ...attributes.map((attribute) => attributeItem(attribute, ownIds, anchors)),
+    ...attributes.flatMap((attribute) => attributeItem(attribute, ownIds, anchors)),
     ''
   ];
 }
@@ -399,7 +476,8 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...listSection('Operators', operatorLines(rootNode), 2, slug)
       ] : []),
       ...restrictionSection('Completion restrictions', rootNode.completionRestrictions, rootNode.ids, 2, anchors, slug),
-      ...restrictionSection('Exit restrictions', rootNode.exitRestrictions, rootNode.ids, 2, anchors, slug)
+      ...restrictionSection('Exit restrictions', rootNode.exitRestrictions, rootNode.ids, 2, anchors, slug),
+      ...guidanceSections(rootNode, 2, slug)
     );
   }
 
@@ -435,7 +513,8 @@ function render({ baseName, diagrams, model, anchors, register }) {
           ...listSection('Operators', operatorLines(node), 3, slug)
         ] : []),
         ...restrictionSection('Completion restrictions', node.completionRestrictions, node.ids, 3, anchors, slug),
-        ...restrictionSection('Exit restrictions', node.exitRestrictions, node.ids, 3, anchors, slug)
+        ...restrictionSection('Exit restrictions', node.exitRestrictions, node.ids, 3, anchors, slug),
+        ...guidanceSections(node, 3, slug)
       );
     });
 

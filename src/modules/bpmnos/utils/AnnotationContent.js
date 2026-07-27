@@ -19,7 +19,7 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 export function getAnnotationContent(host, executionData, collapsedGroup = () => false) {
   const {
     status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal,
-    entryRestrictions, completionRestrictions, exitRestrictions
+    entryRestrictions, completionRestrictions, exitRestrictions, guidance
   } = executionData.get(host);
 
   // what counts as declared here: the element, and for a pool the process it refers to
@@ -36,10 +36,10 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
     group: 'declared',
     inherited: attributes
       .filter(attribute => !ownIds.includes(attribute.declaringElement))
-      .map(attribute => item(attribute, ownIds)),
+      .flatMap(attribute => item(attribute, ownIds)),
     own: attributes
       .filter(attribute => ownIds.includes(attribute.declaringElement))
-      .map(attribute => item(attribute, ownIds))
+      .flatMap(attribute => item(attribute, ownIds))
   });
 
   // kinds the element carries itself: nothing to fold, so they have no inherited half
@@ -83,7 +83,8 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
     checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions),
     ...exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup),
     checkpoint('Completion restrictions', 'completionRestrictions', completionRestrictions),
-    checkpoint('Exit restrictions', 'exitRestrictions', exitRestrictions)
+    checkpoint('Exit restrictions', 'exitRestrictions', exitRestrictions),
+    ...guidanceCompartments(guidance)
   ];
 
   return {
@@ -180,6 +181,56 @@ function exchange(definition, collapsedGroup) {
   ];
 }
 
+// what each guidance type advises, named as a reader would say it
+const GUIDANCE_LABELS = {
+  entry: 'Entry guidance',
+  message: 'Message guidance',
+  choice: 'Choice guidance',
+  exit: 'Exit guidance'
+};
+
+/**
+ * Guidance: one compartment per type, each folded as a whole, in a band of their own after everything the
+ * token does.
+ *
+ * It belongs to neither register: it does not constrain execution and does not happen at a point in the
+ * token's passage — it advises whoever decides, by adding attributes to a candidate, applying operators to
+ * it, discarding what its restrictions rule out and scoring the rest (`Guidance::apply`,
+ * `restrictionsSatisfied`, `getObjective`). Within a compartment the three kinds it may hold are labelled,
+ * each shown only when the guidance carries it.
+ */
+function guidanceCompartments(guidance) {
+  return guidance.map(definition => ({
+    label: GUIDANCE_LABELS[definition.type] || definition.type || 'Guidance',
+    key: `guidance:${definition.type}`,
+    group: 'guidance',
+    foldsWhole: true,
+    count: null,
+    inherited: [],
+    own: [
+      ...group('Attributes', definition.attributes, attribute => [
+        { type: attribute.type || '', text: (attribute.name || attribute.id || '').trim() },
+        ...objectiveTerm(attribute)
+      ]),
+      ...group('Operators', definition.operators, operator => [
+        { type: '', text: operator.expression || operator.id }
+      ]),
+      ...group('Restrictions', definition.restrictions, restriction => [
+        { type: '', text: restriction.expression || restriction.id }
+      ])
+    ]
+  }));
+}
+
+// a labelled run of entries, or nothing when the guidance holds none of that kind
+function group(label, entries, item) {
+  if (!entries.length) {
+    return [];
+  }
+
+  return [ { kind: 'label', text: label }, ...entries.flatMap(item) ];
+}
+
 /**
  * A restriction is shown as written, with nothing said about its scope: the compartment it sits in is when
  * it is checked, and a full-scope one sits in all three.
@@ -206,15 +257,51 @@ function titleOf(host) {
  *
  * The model keeps name and initialization in one string, as the properties panel edits them ("Name (and
  * initial value)").
+ *
+ * An attribute contributing to the objective is followed by its term.
  */
 function item(attribute, ownIds) {
   const raw = (attribute.name || attribute.id).trim(),
         separator = raw.indexOf(':=');
 
-  const initialized = separator !== -1 && ownIds.includes(attribute.declaringElement);
+  const initialized = separator !== -1 && ownIds.includes(attribute.declaringElement),
+        name = separator === -1 ? raw : raw.slice(0, separator).trim();
 
-  return {
-    type: attribute.type || '',
-    text: initialized ? raw : (separator === -1 ? raw : raw.slice(0, separator).trim())
-  };
+  return [
+    {
+      type: attribute.type || '',
+      text: initialized ? raw : name
+    },
+    ...objectiveTerm(attribute, name)
+  ];
+}
+
+/**
+ * The objective term an attribute contributes: `→ minimize 1 * distance`.
+ *
+ * Shown wherever the attribute is listed, as its type is, because the objective belongs to the attribute
+ * rather than to the node reading it — unlike the initialization, which happens at the declaring element
+ * and is shown only there. It is what lets a global's objective be seen at all: globals are declared on the
+ * collaboration and inherited everywhere.
+ *
+ * `objective="none"`, or none at all, contributes nothing (`Attribute.cpp:48-63`) and is not shown. A weight
+ * is required whenever there is an objective; when a model omits it, the term is shown without one rather
+ * than inventing a factor.
+ */
+function objectiveTerm(attribute, name) {
+  const objective = attribute.objective;
+
+  if (!objective || objective === 'none') {
+    return [];
+  }
+
+  const factor = attribute.weight === undefined || attribute.weight === null || attribute.weight === ''
+    ? ''
+    : `${attribute.weight} * `;
+
+  return [ {
+    type: '',
+    text: `→ ${objective} ${factor}${name || attribute.name || attribute.id}`,
+    indent: 1
+  } ];
 }

@@ -63,3 +63,26 @@ export function attributeName(attribute) {
 export function visibleNames(node) {
   return new Set(visibleAttributes(node).map(attributeName));
 }
+
+/**
+ * Everything an element declares itself: the status, data and global attributes whose declaring element it
+ * is, plus the attributes of any guidance it carries — which belong to that guidance and to nothing else.
+ */
+export function declaredAttributes(node) {
+  const definitions = getDefinitions(node);
+
+  if (!definitions) {
+    return [];
+  }
+
+  const entry = collectExecutionData(definitions).byElement.get(node.id);
+
+  if (!entry) {
+    return [];
+  }
+
+  const own = [ ...entry.status, ...entry.data, ...entry.globals ]
+    .filter(attribute => attribute.declaringElement === node.id);
+
+  return [ ...own, ...entry.guidance.flatMap(guidance => guidance.attributes) ];
+}

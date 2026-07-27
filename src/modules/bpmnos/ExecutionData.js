@@ -4,7 +4,8 @@ import { collectExecutionData } from './collectExecutionData.js';
 const EMPTY = {
   status: [], data: [], globals: [],
   conditions: [], timer: [], loop: [], loopKind: '', choices: [], operators: [], messages: [], signal: [],
-  entryRestrictions: [], completionRestrictions: [], exitRestrictions: [], ownRestrictions: []
+  entryRestrictions: [], completionRestrictions: [], exitRestrictions: [], ownRestrictions: [],
+  guidance: []
 };
 
 /**
