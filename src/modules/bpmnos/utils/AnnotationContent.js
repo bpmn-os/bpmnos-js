@@ -17,7 +17,7 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
  * registry holds them.
  */
 export function getAnnotationContent(host, executionData) {
-  const { status, data, globals } = executionData.get(host);
+  const { status, data, globals, conditions, timer } = executionData.get(host);
 
   // what counts as declared here: the element, and for a pool the process it refers to
   const businessObject = getBusinessObject(host),
@@ -38,10 +38,16 @@ export function getAnnotationContent(host, executionData) {
       .map(attribute => item(attribute, ownIds))
   });
 
+  // kinds the element carries itself: nothing to fold, so they have no inherited half
+  const own = (label, items) => ({ label, key: label.toLowerCase(), inherited: [], own: items });
+
+  // the order is the token's passage through the node: what exists, then what makes the node happen at all
   const compartments = [
     compartment('Status', 'statusInherited', status),
     compartment('Data', 'dataInherited', data),
-    compartment('Globals', 'globals', globals)
+    compartment('Globals', 'globals', globals),
+    own('Conditions', conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
+    own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' })))
   ];
 
   return {

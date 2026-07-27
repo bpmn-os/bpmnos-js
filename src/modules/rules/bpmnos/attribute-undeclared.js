@@ -1,96 +1,53 @@
-import { getCustomElements } from '../../bpmnos/utils/StatusUtil';
-import { getStatus } from '../../bpmnos/utils/StatusUtil';
-
 import { is } from 'bpmnlint-utils';
 
-
+import { visibleNames } from './executionData.js';
 
 /**
- * A rule that checks that attributes for restrictions and operators are declared.
+ * A rule that checks that the attributes a node names outright are declared and visible at it.
+ *
+ * "Visible" is what the execution data registry reports: the node's own status, data and global attributes
+ * plus everything inherited from its ancestors, the same account the engine works from.
+ *
+ * Only places that name an attribute **directly** are checked — the contents of messages and signals, whose
+ * `attribute` is a plain name mapped to a key. Restrictions, operators, conditions and parameter values hold
+ * LIMEX expressions instead, and are not checked here: the engine compiles those against its attribute
+ * registry and rejects unknown names itself, so validating them belongs where the engine can be asked
+ * (bpmnos-workbench, with the engine WASM). Approximating that grammar with pattern matching produced false
+ * positives — an aggregator's bound variable in `min{ d in departures | d >= timestamp }` is not an
+ * attribute — which is why this rule was disabled before.
  */
 export default function() {
 
   function check(node, reporter) {
-    const status = getStatus(node);
-    const customElements = getCustomElements(node);
-    for (var i=0; i < customElements.length; i++ ) {
-      const restrictions = customElements[i].restriction;
-      if ( restrictions ) {
-        for (var j=0; j < restrictions.length; j++) {
-          if ( !restrictions[j].attribute ) {
-            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute missing for restriction '" + restrictions[j].id + "'");
-          }
-          else if ( status.filter(attribute => attribute.name == restrictions[j].attribute).length == 0) {
-            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Restriction on undeclared attribute '" + restrictions[j].attribute + "'");
-          }
-        }
-      }
-      const operators = customElements[i].operator;
-      if ( operators ) {
-        for (var j=0; j < operators.length; j++) {
-          if ( !operators[j].attribute ) {
-            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Attribute missing for operator '" + operators[j].id + "'");
-          }
-          else if ( status.filter(attribute => attribute.name == operators[j].attribute).length == 0) {
-            // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Operator on undeclared attribute '" + operators[j].attribute + "'");
-          }
+    const extensionElements = node.extensionElements;
 
-          if ( operators[j].parameter ) {
-            operators[j].parameter.forEach(function(parameter) {
-              if ( parameter.attribute && status.filter(attribute => attribute.name == parameter.attribute).length == 0) {
-                // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Operator has parameter using undeclared attribute '" + parameter.attribute + "'");
-              }
-            });
-          }
-        }
-      }
-      if ( is(node,'bpmn:Event') && customElements[i].$type == "bpmnos:Parameter" ) {
-        // Timer parameter
-        const timerAttribute = customElements[i].attribute;
-        if ( timerAttribute && status.filter(attribute => attribute.name == timerAttribute).length == 0) {
-          // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Parameter uses undeclared attribute '" + timerAttribute + "'");
-        }
-      }
-      if ( is(node,'bpmn:Event') && customElements[i].$type == "bpmnos:Message" ) {
-        // Message parameter
-        const parameters = customElements[i].parameter;
-        if ( parameters ) {
-          parameters.forEach(function(parameter) {
-            if ( parameter.attribute && status.filter(attribute => attribute.name == parameter.attribute).length == 0) {
-              // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Parameter uses undeclared attribute '" + parameter.attribute + "'");
-            }
-          });
-        }
-        // Message content
-        const contents = customElements[i].content;
-        if ( contents ) {
-          contents.forEach(function(content) {
-            if ( content.attribute && status.filter(attribute => attribute.name == content.attribute).length == 0) {
-              // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Message content uses undeclared attribute '" + content.attribute + "'");
-            }
-          });
-        }
-      }
-
-      if ( is(node, 'bpmn:SubProcess') && ( node.type == 'Request' || node.type == 'Release' ) ) {
-        const allocations = customElements[i].request || customElements[i].release;
-        if ( allocations ) {
-          allocations.forEach(function(allocation) {
-            if ( allocation.message ) {
-              allocation.message.forEach(function(message) {
-                if ( message.content ) {
-                  message.content.forEach(function(content) {
-                    if ( content.attribute && status.filter(attribute => attribute.name == content.attribute).length == 0) {
-                      // DISABLED (outdated, re-validate before re-enabling): reporter.report(node.id, "Message content uses undeclared attribute '" + content.attribute + "'");
-                    }
-                  });
-                }
-              });
-            }
-          });
-        }
-      }
+    if (!extensionElements) {
+      return;
     }
+
+    const names = visibleNames(node);
+
+    const report = (used, where) => {
+      if (used && !names.has(used)) {
+        reporter.report(node.id, `Undeclared attribute '${used}' used in ${where}`);
+      }
+    };
+
+    (extensionElements.values || []).forEach(function(element) {
+
+      if (is(element, 'bpmnos:Messages')) {
+        (element.get('message') || []).forEach(message =>
+          (message.get('content') || []).forEach(content =>
+            report(content.get('attribute'),
+              `content '${content.get('key')}' of message '${message.get('name')}'`)));
+      }
+
+      if (is(element, 'bpmnos:Signal')) {
+        (element.get('content') || []).forEach(content =>
+          report(content.get('attribute'),
+            `content '${content.get('key')}' of signal '${element.get('name')}'`));
+      }
+    });
   }
 
   return {
@@ -98,6 +55,3 @@ export default function() {
   };
 
 };
-
-
-

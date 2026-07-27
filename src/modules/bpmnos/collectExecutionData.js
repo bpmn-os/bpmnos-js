@@ -95,7 +95,15 @@ function collect(registry, scope, inheritedStatus, inheritedData, globals) {
 }
 
 function record(registry, businessObject, status, data, globals) {
-  registry.byElement.set(businessObject.id, { status, data, globals });
+  registry.byElement.set(businessObject.id, {
+    status,
+    data,
+    globals,
+
+    // kinds an element carries itself, read straight off it
+    conditions: conditionsOf(businessObject),
+    timer: timerOf(businessObject)
+  });
 
   [ ...status, ...data, ...globals ].forEach(attribute => {
     registry.byId.set(attribute.id, attribute);
@@ -105,6 +113,48 @@ function record(registry, businessObject, status, data, globals) {
     elements.push(businessObject.id);
     registry.elementsById.set(attribute.id, elements);
   });
+}
+
+/**
+ * The conditions of an element: `bpmnos:restrictions` **directly under** `extensionElements`, as opposed to
+ * the restrictions inside `bpmnos:status`.
+ *
+ * The engine reads the same XML in two roles: as `Conditions` on a conditional start, boundary or catch
+ * event, deciding whether the event triggers, and as `Gatekeeper` on a sequence flow, deciding whether the
+ * flow may be taken. Which of the two it is follows from the element carrying them.
+ */
+function conditionsOf(businessObject) {
+  const restrictions = getExtensionElementsList(businessObject, 'bpmnos:Restrictions')[0];
+
+  if (!restrictions) {
+    return [];
+  }
+
+  return (restrictions.get('restriction') || []).map(restriction => ({
+    id: restriction.get('id'),
+    expression: restriction.get('expression'),
+    declaringElement: businessObject.id,
+    moddleElement: restriction
+  }));
+}
+
+/**
+ * The timer of an event: the parameters of `bpmnos:timer`, e.g. `trigger = latest_visit`. The engine expects
+ * exactly one (`Timer`), but the list is kept as found rather than assumed.
+ */
+function timerOf(businessObject) {
+  const timer = getExtensionElementsList(businessObject, 'bpmnos:Timer')[0];
+
+  if (!timer) {
+    return [];
+  }
+
+  return (timer.get('parameter') || []).map(parameter => ({
+    name: parameter.get('name'),
+    value: parameter.get('value'),
+    declaringElement: businessObject.id,
+    moddleElement: parameter
+  }));
 }
 
 // the `bpmnos:` extension elements of a business object; ExtensionElementsUtil is not used here because its

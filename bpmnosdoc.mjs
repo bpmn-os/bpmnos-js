@@ -82,7 +82,7 @@ async function collectModel(page, diagram) {
     const nodes = registry.getAll()
       .filter((element) => element.type !== 'label')
       .map((element) => {
-        const { status, data, globals } = executionData.get(element);
+        const { status, data, globals, conditions, timer } = executionData.get(element);
 
         // a pool stands for the process it refers to: that process documents it, owns its attributes, and
         // is what gets named — a participant id is never shown
@@ -98,7 +98,9 @@ async function collectModel(page, diagram) {
           documentation: documentationOf(element.businessObject),
           status: status.map(attribute),
           data: data.map(attribute),
-          globals: globals.map(attribute)
+          globals: globals.map(attribute),
+          conditions: conditions.map((c) => ({ id: c.id, expression: c.expression })),
+          timer: timer.map((t) => ({ name: t.name, value: t.value }))
         };
       });
 
@@ -153,7 +155,8 @@ function headingText(node) {
 }
 
 function hasContent(node) {
-  return !!(node.documentation || node.status.length || node.data.length || node.globals.length);
+  return !!(node.documentation || node.status.length || node.data.length || node.globals.length
+    || node.conditions.length || node.timer.length);
 }
 
 /**
@@ -188,6 +191,24 @@ function attributeItem(attribute, ownIds, anchors) {
   }
 
   return '- ' + parts.join(' ');
+}
+
+function listSection(title, items, level, slug) {
+  if (!items.length) {
+    return [];
+  }
+
+  slug(title);
+
+  return [ '#'.repeat(level) + ' ' + title, '', ...items.map((item) => '- ' + item), '' ];
+}
+
+function conditionLines(node) {
+  return node.conditions.map((condition) => '`' + (condition.expression || condition.id) + '`');
+}
+
+function timerLines(node) {
+  return node.timer.map((parameter) => `*${parameter.name}:* \`${parameter.value}\``);
 }
 
 function section(title, attributes, ownIds, level, anchors, slug) {
@@ -238,7 +259,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
     lines.push(
       ...section('Status', rootNode.status, rootNode.ids, 2, anchors, slug),
       ...section('Data', rootNode.data, rootNode.ids, 2, anchors, slug),
-      ...section('Globals', rootNode.globals, rootNode.ids, 2, anchors, slug)
+      ...section('Globals', rootNode.globals, rootNode.ids, 2, anchors, slug),
+      ...listSection('Conditions', conditionLines(rootNode), 2, slug),
+      ...listSection('Timer', timerLines(rootNode), 2, slug)
     );
   }
 
@@ -258,7 +281,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
       lines.push(
         ...section('Status', node.status, node.ids, 3, anchors, slug),
         ...section('Data', node.data, node.ids, 3, anchors, slug),
-        ...section('Globals', node.globals, node.ids, 3, anchors, slug)
+        ...section('Globals', node.globals, node.ids, 3, anchors, slug),
+        ...listSection('Conditions', conditionLines(node), 3, slug),
+        ...listSection('Timer', timerLines(node), 3, slug)
       );
     });
 

@@ -1,4 +1,7 @@
-import { collectExecutionData } from './collectExecutionData';
+import { collectExecutionData } from './collectExecutionData.js';
+
+// what an element carrying no execution data reports
+const EMPTY = { status: [], data: [], globals: [], conditions: [], timer: [] };
 
 /**
  * The execution data registry as a diagram-js service: a thin adapter over `collectExecutionData`.
@@ -30,12 +33,12 @@ export default class ExecutionData {
    * The attributes visible at an element, each list in declaration order.
    *
    * @param {djs.model.Base|ModdleElement|String} element  element, business object or id
-   * @return {{ status: Array, data: Array, globals: Array }}
+   * @return {{ status: Array, data: Array, globals: Array, conditions: Array, timer: Array }}
    */
   get(element) {
     const id = typeof element === 'string' ? element : element.id;
 
-    return this._registry.byElement.get(id) || { status: [], data: [], globals: [] };
+    return this._registry.byElement.get(id) || EMPTY;
   }
 
   /**

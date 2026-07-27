@@ -211,15 +211,28 @@
     "severity": "error"
   },
   "bpmnos/attribute-redeclared.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "An attribute must not redeclare an id it inherits — ids are unique model-wide and the engine looks attributes up by them — nor reuse an inherited name, which shadows that attribute for every expression in this scope."
   },
   "bpmnos/attribute-undeclared.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "An attribute named by a message or signal content must be declared at the node or inherited by it. Attributes used inside expressions (restrictions, operators, conditions, parameter values) are not checked here: the engine compiles those and rejects unknown names itself."
   },
   "bpmnos/gatekeeper-restrictions.js": {
     "severity": "error"
   },
   "bpmnos/allocation.js": {
     "severity": "error"
+  },
+  "bpmnos/event-trigger.js": {
+    "severity": "error",
+    "subtypes": {
+      "timer": {
+        "description": "A timer event must state when it fires: a bpmnos:timer parameter giving the trigger. Without it the engine never schedules the event."
+      },
+      "condition": {
+        "description": "A conditional event must state what it waits for: at least one bpmnos:restriction. Without it the engine never triggers the event."
+      }
+    }
   }
 }
