@@ -35,6 +35,10 @@ export function getHost(box) {
  * folded away, what it declares itself is not. Globals are inherited by every element, so the whole
  * compartment folds.
  *
+ * Only the groups named here start folded; a `<key>:own` group, holding what the element declares itself,
+ * is not among them and so starts open. Every group is foldable either way — this map is about where the
+ * box begins, not about what the reader may do.
+ *
  * The state is session-only, kept on the element rather than in the file — whether it should persist is
  * still open, and an element is rebuilt on import, so a reload starts from these defaults.
  */

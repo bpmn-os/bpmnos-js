@@ -297,30 +297,35 @@ function restrictionItem(restriction, ownIds, anchors) {
 }
 
 /**
- * What the node inherits behind a `<details>` fold, what it declares itself beneath it in plain view — the
- * same split the annotation box makes (`AnnotationContent.js`), and collapsed by default as the box's
- * chevron is.
+ * Two folds: what the node inherits, then what it declares itself — the same split the annotation box makes
+ * (`AnnotationContent.js`), and folded as the box's chevrons are, the inherited collapsed and the node's own
+ * open.
  *
  * Both GitHub and doxygen render markdown inside `<details>` as long as a blank line follows the summary and
- * precedes the closing tag, so the entries stay ordinary list items with their links intact. Inherited come
- * first, as they do in the registry and in the box.
+ * precedes the closing tag, so the entries stay ordinary list items with their links intact; doxygen keeps
+ * the `open` attribute too. Inherited come first, as they do in the registry and in the box.
  */
 function foldedList(entries, isOwn, render) {
   const inherited = entries.filter((entry) => !isOwn(entry)),
-        own = entries.filter(isOwn).flatMap(render);
+        own = entries.filter(isOwn);
 
-  if (!inherited.length) {
-    return own;
-  }
+  const fold = (summary, group, open) => group.length ? [
+    open ? '<details open>' : '<details>',
+    `<summary>${summary} (${group.length})</summary>`,
+    '',
+    ...group.flatMap(render),
+    '',
+    '</details>'
+  ] : [];
 
+  const inheritedFold = fold('Inherited', inherited, false),
+        ownFold = fold('Owned', own, true);
+
+  // the blank line between them is what keeps the two blocks apart for a markdown parser
   return [
-    '<details>',
-    `<summary>Inherited (${inherited.length})</summary>`,
-    '',
-    ...inherited.flatMap(render),
-    '',
-    '</details>',
-    ...(own.length ? [ '', ...own ] : [])
+    ...inheritedFold,
+    ...(inheritedFold.length && ownFold.length ? [ '' ] : []),
+    ...ownFold
   ];
 }
 

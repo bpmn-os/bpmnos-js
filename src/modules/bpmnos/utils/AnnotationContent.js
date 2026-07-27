@@ -33,19 +33,27 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
 
   const ownIds = [ host.id, processRef && processRef.id ].filter(Boolean);
 
-  // inherited and own are kept apart: what the element inherits can be folded away, what it declares
-  // itself is always in view
-  const compartment = (label, key, attributes) => ({
-    label,
-    key,
-    group: 'declared',
-    inherited: attributes
-      .filter(attribute => !ownIds.includes(attribute.declaringElement))
-      .flatMap(attribute => item(attribute, ownIds)),
-    own: attributes
-      .filter(attribute => ownIds.includes(attribute.declaringElement))
-      .flatMap(attribute => item(attribute, ownIds))
-  });
+  // Inherited and own are kept apart, each behind a chevron of its own: what the element inherits starts
+  // folded away, what it declares itself starts in view. `ownKey` is what marks a compartment as making
+  // that split at all — the kinds an element simply carries have no such halves and get no chevrons.
+  const compartment = (label, key, attributes) => {
+    const inherited = attributes.filter(attribute => !ownIds.includes(attribute.declaringElement)),
+          own = attributes.filter(attribute => ownIds.includes(attribute.declaringElement));
+
+    return {
+      label,
+      key,
+      ownKey: key + ':own',
+      group: 'declared',
+      inherited: inherited.flatMap(attribute => item(attribute, ownIds)),
+      own: own.flatMap(attribute => item(attribute, ownIds)),
+
+      // an attribute takes a second row where it contributes to the objective, so a chevron counts the
+      // attributes it hides rather than the rows
+      inheritedCount: inherited.length,
+      ownCount: own.length
+    };
+  };
 
   // kinds the element carries itself: nothing to fold, so they have no inherited half
   const own = (label, items) => ({ label, key: label.toLowerCase(), group: 'sequence', inherited: [], own: items });
@@ -63,6 +71,7 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
   const checkpoint = (label, key, restrictions) => ({
     label,
     key,
+    ownKey: key + ':own',
     group: 'sequence',
     inherited: restrictions
       .filter(restriction => !ownIds.includes(restriction.declaringElement))

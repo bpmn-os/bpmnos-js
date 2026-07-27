@@ -74,9 +74,16 @@ export function layout(box, executionData) {
 
     const collapsed = isCollapsed(box, compartment.key);
 
+    // what a chevron counts is entries, which is not what it hides where an entry takes more than one row
+    const inheritedCount = compartment.inheritedCount === undefined
+            ? compartment.inherited.length
+            : compartment.inheritedCount,
+          ownCount = compartment.ownCount === undefined ? compartment.own.length : compartment.ownCount;
+
     if (foldsWhole) {
       const folded = compartment.own.length ? compartment.own : compartment.inherited,
-            count = compartment.count === undefined ? folded.length : compartment.count;
+            foldedCount = compartment.own.length ? ownCount : inheritedCount,
+            count = compartment.count === undefined ? foldedCount : compartment.count;
 
       // a count where the entries are of one kind and countable; none where they are not, as in guidance,
       // which holds attributes, operators and restrictions at once
@@ -102,7 +109,7 @@ export function layout(box, executionData) {
         rows.push({
           kind: 'toggle',
           key: compartment.key,
-          text: `${collapsed ? '▸' : '▾'} inherited (${compartment.inherited.length})`,
+          text: `${collapsed ? '▸' : '▾'} inherited (${inheritedCount})`,
           y,
           height: ITEM_HEIGHT
         });
@@ -113,7 +120,27 @@ export function layout(box, executionData) {
         }
       }
 
-      items(compartment.own);
+      // What the element declares itself folds too, under a chevron of its own — open unless the reader has
+      // closed it, since it is the half the box is usually consulted for. A compartment that makes no such
+      // split (a kind the element simply carries, such as the conditions) has no `ownKey` and no chevron.
+      if (compartment.ownKey && compartment.own.length) {
+        const ownCollapsed = isCollapsed(box, compartment.ownKey);
+
+        rows.push({
+          kind: 'toggle',
+          key: compartment.ownKey,
+          text: `${ownCollapsed ? '▸' : '▾'} owned (${ownCount})`,
+          y,
+          height: ITEM_HEIGHT
+        });
+        y += ITEM_HEIGHT;
+
+        if (!ownCollapsed) {
+          items(compartment.own);
+        }
+      } else {
+        items(compartment.own);
+      }
     }
 
     y += COMPARTMENT_PADDING / 2;
