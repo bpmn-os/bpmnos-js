@@ -8,8 +8,8 @@ import {
 
 import BpmnRenderer from 'bpmn-js/lib/draw/BpmnRenderer';
 
-import { isExecutionData } from './utils/ExecutionDataUtil';
-import { layout, PADDING_X } from './utils/ExecutionDataLayout';
+import { isAnnotation } from './utils/AnnotationUtil';
+import { layout, PADDING_X } from './utils/AnnotationLayout';
 
 const STYLES = {
   title: { fontSize: 12, fontWeight: 'bold' },
@@ -21,7 +21,7 @@ const STYLES = {
  * Draws the execution data box: a header naming the element, then one compartment per kind of declaration,
  * separated by full-width rules. Everything shown is derived from the host at draw time.
  */
-export default function ExecutionDataRenderer(
+export default function BPMNOSAnnotationRenderer(
     config, eventBus, styles,
     pathMap, canvas, textRenderer) {
 
@@ -33,7 +33,7 @@ export default function ExecutionDataRenderer(
   );
 
   this.canRender = function(element) {
-    return isExecutionData(element);
+    return isAnnotation(element);
   };
 
   this.drawShape = function(parentNode, shape) {
@@ -85,9 +85,9 @@ export default function ExecutionDataRenderer(
   };
 }
 
-inherits(ExecutionDataRenderer, BpmnRenderer);
+inherits(BPMNOSAnnotationRenderer, BpmnRenderer);
 
-ExecutionDataRenderer.$inject = [
+BPMNOSAnnotationRenderer.$inject = [
   'config.bpmnRenderer',
   'eventBus',
   'styles',

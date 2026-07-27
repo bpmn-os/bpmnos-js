@@ -8,7 +8,7 @@
     "./moddle": "./src/modules/bpmnos/bpmnos.json",
     "./decision-task": "./src/modules/bpmnos/decision-task.js",
     "./properties": "./src/modules/bpmnos/properties.js",
-    "./execution-data": "./src/modules/bpmnos/execution-data.js",
+    "./annotation": "./src/modules/bpmnos/annotation.js",
     "./rules": "./src/modules/rules/index.js",
     "./rules/*": "./src/modules/rules/*",
     "./newDiagram.bpmn": "./src/newDiagram.bpmn"

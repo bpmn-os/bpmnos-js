@@ -26,8 +26,9 @@ import createToolbar from 'bpmn-workbench/toolbar'; // on-canvas file/view toolb
 import BPMNOSModdleDescriptor from './modules/bpmnos/bpmnos.json';
 import BPMNOSModule from './modules/bpmnos'; // moddle-backed properties panel, decision-task decorator + popup menu
 
-// Execution data boxes: a marked bpmn:TextAnnotation per element, attached by an association
-import ExecutionDataModule from './modules/bpmnos/execution-data';
+// BPMNOS annotations: a marked bpmn:TextAnnotation per element, attached by an association, showing the
+// element's execution data
+import BPMNOSAnnotationModule from './modules/bpmnos/annotation';
 
 import newDiagram from './newDiagram.bpmn?raw';
 
@@ -65,7 +66,7 @@ var modeler = new BpmnModeler({
   additionalModules: [
     BpmnPropertiesPanelModule,
     BPMNOSModule,
-    ExecutionDataModule,
+    BPMNOSAnnotationModule,
     SidePanelModule,
     LintModule,
     IssuesPanelModule,

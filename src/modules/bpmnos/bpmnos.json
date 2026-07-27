@@ -23,7 +23,7 @@
       "extends": [ "bpmn:TextAnnotation" ],
       "properties": [
         {
-          "name": "executionData",
+          "name": "annotation",
           "isAttr": true,
           "type": "String"
         }

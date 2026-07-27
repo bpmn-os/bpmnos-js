@@ -3,15 +3,15 @@ import inherits from 'inherits';
 import CommandInterceptor from 'diagram-js/lib/command/CommandInterceptor';
 
 import {
-  isExecutionData,
+  isAnnotation,
   isHidden,
-  getExecutionData,
+  getAnnotation,
   getHost,
   isProtectedAssociation
-} from './utils/ExecutionDataUtil';
-import { layout } from './utils/ExecutionDataLayout';
+} from './utils/AnnotationUtil';
+import { layout } from './utils/AnnotationLayout';
 
-// runs after bpmn-js's TextAnnotationBehavior, which would otherwise derive the height from the (empty) text
+// runs after bpmn-js's TextBPMNOSAnnotationBehavior, which would otherwise derive the height from the (empty) text
 const RESIZE_PRIORITY = 500;
 
 // runs before bpmn-js's own delete behaviours
@@ -29,7 +29,7 @@ const TOLERANCE = 2;
  * - fits the height to the content, growing away from the host;
  * - applies the persisted `visible`/`hidden` state to the box and its association.
  */
-export default function ExecutionDataBehavior(
+export default function BPMNOSAnnotationBehavior(
     eventBus, modeling, elementRegistry, graphicsFactory, selection) {
 
   CommandInterceptor.call(this, eventBus);
@@ -40,11 +40,11 @@ export default function ExecutionDataBehavior(
   this.postExecuted('shape.append', function(context) {
     const hints = context.hints || {};
 
-    if (!hints.executionData) {
+    if (!hints.annotation) {
       return;
     }
 
-    modeling.updateProperties(context.shape, { executionData: hints.executionData });
+    modeling.updateProperties(context.shape, { annotation: hints.annotation });
   }, true);
 
   // (2) a box lives and dies with its element --------------------------------------------------------
@@ -55,14 +55,14 @@ export default function ExecutionDataBehavior(
     // a box describes exactly one element, so deleting that element takes the box with it. The
     // association needs no mention: removing the box removes what is attached to it.
     elements.forEach(function(element) {
-      const box = element.outgoing && getExecutionData(element);
+      const box = element.outgoing && getAnnotation(element);
 
       if (box && elements.indexOf(box) === -1) {
         elements.push(box);
       }
     });
 
-    // and the association may not go on its own — a backstop below the rule in ExecutionDataRules, which
+    // and the association may not go on its own — a backstop below the rule in BPMNOSAnnotationRules, which
     // programmatic deletion never consults
     context.elements = elements.filter(element => !isProtectedAssociation(element, elements));
   }, true);
@@ -72,7 +72,7 @@ export default function ExecutionDataBehavior(
   // the boxes of the given shapes, minus those already among them
   function boxesOf(shapes) {
     return shapes.reduce(function(boxes, shape) {
-      const box = shape.outgoing && getExecutionData(shape);
+      const box = shape.outgoing && getAnnotation(shape);
 
       if (box && shapes.indexOf(box) === -1 && boxes.indexOf(box) === -1) {
         boxes.push(box);
@@ -106,7 +106,7 @@ export default function ExecutionDataBehavior(
   this.preExecute('shape.resize', RESIZE_PRIORITY, function(context) {
     const shape = context.shape;
 
-    if (!isExecutionData(shape)) {
+    if (!isAnnotation(shape)) {
       return;
     }
 
@@ -114,7 +114,7 @@ export default function ExecutionDataBehavior(
           height = layout(shape).height;
 
     // Only the width is the user's — bpmn-js restricts annotations to the west/east handles. Its
-    // TextAnnotationBehavior has already rewritten newBounds.height to the height of the (empty) text, so
+    // TextBPMNOSAnnotationBehavior has already rewritten newBounds.height to the height of the (empty) text, so
     // the vertical anchor is taken from the shape as it stands, not from those bounds.
     context.newBounds = {
       x: bounds.x,
@@ -171,7 +171,7 @@ export default function ExecutionDataBehavior(
     const connection = event.element;
 
     [ connection.source, connection.target ].forEach(function(element) {
-      if (element && isExecutionData(element)) {
+      if (element && isAnnotation(element)) {
         applyVisibility(element);
 
         if (!fitHeight(element)) {
@@ -188,14 +188,14 @@ export default function ExecutionDataBehavior(
       return;
     }
 
-    if (isExecutionData(element)) {
+    if (isAnnotation(element)) {
       applyVisibility(element);
       return;
     }
 
     // the host changed: its box renders the host's id and declarations
     if (element.outgoing) {
-      const box = getExecutionData(element);
+      const box = getAnnotation(element);
 
       if (box && !fitHeight(box)) {
         redraw(box);
@@ -205,13 +205,13 @@ export default function ExecutionDataBehavior(
 
   // a hidden box must come back hidden
   eventBus.on('import.done', function() {
-    elementRegistry.filter(isExecutionData).forEach(applyVisibility);
+    elementRegistry.filter(isAnnotation).forEach(applyVisibility);
   });
 }
 
-inherits(ExecutionDataBehavior, CommandInterceptor);
+inherits(BPMNOSAnnotationBehavior, CommandInterceptor);
 
-ExecutionDataBehavior.$inject = [ 'eventBus', 'modeling', 'elementRegistry', 'graphicsFactory', 'selection' ];
+BPMNOSAnnotationBehavior.$inject = [ 'eventBus', 'modeling', 'elementRegistry', 'graphicsFactory', 'selection' ];
 
 /**
  * The box grows away from its host: anchored at the bottom when it sits above, at the top when it sits

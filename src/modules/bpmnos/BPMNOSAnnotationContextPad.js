@@ -1,9 +1,9 @@
-import { canHaveExecutionData, isExecutionData, isHidden, getHost } from './utils/ExecutionDataUtil';
+import { canHaveAnnotation, isAnnotation, isHidden, getHost } from './utils/AnnotationUtil';
 
 // bpmn-js puts "Add text annotation" in the 'model' group; joining it and following that key puts our entry
 // right next to the annotation icon in the pad.
 const ANNOTATION_ENTRY = 'append.text-annotation';
-const ENTRY = 'bpmnos-execution-data';
+const ENTRY = 'bpmnos-annotation';
 
 // a box keeps nothing of the standard pad; it is still deleted by selecting it and pressing Del
 const KEPT_ON_BOX = [];
@@ -12,9 +12,9 @@ const KEPT_ON_BOX = [];
  * One entry per state: a lightbulb on the host to create or show its execution data, a slashed one to hide
  * it — on the host and on the box itself.
  */
-export default class ExecutionDataContextPad {
-  constructor(contextPad, eventBus, executionData, translate) {
-    this._executionData = executionData;
+export default class BPMNOSAnnotationContextPad {
+  constructor(contextPad, eventBus, bpmnosAnnotation, translate) {
+    this._annotation = bpmnosAnnotation;
     this._translate = translate;
 
     contextPad.registerProvider(this);
@@ -25,7 +25,7 @@ export default class ExecutionDataContextPad {
     eventBus.on('element.changed', function(event) {
       const element = event.element;
 
-      if (!isExecutionData(element)) {
+      if (!isAnnotation(element)) {
         return;
       }
 
@@ -43,10 +43,10 @@ export default class ExecutionDataContextPad {
   }
 
   getContextPadEntries(element) {
-    const executionData = this._executionData,
+    const annotation = this._annotation,
           translate = this._translate;
 
-    if (isExecutionData(element)) {
+    if (isAnnotation(element)) {
       return function(entries) {
         const kept = {};
 
@@ -59,11 +59,11 @@ export default class ExecutionDataContextPad {
         return {
           [ ENTRY ]: {
             group: 'edit',
-            className: 'bpmnos-icon-execution-data-hide',
+            className: 'bpmnos-icon-annotation-hide',
             title: translate('Hide execution data'),
             action: {
               click: function(event, element) {
-                executionData.hide(element);
+                annotation.hide(element);
               }
             }
           },
@@ -72,36 +72,36 @@ export default class ExecutionDataContextPad {
       };
     }
 
-    if (!canHaveExecutionData(element)) {
+    if (!canHaveAnnotation(element)) {
       return {};
     }
 
     // an updater, so the entry can be placed after the annotation one rather than appended at the end
     return function(entries) {
-      const box = executionData.get(element);
+      const box = annotation.get(element);
 
       // one entry that toggles: create it, show it again, or hide the shown one
       const entry = !box
         ? {
-          className: 'bpmnos-icon-execution-data-show',
+          className: 'bpmnos-icon-annotation-show',
           title: translate('Create execution data'),
           action: function(event, element) {
-            executionData.create(element);
+            annotation.create(element);
           }
         }
-        : executionData.isHidden(box)
+        : annotation.isHidden(box)
           ? {
-            className: 'bpmnos-icon-execution-data-show',
+            className: 'bpmnos-icon-annotation-show',
             title: translate('Show execution data'),
             action: function() {
-              executionData.show(box);
+              annotation.show(box);
             }
           }
           : {
-            className: 'bpmnos-icon-execution-data-hide',
+            className: 'bpmnos-icon-annotation-hide',
             title: translate('Hide execution data'),
             action: function() {
-              executionData.hide(box);
+              annotation.hide(box);
             }
           };
 
@@ -115,7 +115,7 @@ export default class ExecutionDataContextPad {
   }
 }
 
-ExecutionDataContextPad.$inject = [ 'contextPad', 'eventBus', 'executionData', 'translate' ];
+BPMNOSAnnotationContextPad.$inject = [ 'contextPad', 'eventBus', 'bpmnosAnnotation', 'translate' ];
 
 function insertAfter(entries, afterId, id, entry) {
   if (!(afterId in entries)) {

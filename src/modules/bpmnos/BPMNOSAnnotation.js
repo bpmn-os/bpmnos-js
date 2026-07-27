@@ -1,5 +1,5 @@
-import { getExecutionData, isHidden, VISIBLE, HIDDEN } from './utils/ExecutionDataUtil';
-import { layout } from './utils/ExecutionDataLayout';
+import { getAnnotation, isHidden, VISIBLE, HIDDEN } from './utils/AnnotationUtil';
+import { layout } from './utils/AnnotationLayout';
 
 // default width; the user owns it from then on, while the height always follows the content
 export const DEFAULT_WIDTH = 180;
@@ -10,13 +10,13 @@ const GAP = 40;
 /**
  * Creating, finding, showing and hiding the execution data box of an element. One box per element.
  */
-export default class ExecutionData {
+export default class BPMNOSAnnotation {
   constructor(modeling) {
     this._modeling = modeling;
   }
 
   get(host) {
-    return getExecutionData(host);
+    return getAnnotation(host);
   }
 
   isHidden(box) {
@@ -35,7 +35,7 @@ export default class ExecutionData {
     }
 
     // the host is only reachable through the association, which does not exist yet, so the content height
-    // cannot be measured here; ExecutionDataBehavior fits it once the box is attached
+    // cannot be measured here; BPMNOSAnnotationBehavior fits it once the box is attached
     const height = layout({ incoming: [] }).height;
 
     // appendShape positions by the new shape's centre
@@ -50,14 +50,14 @@ export default class ExecutionData {
       position,
       host.parent,
 
-      // picked up by ExecutionDataBehavior, which marks the annotation within the same undo step
-      { executionData: VISIBLE }
+      // picked up by BPMNOSAnnotationBehavior, which marks the annotation within the same undo step
+      { annotation: VISIBLE }
     );
   }
 
   show(box) {
     if (isHidden(box)) {
-      this._modeling.updateProperties(box, { executionData: VISIBLE });
+      this._modeling.updateProperties(box, { annotation: VISIBLE });
     }
 
     return box;
@@ -65,11 +65,11 @@ export default class ExecutionData {
 
   hide(box) {
     if (!isHidden(box)) {
-      this._modeling.updateProperties(box, { executionData: HIDDEN });
+      this._modeling.updateProperties(box, { annotation: HIDDEN });
     }
 
     return box;
   }
 }
 
-ExecutionData.$inject = [ 'modeling' ];
+BPMNOSAnnotation.$inject = [ 'modeling' ];

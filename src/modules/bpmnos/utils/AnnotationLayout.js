@@ -1,5 +1,5 @@
-import { getExecutionDataContent } from './ExecutionDataContent';
-import { getHost } from './ExecutionDataUtil';
+import { getAnnotationContent } from './AnnotationContent';
+import { getHost } from './AnnotationUtil';
 
 // Row metrics of the box. A UML-class-diagram shape in spirit: the header names the element, then one
 // compartment per kind of declaration, separated by full-width rules.
@@ -17,7 +17,7 @@ export const PADDING_X = 8;
  */
 export function layout(box) {
   const host = getHost(box),
-        content = host ? getExecutionDataContent(host) : { title: '', compartments: [] };
+        content = host ? getAnnotationContent(host) : { title: '', compartments: [] };
 
   const rows = [ { kind: 'title', text: content.title, y: 0, height: HEADER_HEIGHT } ],
         separators = [];
