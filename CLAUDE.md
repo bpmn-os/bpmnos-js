@@ -142,4 +142,12 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   with it.
 - `~/Code/bpmndoc` (C++, Xerces + bpmn++) is superseded by `bpmnosdoc` and can go once the latter covers
   what it emitted.
+- **`src/context-pad-compat.js` is a shim to delete on an upstream bump, not before.** It reimplements
+  `ContextPad#getPad`, which diagram-js deprecated (`ContextPad.js` warns, cf. bpmn-io/diagram-js#888) but
+  bpmn-js still calls — as of bpmn-js 18.21.0 / diagram-js 15.21.0 in
+  `features/context-pad/ContextPadProvider.js` (positioning the replace menu) and
+  `features/align-elements/AlignElementsContextPadProvider.js`. Without it those calls log a deprecation
+  stack on every wrench click; once `getPad` is gone from diagram-js and bpmn-js has stopped calling it,
+  they would break instead. **Check those two files after a bpmn-js bump: when neither calls `getPad`, drop
+  the shim and its wiring in `src/app.js`.**
 - `npm audit` reports toolchain vulnerabilities (Vite/esbuild transitive) — review before relying on it.
