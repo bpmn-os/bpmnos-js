@@ -22,10 +22,12 @@ function preactJsxInJs() {
 }
 
 // Builds the demo modeller (src/app.js + index.html), deployed to GitHub Pages. `base` is the gh-pages
-// sub-path (https://bpmn-os.github.io/bpmnos-js/) in CI. react is aliased to the properties-panel preact
+// sub-path (https://bpmn-os.github.io/bpmnos-js/) when *building* in CI. It must stay '/' for the dev
+// server: bpmnosdoc drives that server headlessly in CI too, and a sub-path base makes vite 404 the
+// root URL, so no app — and no diagrams — ever load. react is aliased to the properties-panel preact
 // compat build so any `react` import resolves to preact.
-export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/bpmnos-js/' : '/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' && process.env.GITHUB_ACTIONS ? '/bpmnos-js/' : '/',
   plugins: [ preactJsxInJs() ],
   resolve: {
     alias: {
@@ -41,4 +43,4 @@ export default defineConfig({
       jsxImportSource: '@bpmn-io/properties-panel/preact'
     }
   }
-});
+}));
