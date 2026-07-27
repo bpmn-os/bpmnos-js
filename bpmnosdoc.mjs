@@ -89,7 +89,9 @@ async function collectModel(page, diagram) {
     const nodes = registry.getAll()
       .filter((element) => element.type !== 'label')
       .map((element) => {
-        const { status, data, globals, conditions, timer, operators, messages, signal } = executionData.get(element);
+        const {
+          status, data, globals, conditions, timer, choices, operators, messages, signal
+        } = executionData.get(element);
 
         // a pool stands for the process it refers to: that process documents it, owns its attributes, and
         // is what gets named — a participant id is never shown
@@ -108,6 +110,7 @@ async function collectModel(page, diagram) {
           globals: globals.map(attribute),
           conditions: conditions.map((c) => ({ id: c.id, expression: c.expression })),
           timer: timer.map((t) => ({ name: t.name, value: t.value })),
+          choices: choices.map((c) => ({ id: c.id, condition: c.condition })),
           operators: operators.map((o) => ({ id: o.id, expression: o.expression })),
           messages: messages.map(exchange),
           signal: signal.map(exchange),
@@ -172,7 +175,7 @@ function headingText(node) {
 
 function hasContent(node) {
   return !!(node.documentation || node.status.length || node.data.length || node.globals.length
-    || node.conditions.length || node.timer.length || node.operators.length
+    || node.conditions.length || node.timer.length || node.choices.length || node.operators.length
     || node.messages.length || node.signal.length);
 }
 
@@ -255,6 +258,10 @@ function exchangeSections(title, definitions, level, slug) {
   return out;
 }
 
+function choiceLines(node) {
+  return node.choices.map((choice) => '`' + (choice.condition || choice.id) + '`');
+}
+
 function operatorLines(node) {
   return node.operators.map((operator) => '`' + (operator.expression || operator.id) + '`');
 }
@@ -318,10 +325,16 @@ function render({ baseName, diagrams, model, anchors, register }) {
       ...section('Globals', rootNode.globals, rootNode.ids, 2, anchors, slug),
       ...listSection('Conditions', conditionLines(rootNode), 2, slug),
       ...listSection('Timer', timerLines(rootNode), 2, slug),
-      ...(rootNode.operatorsOnCompletion ? [] : listSection('Operators', operatorLines(rootNode), 2, slug)),
+      ...(rootNode.operatorsOnCompletion ? [] : [
+        ...listSection('Choices', choiceLines(rootNode), 2, slug),
+        ...listSection('Operators', operatorLines(rootNode), 2, slug)
+      ]),
       ...exchangeSections('Message', rootNode.messages, 2, slug),
       ...exchangeSections('Signal', rootNode.signal, 2, slug),
-      ...(rootNode.operatorsOnCompletion ? listSection('Operators', operatorLines(rootNode), 2, slug) : [])
+      ...(rootNode.operatorsOnCompletion ? [
+        ...listSection('Choices', choiceLines(rootNode), 2, slug),
+        ...listSection('Operators', operatorLines(rootNode), 2, slug)
+      ] : [])
     );
   }
 
@@ -344,10 +357,16 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...section('Globals', node.globals, node.ids, 3, anchors, slug),
         ...listSection('Conditions', conditionLines(node), 3, slug),
         ...listSection('Timer', timerLines(node), 3, slug),
-        ...(node.operatorsOnCompletion ? [] : listSection('Operators', operatorLines(node), 3, slug)),
+        ...(node.operatorsOnCompletion ? [] : [
+          ...listSection('Choices', choiceLines(node), 3, slug),
+          ...listSection('Operators', operatorLines(node), 3, slug)
+        ]),
         ...exchangeSections('Message', node.messages, 3, slug),
         ...exchangeSections('Signal', node.signal, 3, slug),
-        ...(node.operatorsOnCompletion ? listSection('Operators', operatorLines(node), 3, slug) : [])
+        ...(node.operatorsOnCompletion ? [
+          ...listSection('Choices', choiceLines(node), 3, slug),
+          ...listSection('Operators', operatorLines(node), 3, slug)
+        ] : [])
       );
     });
 

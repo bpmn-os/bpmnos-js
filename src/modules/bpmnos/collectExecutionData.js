@@ -103,6 +103,7 @@ function record(registry, businessObject, status, data, globals) {
     // kinds an element carries itself, read straight off it
     conditions: conditionsOf(businessObject),
     timer: timerOf(businessObject),
+    choices: choicesOf(businessObject),
     operators: operatorsOf(businessObject),
     messages: messagesOf(businessObject),
     signal: signalOf(businessObject)
@@ -116,6 +117,31 @@ function record(registry, businessObject, status, data, globals) {
     elements.push(businessObject.id);
     registry.elementsById.set(attribute.id, elements);
   });
+}
+
+/**
+ * The choices of an element: `bpmnos:status/decisions`, each an id and a condition.
+ *
+ * Not a kind with operators. An operator assigns a value; a choice states what a decision maker may pick —
+ * the engine parses the condition into bounds, an enumeration and an optional discretizer, and takes the
+ * attribute being chosen from the condition itself (`Choice.cpp:60-70`), as in
+ * `1 <= index <= count(destinations)`. The condition is reported as written.
+ */
+function choicesOf(businessObject) {
+  const status = getStatus(businessObject);
+
+  if (!status) {
+    return [];
+  }
+
+  return (status.get('decisions') || [])
+    .flatMap(decisions => decisions.get('decision') || [])
+    .map(decision => ({
+      id: decision.get('id'),
+      condition: decision.get('condition'),
+      declaringElement: businessObject.id,
+      moddleElement: decision
+    }));
 }
 
 /**
