@@ -23,6 +23,7 @@ import * as attributeUndeclared from "./bpmnos/attribute-undeclared.js";
 import * as gatekeeperRestrictions from "./bpmnos/gatekeeper-restrictions.js";
 import * as allocation from "./bpmnos/allocation.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
+import * as loopParameters from "./bpmnos/loop-parameters.js";
 
 // Rule sources: '' = this package's local rules (engine/**, bpmnos/**); '@bpmn-workbench' = the
 // essential rules, via the context bpmn-workbench exports.
@@ -40,7 +41,8 @@ const sources = {
     "./bpmnos/attribute-undeclared.js": attributeUndeclared,
     "./bpmnos/gatekeeper-restrictions.js": gatekeeperRestrictions,
     "./bpmnos/allocation.js": allocation,
-    "./bpmnos/event-trigger.js": eventTrigger
+    "./bpmnos/event-trigger.js": eventTrigger,
+    "./bpmnos/loop-parameters.js": loopParameters
   }),
   "@bpmn-workbench": ruleContext
 };

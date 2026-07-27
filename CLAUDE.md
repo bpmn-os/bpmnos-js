@@ -138,6 +138,17 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   markdown would make usable golden files.
 - **Collapsed state is session-only** — whether folding should persist in the file is deliberately
   undecided.
+- **The engine should reject bad loop input rather than ignore it** (a note for `~/Code/bpmnos/engine`, not
+  work for this repo). `ExtensionElements.cpp:241-256` assigns the four parameters it knows —
+  `cardinality`, `index`, `condition`, `maximum` — and silently drops everything else: an unknown name, a
+  parameter belonging to the other kind of loop (`cardinality` on a standard loop, `condition`/`maximum` on
+  a multi-instance one), a duplicate (last one wins), a parameter with no expression, and parameters on an
+  activity carrying no BPMN loop characteristics at all, which are never read. All of these could throw
+  where the file is read, as the constructor already does for an illegal restriction, operator or choice.
+  Two further cases throw only when the activity is reached — a multi-instance activity with neither a
+  cardinality nor a message (`StateMachine.cpp:433-444`) and a `maximum` without an `index`
+  (`Token.cpp:442-446`) — and are decidable at load. `bpmnos/loop-parameters.js` flags all seven here, so
+  the lint rule and such an engine check should be kept in step.
 - The registry holds attributes only; **operators and restrictions** are to follow, and `bpmnosdoc` grows
   with it.
 - `~/Code/bpmndoc` (C++, Xerces + bpmn++) is superseded by `bpmnosdoc` and can go once the latter covers

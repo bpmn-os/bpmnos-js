@@ -9,7 +9,9 @@ import { visibleNames } from './executionData.js';
  * plus everything inherited from its ancestors, the same account the engine works from.
  *
  * Only places that name an attribute **directly** are checked — the contents of messages and signals, whose
- * `attribute` is a plain name mapped to a key. Restrictions, operators, conditions and parameter values hold
+ * `attribute` is a plain name mapped to a key, and the `index` parameter of a loop, which the engine
+ * requires to *be* an attribute rather than an expression over one (`StateMachine.cpp:446-456`,
+ * `Token.cpp:430-441`), so anything that is not a declared name is an error there whichever it is. Restrictions, operators, conditions and parameter values hold
  * LIMEX expressions instead, and are not checked here: the engine compiles those against its attribute
  * registry and rejects unknown names itself, so validating them belongs where the engine can be asked
  * (bpmnos-workbench, with the engine WASM). Approximating that grammar with pattern matching produced false
@@ -40,6 +42,12 @@ export default function() {
           (message.get('content') || []).forEach(content =>
             report(content.get('attribute'),
               `content '${content.get('key')}' of message '${message.get('name')}'`)));
+      }
+
+      if (is(element, 'bpmnos:LoopCharacteristics')) {
+        (element.get('parameter') || [])
+          .filter(parameter => parameter.get('name') === 'index')
+          .forEach(parameter => report(parameter.get('value'), 'the loop index'));
       }
 
       if (is(element, 'bpmnos:Signal')) {

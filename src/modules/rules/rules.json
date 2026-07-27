@@ -212,7 +212,7 @@
   },
   "bpmnos/attribute-redeclared.js": {
     "severity": "error",
-    "description": "An attribute must not redeclare an id it inherits — ids are unique model-wide and the engine looks attributes up by them — nor reuse an inherited name, which shadows that attribute for every expression in this scope."
+    "description": "An attribute must not redeclare an id it inherits \u2014 ids are unique model-wide and the engine looks attributes up by them \u2014 nor reuse an inherited name, which shadows that attribute for every expression in this scope."
   },
   "bpmnos/attribute-undeclared.js": {
     "severity": "error",
@@ -232,6 +232,32 @@
       },
       "condition": {
         "description": "A conditional event must state what it waits for: at least one bpmnos:restriction. Without it the engine never triggers the event."
+      }
+    }
+  },
+  "bpmnos/loop-parameters.js": {
+    "severity": "error",
+    "subtypes": {
+      "noLoopCharacteristics": {
+        "description": "Loop parameters are read only for an activity BPMN marks as a standard loop or as multi-instance. Without those markers the engine does not loop and ignores the parameters."
+      },
+      "unknownParameter": {
+        "description": "A loop parameter must be named cardinality, index, condition or maximum. The engine ignores any other name."
+      },
+      "unusedParameter": {
+        "description": "A multi-instance activity is sized by cardinality and may name an index; a standard loop repeats while condition holds, up to maximum iterations counted in index. A parameter belonging to the other kind of loop is never read."
+      },
+      "duplicateParameter": {
+        "description": "The same loop parameter given twice: the engine keeps the last one and discards the earlier."
+      },
+      "parameterWithoutValue": {
+        "description": "A loop parameter must carry the expression the engine evaluates. Without a value it is skipped."
+      },
+      "noCardinality": {
+        "description": "A multi-instance activity is sized by its cardinality, or by the number of messages it defines when it has none. With neither, the engine creates no instances and fails when the activity is reached."
+      },
+      "maximumWithoutIndex": {
+        "description": "A loop maximum bounds the loop index, so the activity must name an index attribute to count in. Without it the engine fails when the activity is entered."
       }
     }
   }
