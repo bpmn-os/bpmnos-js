@@ -3,3 +3,20 @@
   height: 12px;
 }
 
+/* Execution data entries. A lightbulb — "look into this element" — to create or show the box, slashed to
+   hide it. Own artwork (drawn here, not copied from an icon set), so no attribution applies. */
+.bpmnos-icon-execution-data-show::before,
+.bpmnos-icon-execution-data-hide::before {
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 1px auto; /* matches the visual weight of the bpmn-font icons in the 22x22 entry */
+}
+
+.bpmnos-icon-execution-data-show::before {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.6 10.4a4.4 4.4 0 1 1 2.8 0'/%3E%3Cpath d='M6.6 10.4v1.8h2.8v-1.8M7 13.6h2'/%3E%3C/svg%3E");
+}
+
+.bpmnos-icon-execution-data-hide::before {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.6 10.4a4.4 4.4 0 1 1 2.8 0'/%3E%3Cpath d='M6.6 10.4v1.8h2.8v-1.8M7 13.6h2'/%3E%3Cpath d='M2.4 13.6 13.6 2.4' stroke='%23fff' stroke-width='3.2'/%3E%3Cpath d='M2.4 13.6 13.6 2.4' stroke-width='1.6'/%3E%3C/svg%3E");
+}

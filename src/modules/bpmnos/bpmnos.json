@@ -19,7 +19,18 @@
       ]
     },
     {
-      "name": "Decisions", 
+      "name": "AnnotationExtension",
+      "extends": [ "bpmn:TextAnnotation" ],
+      "properties": [
+        {
+          "name": "executionData",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "Decisions",
       "superClass": [ "Element" ],
       "properties": [
         {

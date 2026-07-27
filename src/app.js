@@ -26,6 +26,9 @@ import createToolbar from 'bpmn-workbench/toolbar'; // on-canvas file/view toolb
 import BPMNOSModdleDescriptor from './modules/bpmnos/bpmnos.json';
 import BPMNOSModule from './modules/bpmnos'; // moddle-backed properties panel, decision-task decorator + popup menu
 
+// Execution data boxes: a marked bpmn:TextAnnotation per element, attached by an association
+import ExecutionDataModule from './modules/bpmnos/execution-data';
+
 import newDiagram from './newDiagram.bpmn?raw';
 
 import ContextPadCompatModule from './context-pad-compat'; // shim bpmn-js's deprecated ContextPad#getPad call
@@ -62,6 +65,7 @@ var modeler = new BpmnModeler({
   additionalModules: [
     BpmnPropertiesPanelModule,
     BPMNOSModule,
+    ExecutionDataModule,
     SidePanelModule,
     LintModule,
     IssuesPanelModule,
