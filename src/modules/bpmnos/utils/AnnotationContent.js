@@ -18,7 +18,8 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
  */
 export function getAnnotationContent(host, executionData, collapsedGroup = () => false) {
   const {
-    status, data, globals, conditions, timer, choices, operators, messages, signal
+    status, data, globals, conditions, timer, choices, operators, messages, signal,
+    entryRestrictions, completionRestrictions, exitRestrictions
   } = executionData.get(host);
 
   // what counts as declared here: the element, and for a pool the process it refers to
@@ -44,6 +45,19 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
   // kinds the element carries itself: nothing to fold, so they have no inherited half
   const own = (label, items) => ({ label, key: label.toLowerCase(), group: 'sequence', inherited: [], own: items });
 
+  // restrictions fold like attributes do: what the node inherits behind a chevron, what it declares in view
+  const checkpoint = (label, key, restrictions) => ({
+    label,
+    key,
+    group: 'sequence',
+    inherited: restrictions
+      .filter(restriction => !ownIds.includes(restriction.declaringElement))
+      .map(restriction => restrictionItem(restriction)),
+    own: restrictions
+      .filter(restriction => ownIds.includes(restriction.declaringElement))
+      .map(restriction => restrictionItem(restriction))
+  });
+
   // Two halves, told apart by a double rule: what a token here carries — a set, in declaration order — and
   // then what happens at the node, read top to bottom as the token's passage through it.
   const compartments = [
@@ -52,7 +66,10 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
     compartment('Globals', 'globals', globals),
     own('Conditions', conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
     own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
-    ...exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup)
+    checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions),
+    ...exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup),
+    checkpoint('Completion restrictions', 'completionRestrictions', completionRestrictions),
+    checkpoint('Exit restrictions', 'exitRestrictions', exitRestrictions)
   ];
 
   return {
@@ -147,6 +164,17 @@ function exchange(definition, collapsedGroup) {
     ...group('header', definition.parameters || [], [ 'name', 'value' ]),
     ...group('content', definition.contents || [], [ 'key', 'attribute' ])
   ];
+}
+
+/**
+ * A restriction is shown as written, with nothing said about its scope: the compartment it sits in is when
+ * it is checked, and a full-scope one sits in all three.
+ */
+function restrictionItem(restriction) {
+  return {
+    type: '',
+    text: restriction.expression || restriction.id
+  };
 }
 
 // a pool is titled by the process it refers to — a participant id is never shown

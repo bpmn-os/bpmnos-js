@@ -73,6 +73,13 @@ async function collectModel(page, diagram) {
       declaringElement: a.declaringElement
     });
 
+    const restriction = (r) => ({
+      id: r.id,
+      expression: r.expression,
+      scope: r.scope,
+      declaringElement: r.declaringElement
+    });
+
     // a message or signal, flattened: name, header parameters, and the contents mapping attributes to keys
     const exchange = (definition) => ({
       name: definition.name,
@@ -90,7 +97,8 @@ async function collectModel(page, diagram) {
       .filter((element) => element.type !== 'label')
       .map((element) => {
         const {
-          status, data, globals, conditions, timer, choices, operators, messages, signal
+          status, data, globals, conditions, timer, choices, operators, messages, signal,
+          entryRestrictions, completionRestrictions, exitRestrictions
         } = executionData.get(element);
 
         // a pool stands for the process it refers to: that process documents it, owns its attributes, and
@@ -111,6 +119,9 @@ async function collectModel(page, diagram) {
           conditions: conditions.map((c) => ({ id: c.id, expression: c.expression })),
           timer: timer.map((t) => ({ name: t.name, value: t.value })),
           choices: choices.map((c) => ({ id: c.id, condition: c.condition })),
+          entryRestrictions: entryRestrictions.map(restriction),
+          completionRestrictions: completionRestrictions.map(restriction),
+          exitRestrictions: exitRestrictions.map(restriction),
           operators: operators.map((o) => ({ id: o.id, expression: o.expression })),
           messages: messages.map(exchange),
           signal: signal.map(exchange),
@@ -176,6 +187,7 @@ function headingText(node) {
 function hasContent(node) {
   return !!(node.documentation || node.status.length || node.data.length || node.globals.length
     || node.conditions.length || node.timer.length || node.choices.length || node.operators.length
+    || node.entryRestrictions.length || node.completionRestrictions.length || node.exitRestrictions.length
     || node.messages.length || node.signal.length);
 }
 
@@ -211,6 +223,38 @@ function attributeItem(attribute, ownIds, anchors) {
   }
 
   return '- ' + parts.join(' ');
+}
+
+/**
+ * A restriction as written, naming its owner when it is inherited rather than declared here. Nothing is said
+ * about its scope: the section it sits in is when it is checked, and a full-scope one sits in all three.
+ */
+function restrictionItem(restriction, ownIds, anchors) {
+  const parts = [ '`' + (restriction.expression || restriction.id) + '`' ];
+
+  if (!ownIds.includes(restriction.declaringElement)) {
+    const owner = '`' + restriction.declaringElement + '`',
+          anchor = anchors.get(restriction.declaringElement);
+
+    parts.push(`(from ${anchor ? `[${owner}](#${anchor})` : owner})`);
+  }
+
+  return '- ' + parts.join(' ');
+}
+
+function restrictionSection(title, restrictions, ownIds, level, anchors, slug) {
+  if (!restrictions.length) {
+    return [];
+  }
+
+  slug(title);
+
+  return [
+    '#'.repeat(level) + ' ' + title,
+    '',
+    ...restrictions.map((r) => restrictionItem(r, ownIds, anchors)),
+    ''
+  ];
 }
 
 function listSection(title, items, level, slug) {
@@ -325,6 +369,7 @@ function render({ baseName, diagrams, model, anchors, register }) {
       ...section('Globals', rootNode.globals, rootNode.ids, 2, anchors, slug),
       ...listSection('Conditions', conditionLines(rootNode), 2, slug),
       ...listSection('Timer', timerLines(rootNode), 2, slug),
+      ...restrictionSection('Entry restrictions', rootNode.entryRestrictions, rootNode.ids, 2, anchors, slug),
       ...(rootNode.operatorsOnCompletion ? [] : [
         ...listSection('Choices', choiceLines(rootNode), 2, slug),
         ...listSection('Operators', operatorLines(rootNode), 2, slug)
@@ -334,7 +379,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
       ...(rootNode.operatorsOnCompletion ? [
         ...listSection('Choices', choiceLines(rootNode), 2, slug),
         ...listSection('Operators', operatorLines(rootNode), 2, slug)
-      ] : [])
+      ] : []),
+      ...restrictionSection('Completion restrictions', rootNode.completionRestrictions, rootNode.ids, 2, anchors, slug),
+      ...restrictionSection('Exit restrictions', rootNode.exitRestrictions, rootNode.ids, 2, anchors, slug)
     );
   }
 
@@ -357,6 +404,7 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...section('Globals', node.globals, node.ids, 3, anchors, slug),
         ...listSection('Conditions', conditionLines(node), 3, slug),
         ...listSection('Timer', timerLines(node), 3, slug),
+        ...restrictionSection('Entry restrictions', node.entryRestrictions, node.ids, 3, anchors, slug),
         ...(node.operatorsOnCompletion ? [] : [
           ...listSection('Choices', choiceLines(node), 3, slug),
           ...listSection('Operators', operatorLines(node), 3, slug)
@@ -366,7 +414,9 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...(node.operatorsOnCompletion ? [
           ...listSection('Choices', choiceLines(node), 3, slug),
           ...listSection('Operators', operatorLines(node), 3, slug)
-        ] : [])
+        ] : []),
+        ...restrictionSection('Completion restrictions', node.completionRestrictions, node.ids, 3, anchors, slug),
+        ...restrictionSection('Exit restrictions', node.exitRestrictions, node.ids, 3, anchors, slug)
       );
     });
 

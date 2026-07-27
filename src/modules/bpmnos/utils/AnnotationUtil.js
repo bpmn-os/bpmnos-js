@@ -41,7 +41,10 @@ export function getHost(box) {
 const COLLAPSED_BY_DEFAULT = {
   statusInherited: true,
   dataInherited: true,
-  globals: true
+  globals: true,
+  entryRestrictions: true,
+  completionRestrictions: true,
+  exitRestrictions: true
 };
 
 export function isCollapsed(box, key) {

@@ -50,7 +50,7 @@ export function collectExecutionData(definitions) {
 
   rootElements.forEach(rootElement => {
     if (is(rootElement, 'bpmn:Process')) {
-      collect(registry, rootElement, [], [], globals);
+      collect(registry, rootElement, [], [], globals, []);
     }
   });
 
@@ -58,13 +58,14 @@ export function collectExecutionData(definitions) {
   rootElements
     .filter(rootElement => is(rootElement, 'bpmn:Collaboration'))
     .forEach(collaboration => {
-      record(registry, collaboration, [], [], globals);
+      record(registry, collaboration, [], [], globals, [], []);
 
       (collaboration.get('participants') || []).forEach(participant => {
         const processRef = participant.get('processRef'),
               visible = processRef && registry.byElement.get(processRef.id);
 
-        record(registry, participant, visible ? visible.status : [], visible ? visible.data : [], globals);
+        record(registry, participant, visible ? visible.status : [], visible ? visible.data : [], globals,
+          [], visible ? visible.ownRestrictions : []);
       });
     });
 
@@ -72,33 +73,50 @@ export function collectExecutionData(definitions) {
 }
 
 // walk a scope, handing its declarations down to everything it contains
-function collect(registry, scope, inheritedStatus, inheritedData, globals) {
+function collect(registry, scope, inheritedStatus, inheritedData, globals, inheritedRestrictions) {
   const status = inheritedStatus.concat(attributesOf(getStatus(scope), 'status', scope)),
         data = inheritedData.concat(dataOf(scope));
 
-  record(registry, scope, status, data, globals);
+  const own = restrictionsOf(scope);
+
+  record(registry, scope, status, data, globals, inheritedRestrictions, own);
+
+  // what the scope hands down: the full-scope restrictions it declares, on top of what it inherited itself
+  // — unless it is a scope its content does not inherit through, which keeps only its own
+  const handedDown = (breaksInheritance(scope) ? [] : inheritedRestrictions)
+    .concat(own.filter(restriction => restriction.scope === 'full'));
 
   (scope.get('flowElements') || []).forEach(flowElement => {
     if (isScope(flowElement)) {
-      collect(registry, flowElement, status, data, globals);
+      collect(registry, flowElement, status, data, globals, handedDown);
     } else if (is(flowElement, 'bpmn:Activity')) {
 
       // an activity declares status of its own but contains no data objects
       record(registry, flowElement, status.concat(attributesOf(getStatus(flowElement), 'status', flowElement)),
-        data, globals);
+        data, globals, handedDown, restrictionsOf(flowElement));
     } else {
-      record(registry, flowElement, status, data, globals);
+      record(registry, flowElement, status, data, globals, handedDown, restrictionsOf(flowElement));
     }
   });
 
-  (scope.get('artifacts') || []).forEach(artifact => record(registry, artifact, status, data, globals));
+  (scope.get('artifacts') || []).forEach(artifact =>
+    record(registry, artifact, status, data, globals, handedDown, []));
 }
 
-function record(registry, businessObject, status, data, globals) {
+function record(registry, businessObject, status, data, globals, inheritedRestrictions, ownRestrictions) {
   registry.byElement.set(businessObject.id, {
     status,
     data,
     globals,
+
+    // one list per checkpoint, inherited first as with attributes; a full-scope restriction is checked at
+    // every one of them and therefore appears in all three
+    entryRestrictions: checkedAt('entry', inheritedRestrictions, ownRestrictions),
+    completionRestrictions: checkedAt('completion', inheritedRestrictions, ownRestrictions),
+    exitRestrictions: checkedAt('exit', inheritedRestrictions, ownRestrictions),
+
+    // what the element hands down, kept for the pool that stands for a process
+    ownRestrictions,
 
     // kinds an element carries itself, read straight off it
     conditions: conditionsOf(businessObject),
@@ -117,6 +135,79 @@ function record(registry, businessObject, status, data, globals) {
     elements.push(businessObject.id);
     registry.elementsById.set(attribute.id, elements);
   });
+}
+
+/**
+ * The restrictions checked at one of the three checkpoints: the element's own restrictions of that scope
+ * and its own full-scope ones, preceded by the full-scope restrictions it inherits.
+ *
+ * That is what the engine checks (`ExtensionElements::feasibleEntry` and its two siblings, each ending in
+ * `satisfiesInheritedRestrictions`): a descendant re-checks only its ancestors' full-scope restrictions,
+ * never their entry, completion or exit ones.
+ */
+function checkedAt(scope, inheritedRestrictions, ownRestrictions) {
+  const own = ownRestrictions.filter(restriction =>
+    restriction.scope === scope || restriction.scope === 'full');
+
+  if (!inheritedRestrictions.length && !own.length) {
+    return [];
+  }
+
+  return [ ...inheritedRestrictions, ...own ];
+}
+
+/**
+ * The restrictions an element declares: `bpmnos:status/restrictions/restriction`, each an id, an expression
+ * and a scope.
+ *
+ * The scope defaults to full and falls back to it for anything unrecognised, as the engine does
+ * (`Restriction.cpp:9-24`). Note that the XSD lists entry, exit and full only while the parser also accepts
+ * completion, so a model may carry a scope its schema does not.
+ */
+function restrictionsOf(businessObject) {
+  const status = getStatus(businessObject);
+
+  if (!status) {
+    return [];
+  }
+
+  return (status.get('restrictions') || [])
+    .flatMap(restrictions => restrictions.get('restriction') || [])
+    .map(restriction => {
+      const scope = restriction.get('scope');
+
+      return {
+        id: restriction.get('id'),
+        expression: restriction.get('expression'),
+        scope: [ 'entry', 'completion', 'exit' ].includes(scope) ? scope : 'full',
+        declaringElement: businessObject.id,
+        moddleElement: restriction
+      };
+    });
+}
+
+/**
+ * Whether a scope's content inherits restrictions from above it.
+ *
+ * It does not through an event sub-process started by an error or a compensate event, nor through an
+ * activity performed for compensation (`ExtensionElements.cpp:378-392`): such a scope is entered on a path
+ * of its own, where the conditions its surroundings impose no longer hold. Its own full-scope restrictions
+ * are still handed down.
+ */
+function breaksInheritance(businessObject) {
+  if (businessObject.get('isForCompensation')) {
+    return true;
+  }
+
+  if (!businessObject.get('triggeredByEvent')) {
+    return false;
+  }
+
+  const startEvent = (businessObject.get('flowElements') || []).find(flowElement =>
+    is(flowElement, 'bpmn:StartEvent'));
+
+  return Boolean(startEvent) && (startEvent.get('eventDefinitions') || []).some(definition =>
+    is(definition, 'bpmn:ErrorEventDefinition') || is(definition, 'bpmn:CompensateEventDefinition'));
 }
 
 /**
