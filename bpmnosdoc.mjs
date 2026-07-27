@@ -97,7 +97,7 @@ async function collectModel(page, diagram) {
       .filter((element) => element.type !== 'label')
       .map((element) => {
         const {
-          status, data, globals, conditions, timer, choices, operators, messages, signal,
+          status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal,
           entryRestrictions, completionRestrictions, exitRestrictions
         } = executionData.get(element);
 
@@ -118,6 +118,8 @@ async function collectModel(page, diagram) {
           globals: globals.map(attribute),
           conditions: conditions.map((c) => ({ id: c.id, expression: c.expression })),
           timer: timer.map((t) => ({ name: t.name, value: t.value })),
+          loop: loop.map((p) => ({ name: p.name, value: p.value })),
+          loopKind,
           choices: choices.map((c) => ({ id: c.id, condition: c.condition })),
           entryRestrictions: entryRestrictions.map(restriction),
           completionRestrictions: completionRestrictions.map(restriction),
@@ -186,7 +188,8 @@ function headingText(node) {
 
 function hasContent(node) {
   return !!(node.documentation || node.status.length || node.data.length || node.globals.length
-    || node.conditions.length || node.timer.length || node.choices.length || node.operators.length
+    || node.conditions.length || node.timer.length || node.loop.length
+    || node.choices.length || node.operators.length
     || node.entryRestrictions.length || node.completionRestrictions.length || node.exitRestrictions.length
     || node.messages.length || node.signal.length);
 }
@@ -318,6 +321,20 @@ function timerLines(node) {
   return node.timer.map((parameter) => `*${parameter.name}:* \`${parameter.value}\``);
 }
 
+/**
+ * How often the node runs: its own section between what it declares and what it does, since the parameters
+ * frame the whole passage rather than happening at a point in it. The heading names the kind, which is what
+ * says when they are read — a multi-instance cardinality before the instance tokens exist, a standard
+ * loop's condition and maximum after the exit restrictions have passed.
+ */
+function loopLines(node) {
+  return node.loop.map((parameter) => `*${parameter.name}:* \`${parameter.value}\``);
+}
+
+function loopTitle(node) {
+  return node.loopKind === 'multiInstance' ? 'Multi-instance' : 'Loop';
+}
+
 function section(title, attributes, ownIds, level, anchors, slug) {
   if (!attributes.length) {
     return [];
@@ -367,6 +384,7 @@ function render({ baseName, diagrams, model, anchors, register }) {
       ...section('Status', rootNode.status, rootNode.ids, 2, anchors, slug),
       ...section('Data', rootNode.data, rootNode.ids, 2, anchors, slug),
       ...section('Globals', rootNode.globals, rootNode.ids, 2, anchors, slug),
+      ...listSection(loopTitle(rootNode), loopLines(rootNode), 2, slug),
       ...listSection('Conditions', conditionLines(rootNode), 2, slug),
       ...listSection('Timer', timerLines(rootNode), 2, slug),
       ...restrictionSection('Entry restrictions', rootNode.entryRestrictions, rootNode.ids, 2, anchors, slug),
@@ -402,6 +420,7 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...section('Status', node.status, node.ids, 3, anchors, slug),
         ...section('Data', node.data, node.ids, 3, anchors, slug),
         ...section('Globals', node.globals, node.ids, 3, anchors, slug),
+        ...listSection(loopTitle(node), loopLines(node), 3, slug),
         ...listSection('Conditions', conditionLines(node), 3, slug),
         ...listSection('Timer', timerLines(node), 3, slug),
         ...restrictionSection('Entry restrictions', node.entryRestrictions, node.ids, 3, anchors, slug),

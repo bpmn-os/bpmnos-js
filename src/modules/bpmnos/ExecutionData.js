@@ -3,7 +3,7 @@ import { collectExecutionData } from './collectExecutionData.js';
 // what an element carrying no execution data reports
 const EMPTY = {
   status: [], data: [], globals: [],
-  conditions: [], timer: [], choices: [], operators: [], messages: [], signal: [],
+  conditions: [], timer: [], loop: [], loopKind: '', choices: [], operators: [], messages: [], signal: [],
   entryRestrictions: [], completionRestrictions: [], exitRestrictions: [], ownRestrictions: []
 };
 

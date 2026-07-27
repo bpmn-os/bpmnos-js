@@ -18,7 +18,7 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
  */
 export function getAnnotationContent(host, executionData, collapsedGroup = () => false) {
   const {
-    status, data, globals, conditions, timer, choices, operators, messages, signal,
+    status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal,
     entryRestrictions, completionRestrictions, exitRestrictions
   } = executionData.get(host);
 
@@ -45,6 +45,15 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
   // kinds the element carries itself: nothing to fold, so they have no inherited half
   const own = (label, items) => ({ label, key: label.toLowerCase(), group: 'sequence', inherited: [], own: items });
 
+  // how often the node runs, which frames everything below rather than happening at a point within it
+  const loopBand = {
+    label: loopKind === 'multiInstance' ? 'Multi-instance' : 'Loop',
+    key: 'loop',
+    group: 'loop',
+    inherited: [],
+    own: loop.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))
+  };
+
   // restrictions fold like attributes do: what the node inherits behind a chevron, what it declares in view
   const checkpoint = (label, key, restrictions) => ({
     label,
@@ -58,12 +67,17 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
       .map(restriction => restrictionItem(restriction))
   });
 
-  // Two halves, told apart by a double rule: what a token here carries — a set, in declaration order — and
-  // then what happens at the node, read top to bottom as the token's passage through it.
+  // Three registers, told apart by a double rule where one gives way to the next: what a token here carries
+  // — a set, in declaration order — then how often the node runs, then what happens at it, read top to
+  // bottom as the token's passage through it. The loop parameters are a band of their own because they
+  // frame the whole passage rather than happening at a point in it: a multi-instance cardinality is read
+  // before the instance tokens exist (`Token::advanceToReady`), a standard loop's condition and maximum
+  // after the exit restrictions have passed (`Token::advanceToExiting`), and the label says which it is.
   const compartments = [
     compartment('Status', 'statusInherited', status),
     compartment('Data', 'dataInherited', data),
     compartment('Globals', 'globals', globals),
+    loopBand,
     own('Conditions', conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
     own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
     checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions),

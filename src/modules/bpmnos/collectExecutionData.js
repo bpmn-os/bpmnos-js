@@ -121,6 +121,8 @@ function record(registry, businessObject, status, data, globals, inheritedRestri
     // kinds an element carries itself, read straight off it
     conditions: conditionsOf(businessObject),
     timer: timerOf(businessObject),
+    loop: loopOf(businessObject),
+    loopKind: loopKindOf(businessObject),
     choices: choicesOf(businessObject),
     operators: operatorsOf(businessObject),
     messages: messagesOf(businessObject),
@@ -297,6 +299,45 @@ function timerOf(businessObject) {
     declaringElement: businessObject.id,
     moddleElement: parameter
   }));
+}
+
+/**
+ * The loop parameters of an activity: `bpmnos:loopCharacteristics/parameter`, named `cardinality`, `index`,
+ * `condition` or `maximum` (`ExtensionElements.cpp:241-256`). Reported as declared, in document order —
+ * a name the engine does not know is a modelling error worth seeing.
+ */
+function loopOf(businessObject) {
+  const loopCharacteristics = getExtensionElementsList(businessObject, 'bpmnos:LoopCharacteristics')[0];
+
+  if (!loopCharacteristics) {
+    return [];
+  }
+
+  return (loopCharacteristics.get('parameter') || []).map(parameter => ({
+    name: parameter.get('name'),
+    value: parameter.get('value'),
+    declaringElement: businessObject.id,
+    moddleElement: parameter
+  }));
+}
+
+/**
+ * Which kind of loop the activity carries, which decides when the parameters are read: a multi-instance
+ * activity evaluates its cardinality as the activity is entered
+ * (`StateMachine::createMultiInstanceActivityTokens`), while a standard loop evaluates its condition and
+ * maximum in `Token::advanceToExiting`, after the exit restrictions have been checked.
+ *
+ * It comes from the BPMN loop characteristics, not from the BPMNOS parameters: without them the engine does
+ * not loop at all.
+ */
+function loopKindOf(businessObject) {
+  const loopCharacteristics = businessObject.get && businessObject.get('loopCharacteristics');
+
+  if (!loopCharacteristics) {
+    return '';
+  }
+
+  return is(loopCharacteristics, 'bpmn:MultiInstanceLoopCharacteristics') ? 'multiInstance' : 'standard';
 }
 
 /**
