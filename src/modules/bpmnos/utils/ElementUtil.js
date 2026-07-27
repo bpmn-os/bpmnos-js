@@ -2,7 +2,7 @@ import Ids from 'ids';
 
 import {
   is
-} from 'bpmn-js/lib/util/ModelUtil';
+} from 'bpmn-js/lib/util/ModelUtil.js';
 
 /**
  * Create a new element and set its parent.
