@@ -9,6 +9,11 @@ import {
 /**
  * The identifier registry as a diagram-js service: a thin adapter over `collectIdentifiers`.
  *
+ * The file is named for the class rather than for the service, unlike `ExecutionData` beside
+ * `execution-data`, because a service named by a single word would give a class file and a module file that
+ * differ only in case. Two such files are one file to a resolver that folds case, whether a bundler's or a
+ * filesystem's, and the module would then import itself.
+ *
  * All of the reading lives in that module, which is model-level and knows nothing of the canvas. This class
  * adds only what a modeller needs on top of it — keeping the collection current as the model is edited, and
  * announcing that it changed. A consumer without a modeller calls `collectIdentifiers(definitions)` and its
@@ -19,7 +24,7 @@ import {
  * from the registry is what makes a duplicate impossible rather than improbable, and the same registry is
  * what a field validating a typed identifier consults.
  */
-export default class Identifiers {
+export default class IdentifierRegistry {
   constructor(eventBus, bpmnjs) {
     this._bpmnjs = bpmnjs;
     this._eventBus = eventBus;
@@ -81,7 +86,7 @@ export default class Identifiers {
   }
 }
 
-Identifiers.$inject = [ 'eventBus', 'bpmnjs' ];
+IdentifierRegistry.$inject = [ 'eventBus', 'bpmnjs' ];
 
 // a diagram element, a business object and an id are all accepted, as elsewhere in this package
 function idOf(element) {

@@ -9,7 +9,7 @@ import {
   spacesOf
 } from '../src/modules/bpmnos/collectIdentifiers.js';
 
-import Identifiers from '../src/modules/bpmnos/Identifiers.js';
+import IdentifierRegistry from '../src/modules/bpmnos/IdentifierRegistry.js';
 
 import { eventBusStub, parse } from './helper.mjs';
 
@@ -176,7 +176,7 @@ describe('nextIdentifier', function() {
 /**
  * The service adds only currency to the collector: it holds no knowledge of a model of its own.
  */
-describe('Identifiers', function() {
+describe('IdentifierRegistry', function() {
   let definitions;
 
   before(async function() {
@@ -186,7 +186,7 @@ describe('Identifiers', function() {
   function create() {
     const eventBus = eventBusStub();
 
-    return { eventBus, identifiers: new Identifiers(eventBus, { getDefinitions: () => definitions }) };
+    return { eventBus, identifiers: new IdentifierRegistry(eventBus, { getDefinitions: () => definitions }) };
   }
 
   it('holds nothing until a model is imported', function() {
@@ -235,7 +235,7 @@ describe('Identifiers', function() {
   it('follows an element renamed', async function() {
     const model = await parse('job-shop-scheduling-problem');
     const eventBus = eventBusStub(),
-          identifiers = new Identifiers(eventBus, { getDefinitions: () => model });
+          identifiers = new IdentifierRegistry(eventBus, { getDefinitions: () => model });
 
     eventBus.fire('import.done');
 
@@ -256,7 +256,7 @@ describe('Identifiers', function() {
   it('follows a process renamed, and the pool that stands for it with it', async function() {
     const model = await parse('job-shop-scheduling-problem');
     const eventBus = eventBusStub(),
-          identifiers = new Identifiers(eventBus, { getDefinitions: () => model });
+          identifiers = new IdentifierRegistry(eventBus, { getDefinitions: () => model });
 
     eventBus.fire('import.done');
 
