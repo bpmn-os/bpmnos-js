@@ -149,12 +149,27 @@ export default function BPMNOSAnnotationRenderer(
         // a fold standing for a compartment is set as that compartment's label, the rest as apparatus
         const style = row.emphasis ? STYLES.label : STYLES.toggle;
 
+        // The caret is placed by its rightmost point rather than by its box or its tip. Pointing right that
+        // point is the tip itself, at (11.66, 8) of the 16-unit box; turned down it is the end of the right
+        // arm, at (13.24, 6), the tip having swung to the bottom. Anchoring the tip in both positions would
+        // hang the open mark four pixels low, and anchoring the box would misplace both.
+        //
+        // Sideways it keeps its ink centred in the space reserved for it, that ink being 8 by 8 about
+        // (6, 8) and about (8, 6) once turned.
+        const anchor = row.collapsed ? 8 : 6,
+              ink = row.collapsed ? { x: 6, y: 8 } : { x: 8, y: 6 };
+
+        // the row's text is centred as a line, descenders and all, so its letters read a little above the
+        // middle of the row; the tip follows them rather than the geometry
+        const middle = row.height / 2 - style.fontSize * 0.07;
+
         svgAttr(caret, {
           d: CARET,
           fill: style.fill,
           'fill-rule': 'evenodd',
-          transform: `translate(${left}, ${(row.height - CARET_SIZE) / 2}) scale(${scale}) ` +
-            `rotate(${row.collapsed ? 0 : 90} 8 8) rotate(-45 6 8)`
+          transform:
+            `translate(${left + CARET_SIZE / 2 - scale * ink.x}, ${middle - scale * anchor}) ` +
+            `scale(${scale}) rotate(${row.collapsed ? 0 : 90} 8 8) rotate(-45 6 8)`
         });
 
         svgAppend(group, caret);
