@@ -124,6 +124,24 @@ restriction, operator or choice that carries no expression, are shown by their i
 that identifier is standing in for something that ought to be there: the engine resolves an attribute by its
 name, and content without an expression says nothing at all.
 
+A box holds no text of its own. What it shows is drawn from the model each time it is rendered, and the
+annotation's text is never read, so a double click on a box does not open the label editor as it does on a
+text annotation of the user's own.
+
+The module exports one function beside itself, `annotationRole(element)`, answering what an element is to a
+box: `box`, `association`, `host` for an element that may carry one, and `null` for anything else. It is
+there for a host that permits some modelling of a box under conditions of its own — a workbench keeping the
+box alive while a simulation runs, where the rest of the canvas is read-only — so that the host may say what
+it permits of each kind without knowing how a box is put together.
+
+```js
+import AnnotationModule, { annotationRole } from 'bpmnos-js/annotation';
+import 'bpmnos-js/bpmnos.css';
+```
+
+The stylesheet carries the icons the modules draw with, the decision task's and the box's, and a host imports
+it as it imports bpmn-js's own.
+
 ## Demo modeller
 
 The demo wires the three modules into a bpmn-js modeller with the property panel and an Issues tab. The

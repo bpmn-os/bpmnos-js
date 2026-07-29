@@ -10,6 +10,7 @@
     "./decision-task": "./src/modules/bpmnos/decision-task.js",
     "./properties": "./src/modules/bpmnos/properties.js",
     "./annotation": "./src/modules/bpmnos/annotation.js",
+    "./bpmnos.css": "./src/modules/bpmnos/css/bpmnos.css",
     "./execution-data": "./src/modules/bpmnos/execution-data.js",
     "./collect-execution-data": "./src/modules/bpmnos/collectExecutionData.js",
     "./identifiers": "./src/modules/bpmnos/identifiers.js",

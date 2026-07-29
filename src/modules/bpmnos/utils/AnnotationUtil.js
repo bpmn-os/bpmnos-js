@@ -1,4 +1,4 @@
-import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
+import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil.js';
 
 // An execution data box is a plain bpmn:TextAnnotation marked with bpmnos:annotation, attached to the
 // element it describes by a bpmn:Association. The attribute's presence marks the annotation as ours; its
@@ -88,6 +88,29 @@ export function isProtectedAssociation(element, elements) {
 
   return elements.indexOf(element.target) === -1
     && elements.indexOf(getHost(element.target)) === -1;
+}
+
+/**
+ * What an element is to an execution data box: the box itself, the association tying one to its host, an
+ * element that may carry one, or none of the three.
+ *
+ * One question with one answer, so that a host may decide what it permits of a box without knowing how a box
+ * is put together. A host that keeps part of the modeller alive while a run is on, for instance, permits the
+ * creation of a box on a `host`, and moving, resizing and deleting a `box`, and needs nothing else from this
+ * module to say so.
+ *
+ * @return {'box'|'association'|'host'|null}
+ */
+export function annotationRole(element) {
+  if (isAnnotation(element)) {
+    return 'box';
+  }
+
+  if (isAnnotationAssociation(element)) {
+    return 'association';
+  }
+
+  return canHaveAnnotation(element) ? 'host' : null;
 }
 
 /**

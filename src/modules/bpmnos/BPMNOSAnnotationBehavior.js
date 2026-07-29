@@ -318,6 +318,16 @@ export default function BPMNOSAnnotationBehavior(
     return false;
   });
 
+  // A box holds no text of its own: what it shows is drawn from the model's execution data, and the
+  // annotation's `text` is never read. Label editing would therefore put a caret into content the user
+  // cannot change and, on committing, would write a text that nothing renders. Above bpmn-js's
+  // LabelEditingProvider, which is what a double click on an annotation would otherwise reach.
+  eventBus.on('element.dblclick', HIGH_PRIORITY, function(event) {
+    if (isAnnotation(event.element)) {
+      return false;
+    }
+  });
+
   // a hidden box must come back hidden
   eventBus.on('import.done', function() {
     elementRegistry.filter(isAnnotation).forEach(applyVisibility);
