@@ -22,15 +22,26 @@ import { is } from 'bpmnlint-utils';
  *
  * @param {ModdleElement} definitions  a `bpmn:Definitions`
  *
+ * An attribute is reached either through the element that sees it, which is `byElement`, or through its
+ * identifier, which is `byId` and `elementsById`. The second is bounded by the process, because an
+ * identifier is: every process declares its own `Instance` and `Timestamp`, so a map spanning the model
+ * would hold whichever process was walked last and would merge the elements of both under one identifier.
+ * Both are therefore keyed by the process first and by the identifier within it, and `processOf` says which
+ * process an element belongs to.
+ *
  * @return {{
  *   byElement: Map<String, { status: Array, data: Array, globals: Array }>,
- *   byId: Map<String, Object>,
- *   elementsById: Map<String, String[]>
+ *   processes: String[],
+ *   processOf: Map<String, String>,
+ *   byId: Map<String, Map<String, Object>>,
+ *   elementsById: Map<String, Map<String, String[]>>
  * }}
  */
 export function collectExecutionData(definitions) {
   const registry = {
     byElement: new Map(),
+    processes: [],
+    processOf: new Map(),
     byId: new Map(),
     elementsById: new Map(),
     tables: []
@@ -53,7 +64,15 @@ export function collectExecutionData(definitions) {
 
   rootElements.forEach(rootElement => {
     if (is(rootElement, 'bpmn:Process')) {
-      collect(registry, rootElement, [], [], globals, []);
+      registry.processes.push(rootElement.id);
+      registry.byId.set(rootElement.id, new Map());
+      registry.elementsById.set(rootElement.id, new Map());
+    }
+  });
+
+  rootElements.forEach(rootElement => {
+    if (is(rootElement, 'bpmn:Process')) {
+      collect(registry, rootElement, [], [], globals, [], rootElement.id);
     }
   });
 
@@ -61,28 +80,71 @@ export function collectExecutionData(definitions) {
   rootElements
     .filter(rootElement => is(rootElement, 'bpmn:Collaboration'))
     .forEach(collaboration => {
-      record(registry, collaboration, [], [], globals, [], []);
+      // the collaboration belongs to no one process, so what it declares is recorded in every one of them
+      record(registry, collaboration, [], [], globals, [], [], undefined);
 
       (collaboration.get('participants') || []).forEach(participant => {
         const processRef = participant.get('processRef'),
               visible = processRef && registry.byElement.get(processRef.id);
 
         record(registry, participant, visible ? visible.status : [], visible ? visible.data : [], globals,
-          [], visible ? visible.ownRestrictions : []);
+          [], visible ? visible.ownRestrictions : [], processRef && processRef.id);
       });
     });
 
   return registry;
 }
 
+/**
+ * The processes whose namespace an element's identifiers belong to.
+ *
+ * One for an element a process contains, and every one of them for an element that no process does, which is
+ * the collaboration and anything the walk did not reach: what is declared there is seen from everywhere.
+ */
+export function spacesOf(registry, elementId) {
+  const processId = registry.processOf.get(elementId);
+
+  return processId ? [ processId ] : registry.processes;
+}
+
+/**
+ * The attribute of the given identifier, as the element sees it.
+ *
+ * The element decides which process's namespace is consulted, since the same identifier denotes a different
+ * attribute in each. An element belonging to no process is answered from the first namespace that holds the
+ * identifier, there being nothing better to say.
+ *
+ * @param {Object} registry
+ * @param {String} elementId
+ * @param {String} id
+ */
+export function getAttribute(registry, elementId, id) {
+  for (const processId of spacesOf(registry, elementId)) {
+    const found = (registry.byId.get(processId) || new Map()).get(id);
+
+    if (found) {
+      return found;
+    }
+  }
+}
+
+/**
+ * The ids of the elements that see the attribute of the given identifier, within the namespace the element
+ * belongs to — what a `DataUpdate` resolves against.
+ */
+export function getElements(registry, elementId, id) {
+  return spacesOf(registry, elementId)
+    .flatMap(processId => (registry.elementsById.get(processId) || new Map()).get(id) || []);
+}
+
 // walk a scope, handing its declarations down to everything it contains
-function collect(registry, scope, inheritedStatus, inheritedData, globals, inheritedRestrictions) {
+function collect(registry, scope, inheritedStatus, inheritedData, globals, inheritedRestrictions, processId) {
   const status = inheritedStatus.concat(attributesOf(getStatus(scope), 'status', scope)),
         data = inheritedData.concat(dataOf(scope));
 
   const own = restrictionsOf(scope);
 
-  record(registry, scope, status, data, globals, inheritedRestrictions, own);
+  record(registry, scope, status, data, globals, inheritedRestrictions, own, processId);
 
   // what the scope hands down: the full-scope restrictions it declares, on top of what it inherited itself
   // — unless it is a scope its content does not inherit through, which keeps only its own
@@ -91,22 +153,23 @@ function collect(registry, scope, inheritedStatus, inheritedData, globals, inher
 
   (scope.get('flowElements') || []).forEach(flowElement => {
     if (isScope(flowElement)) {
-      collect(registry, flowElement, status, data, globals, handedDown);
+      collect(registry, flowElement, status, data, globals, handedDown, processId);
     } else if (is(flowElement, 'bpmn:Activity')) {
 
       // an activity declares status of its own but contains no data objects
       record(registry, flowElement, status.concat(attributesOf(getStatus(flowElement), 'status', flowElement)),
-        data, globals, handedDown, restrictionsOf(flowElement));
+        data, globals, handedDown, restrictionsOf(flowElement), processId);
     } else {
-      record(registry, flowElement, status, data, globals, handedDown, restrictionsOf(flowElement));
+      record(registry, flowElement, status, data, globals, handedDown, restrictionsOf(flowElement), processId);
     }
   });
 
   (scope.get('artifacts') || []).forEach(artifact =>
-    record(registry, artifact, status, data, globals, handedDown, []));
+    record(registry, artifact, status, data, globals, handedDown, [], processId));
 }
 
-function record(registry, businessObject, status, data, globals, inheritedRestrictions, ownRestrictions) {
+function record(registry, businessObject, status, data, globals, inheritedRestrictions, ownRestrictions,
+    processId) {
   registry.byElement.set(businessObject.id, {
     status,
     data,
@@ -133,13 +196,31 @@ function record(registry, businessObject, status, data, globals, inheritedRestri
     guidance: guidanceOf(businessObject)
   });
 
-  [ ...status, ...data, ...globals ].forEach(attribute => {
-    registry.byId.set(attribute.id, attribute);
+  if (processId) {
+    registry.processOf.set(businessObject.id, processId);
+  }
 
-    const elements = registry.elementsById.get(attribute.id) || [];
+  // an identifier is unique within its process and not beyond it, so an attribute is recorded in the
+  // namespace of the process declaring it; what the collaboration declares is seen from every process and is
+  // recorded in each
+  const spaces = processId ? [ processId ] : registry.processes;
 
-    elements.push(businessObject.id);
-    registry.elementsById.set(attribute.id, elements);
+  spaces.forEach(space => {
+    const byId = registry.byId.get(space),
+          elementsById = registry.elementsById.get(space);
+
+    if (!byId) {
+      return;
+    }
+
+    [ ...status, ...data, ...globals ].forEach(attribute => {
+      byId.set(attribute.id, attribute);
+
+      const elements = elementsById.get(attribute.id) || [];
+
+      elements.push(businessObject.id);
+      elementsById.set(attribute.id, elements);
+    });
   });
 }
 

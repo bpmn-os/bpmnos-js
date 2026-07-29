@@ -1,4 +1,9 @@
-import { collectExecutionData } from './collectExecutionData.js';
+import {
+  collectExecutionData,
+  getAttribute,
+  getElements,
+  spacesOf
+} from './collectExecutionData.js';
 
 // what an element carrying no execution data reports
 const EMPTY = {
@@ -64,17 +69,33 @@ export default class ExecutionData {
   }
 
   /**
-   * The attribute with the given id, ids being unique model-wide.
+   * The attribute of the given identifier, as the element sees it.
+   *
+   * An identifier is unique within a process and not beyond it, so the element is what says which process
+   * is meant: a collaboration holds one `Instance` and one `Timestamp` per participant, and asking for one
+   * without saying where would answer with whichever process was read last.
+   *
+   * @param {djs.model.Base|ModdleElement|String} element
+   * @param {String} id
    */
-  getAttribute(id) {
-    return this._registry.byId.get(id);
+  getAttribute(element, id) {
+    return getAttribute(this._registry, idOf(element), id);
   }
 
   /**
-   * The ids of the elements that see the given attribute — what a DataUpdate resolves against.
+   * The ids of the elements that see the attribute of the given identifier, within the process the element
+   * belongs to — what a `DataUpdate` resolves against.
    */
-  getElements(attributeId) {
-    return this._registry.elementsById.get(attributeId) || [];
+  getElements(element, id) {
+    return getElements(this._registry, idOf(element), id);
+  }
+
+  /**
+   * The ids of the processes whose namespace the element's identifiers belong to: the one containing it, or
+   * every one of them for an element belonging to none, the collaboration among them.
+   */
+  getProcesses(element) {
+    return spacesOf(this._registry, idOf(element));
   }
 
   /**
@@ -92,3 +113,8 @@ export default class ExecutionData {
 }
 
 ExecutionData.$inject = [ 'eventBus', 'bpmnjs' ];
+
+// a diagram element, a business object and an id are all accepted, as elsewhere in this package
+function idOf(element) {
+  return typeof element === 'string' ? element : element && element.id;
+}
