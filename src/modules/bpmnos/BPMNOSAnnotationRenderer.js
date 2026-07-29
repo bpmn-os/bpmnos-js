@@ -11,12 +11,33 @@ import BpmnRenderer from 'bpmn-js/lib/draw/BpmnRenderer';
 import { isAnnotation } from './utils/AnnotationUtil';
 import { layout, DOUBLE_GAP, PADDING_X } from './utils/AnnotationLayout';
 
+/**
+ * The disclosure caret of `bpmn-js-side-panel`, so a fold on the canvas is the same sign as a fold in the
+ * panel. The path is that component's own, a rounded corner turned by 45 degrees, and it points right while
+ * the group is folded and down while it is open, as the panel turns it by 90 degrees when it opens.
+ */
+const CARET = 'M10,12 L3,12 C2.44771525,12 2,11.5522847 2,11 C2,10.4477153 2.44771525,10 3,10 ' +
+  'L8,10 L8,5 C8,4.44771525 8.44771525,4 9,4 C9.55228475,4 10,4.44771525 10,5 L10,12 Z';
+
+const CARET_SIZE = 11,
+      CARET_GAP = 3;
+
 const STYLES = {
   title: { fontSize: 12, fontWeight: 'bold' },
-  label: { fontSize: 9, fill: '#777' },
+
+  // the kind a compartment holds — status, data, globals — set small and in capitals, so it names what
+  // follows without competing with it
+  label: { fontSize: 10, fill: '#555' },
+
+  // what a node declares: the name in black, the type beside it in dark italics
   item: { fontSize: 11 },
-  type: { fontSize: 11, fontStyle: 'italic', fill: '#8a8a8a' },
-  toggle: { fontSize: 10, fill: '#555' }
+  type: { fontSize: 11, fontStyle: 'italic', fill: '#555' },
+
+  // the folds, which are apparatus rather than content, and are therefore the lightest thing in the box
+  toggle: { fontSize: 10, fill: '#8a8a8a' },
+
+  // an identifier standing in for a name the model does not carry
+  fallback: { fontSize: 11, fill: '#cc0000' }
 };
 
 // between the type and the name it qualifies
@@ -120,7 +141,26 @@ export default function BPMNOSAnnotationRenderer(
 
         const { width } = textRenderer.getDimensions(row.type, { style: STYLES.type });
 
-        draw(row.text || '', STYLES.item, left + width + TYPE_GAP);
+        draw(row.text || '', row.fallback ? STYLES.fallback : STYLES.item, left + width + TYPE_GAP);
+      } else if (row.kind === 'toggle') {
+        const caret = svgCreate('path'),
+              scale = CARET_SIZE / 16;
+
+        // a fold standing for a compartment is set as that compartment's label, the rest as apparatus
+        const style = row.emphasis ? STYLES.label : STYLES.toggle;
+
+        svgAttr(caret, {
+          d: CARET,
+          fill: style.fill,
+          'fill-rule': 'evenodd',
+          transform: `translate(${left}, ${(row.height - CARET_SIZE) / 2}) scale(${scale}) ` +
+            `rotate(${row.collapsed ? 0 : 90} 8 8) rotate(-45 6 8)`
+        });
+
+        svgAppend(group, caret);
+
+        draw(row.emphasis ? (row.text || '').toUpperCase() : (row.text || ''), style,
+          left + CARET_SIZE + CARET_GAP);
       } else if (row.kind === 'title') {
 
         // the header is centred, which the left-aligned no-wrap box cannot do by itself
@@ -128,7 +168,25 @@ export default function BPMNOSAnnotationRenderer(
 
         draw(row.text || '', STYLES.title, Math.max(PADDING_X, (shape.width - width) / 2));
       } else {
-        draw(row.text || '', STYLES[row.kind], left);
+        // a compartment label is set in capitals; one subdued to a list within a list is not
+        const label = row.kind === 'label' && !row.subdued;
+
+        const text = label ? (row.text || '').toUpperCase() : (row.text || '');
+
+        const style = row.fallback
+          ? STYLES.fallback
+          : (row.subdued ? STYLES.toggle : STYLES[row.kind]);
+
+        draw(text, style, left);
+
+        // a row whose closing part alone stands in for a missing name, the objective term above all
+        if (row.fallbackText) {
+          const { width } = textRenderer.getDimensions(text, { style });
+
+          // the same gap that sets a type apart from the name it qualifies, since a trailing space in the
+          // text is not measured and the two runs would otherwise touch
+          draw(row.fallbackText, STYLES.fallback, left + width + TYPE_GAP);
+        }
       }
 
       svgAppend(parentNode, group);

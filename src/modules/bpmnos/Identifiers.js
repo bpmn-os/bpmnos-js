@@ -15,9 +15,9 @@ import {
  * query functions directly instead of going through here.
  *
  * It answers two questions, both bounded by the process that contains the element asked about: whether an
- * identifier is already taken, and what the next free identifier for a prefix is. Generation drawn from the
- * registry is what makes a duplicate impossible rather than improbable, and the same registry is what a
- * field validating a typed identifier consults.
+ * identifier is already taken, and what the next free identifier for a prefix is. Generating an identifier
+ * from the registry is what makes a duplicate impossible rather than improbable, and the same registry is
+ * what a field validating a typed identifier consults.
  */
 export default class Identifiers {
   constructor(eventBus, bpmnjs) {

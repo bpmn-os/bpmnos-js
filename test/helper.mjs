@@ -34,6 +34,56 @@ export async function parse(name) {
 }
 
 /**
+ * Every `bpmnos:` element of a kind, anywhere beneath a `bpmn:Definitions`, in document order.
+ *
+ * A test states what it needs by type rather than by walking the fixture, so that the fixture may be
+ * replaced without every test being rewritten around its shape.
+ *
+ * @param {ModdleElement} root
+ * @param {String} type
+ */
+export function findAll(root, type) {
+  return findWhere(root, moddleElement => moddleElement.$type === type);
+}
+
+/**
+ * The element of the given id, wherever it sits.
+ */
+export function findById(root, id) {
+  return findWhere(root, moddleElement => moddleElement.id === id)[0];
+}
+
+function findWhere(root, matches) {
+  const found = [], seen = new Set();
+
+  (function visit(moddleElement) {
+    if (!moddleElement || typeof moddleElement !== 'object' || seen.has(moddleElement)) {
+      return;
+    }
+
+    seen.add(moddleElement);
+
+    if (matches(moddleElement)) {
+      found.push(moddleElement);
+    }
+
+    Object.keys(moddleElement)
+      .filter(key => !key.startsWith('$'))
+      .forEach(key => {
+        const value = moddleElement[key];
+
+        if (Array.isArray(value)) {
+          value.forEach(visit);
+        } else if (value && typeof value === 'object' && value.$type) {
+          visit(value);
+        }
+      });
+  })(root);
+
+  return found;
+}
+
+/**
  * A stand-in for diagram-js's event bus, holding the listeners a service registers and recording what it
  * fires, which is what a service's reaction to an edit is tested through.
  */
@@ -43,9 +93,12 @@ export function eventBusStub() {
   return {
     fired,
 
-    on(events, callback) {
+    // diagram-js allows a priority between the event and the listener, which is accepted and ignored here
+    on(events, priority, callback) {
+      const listener = callback || priority;
+
       [].concat(events).forEach(event => {
-        listeners.set(event, (listeners.get(event) || []).concat(callback));
+        listeners.set(event, (listeners.get(event) || []).concat(listener));
       });
     },
 

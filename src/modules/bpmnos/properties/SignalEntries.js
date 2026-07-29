@@ -6,8 +6,7 @@ import { Content, ContentEntries } from './ContentEntries';
 import { Parameter, ParameterEntries } from './ParameterEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {

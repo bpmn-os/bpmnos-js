@@ -5,21 +5,16 @@ import {
 import GuidanceEntries from './GuidanceEntries';
 
 import {
-  createElement,
-  nextId
-} from '../utils/ElementUtil';
-
-import {
   getRelevantBusinessObject,
   getCustomItems,
   createCustomItem
 } from '../utils/CustomItemUtil';
 
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
+
 import {
   isMessageSupported
 } from '../utils/EventDefinitionUtil';
-
-import { without } from 'min-dash';
 
 
 // Creates guidance entry and returns { items, add }
@@ -84,19 +79,9 @@ function addFactory({ bpmnFactory, commandStack, element }) {
 function removeFactory({ commandStack, element, guidance }) {
   return function(event) {
     event.stopPropagation();
- 
-    const businessObject = getRelevantBusinessObject(element);
-    const extensionElements = businessObject.get('extensionElements');
 
-    let values = without(extensionElements.get('values'), guidance);
-
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: extensionElements,
-      properties: {
-        values: values
-      }
-    });
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, guidance));
   };
 }
 

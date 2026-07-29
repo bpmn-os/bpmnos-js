@@ -4,7 +4,11 @@ import {
 
 import { TextFieldEntry, SelectEntry } from '@bpmn-io/properties-panel';
 
+import { useCallback } from '@bpmn-io/properties-panel/preact/hooks';
+
 import { useService } from 'bpmn-js-properties-panel';
+
+import IdEntry from './IdEntry';
 
 import {
   createElement
@@ -22,9 +26,9 @@ export default function AttributeEntries(props) {
 
   const entries = [ {
     id: idPrefix + '-id',
-    component: AttributeId,
+    component: IdEntry,
     idPrefix,
-    attribute
+    item: attribute
   },{
     id: idPrefix + '-type',
     component: AttributeType,
@@ -48,41 +52,6 @@ export default function AttributeEntries(props) {
   } ];
 
   return entries;
-}
-
-function AttributeId(props) {
-  const {
-    idPrefix,
-    element,
-    attribute
-  } = props;
-
-  const commandStack = useService('commandStack');
-  const translate = useService('translate');
-  const debounce = useService('debounceInput');
-
-  const setValue = (value) => {
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: attribute,
-      properties: {
-        id: value
-      }
-    });
-  };
-
-  const getValue = () => {
-    return attribute.id;
-  };
-
-  return TextFieldEntry({
-    element: attribute,
-    id: idPrefix + '-id',
-    label: translate('Id'),
-    getValue,
-    setValue,
-    debounce
-  });
 }
 
 function AttributeName(props) {
@@ -188,12 +157,21 @@ function AttributeObjective(props) {
 //  const debounce = useService('debounceInput');
 
   const setValue = (value) => {
-    if ( value ) {
+
+    // an option carrying no value of its own is handed back by its label, so `none` arrives as a word and
+    // means what an empty selection means: the attribute contributes to no objective
+    if ( value && value != 'none' ) {
+
+      // an objective requires a weight, so one is given where the attribute carries none; a weight already
+      // set is kept, since changing between minimize and maximize says nothing about it
+      const weight = attribute.get('weight');
+
       commandStack.execute('element.updateModdleProperties', {
         element,
         moddleElement: attribute,
         properties: {
-          objective: value
+          objective: value,
+          weight: weight === undefined || weight === null || weight === '' ? '1' : weight
         }
       });
     }
@@ -210,12 +188,14 @@ function AttributeObjective(props) {
   };
 
   const getValue = () => {
-    return attribute.objective;
+
+    // a model may carry `objective="none"`, which the engine reads as no objective and which is shown as one
+    return attribute.objective == 'none' ? '' : attribute.objective;
   };
 
   const getOptions = (element) => {
     return [
-      { value: null, label: translate('none') },
+      { value: '', label: translate('none') },
       { value: 'minimize', label: translate('minimize') },
       { value: 'maximize', label: translate('maximize') }
     ];
@@ -245,7 +225,21 @@ function AttributeWeight(props) {
   const translate = useService('translate');
   const debounce = useService('debounceInput');
 
-  const setValue = (value) => {
+  const setValue = (value, error) => {
+
+    // what the check refuses never reaches the model, as with an identifier
+    if (error) {
+      return;
+    }
+
+    // the entry commits what it holds as it is removed, which happens exactly when the objective is cleared,
+    // so a weight is written only while there is an objective to weigh
+    const objective = attribute.get('objective');
+
+    if ( !objective || objective == 'none' ) {
+      return;
+    }
+
     commandStack.execute('element.updateModdleProperties', {
       element,
       moddleElement: attribute,
@@ -259,10 +253,29 @@ function AttributeWeight(props) {
     return attribute.weight;
   };
 
+  /**
+   * An attribute contributing to the objective is weighted, and the weight is a number.
+   *
+   * The engine multiplies the attribute's value by it (`Attribute.cpp`), so a missing or unreadable weight
+   * has no meaning; the entry is shown only while there is an objective, so the check applies exactly where
+   * a weight is required. It keeps its identity between renderings for the reason given in `IdEntry`: a
+   * check written afresh each time would clear its own message against the value the model still holds.
+   */
+  const validate = useCallback((value) => {
+    if ( value === undefined || value === null || String(value).trim() == "" ) {
+      return translate('Weight must not be empty.');
+    }
+
+    if ( !isFinite(Number(value)) ) {
+      return translate('Weight must be a number.');
+    }
+  }, [ translate ]);
+
   return TextFieldEntry({
     element: attribute,
     id: idPrefix + '-weight',
     label: translate('Weight'),
+    validate,
     getValue,
     setValue,
     debounce

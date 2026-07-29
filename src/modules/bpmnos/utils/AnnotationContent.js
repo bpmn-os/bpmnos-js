@@ -93,7 +93,7 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
     compartment('Globals', 'globals', globals),
     loopBand,
     own(isFlow ? 'Gatekeeper' : 'Conditions',
-      conditions.map(condition => ({ type: '', text: condition.expression || condition.id }))),
+      conditions.map(condition => expressionItem(condition, condition.expression))),
     own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
     ...(isFlow ? [] : [ checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions) ]),
     ...exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup),
@@ -125,8 +125,8 @@ function exchangeAndOperators(host, choices, operators, messages, signal, collap
 
   // a choice is made before the operators that use what was chosen
   const applied = [
-    own('Choices', choices.map(choice => ({ type: '', text: choice.condition || choice.id }))),
-    own('Operators', operators.map(operator => ({ type: '', text: operator.expression || operator.id })))
+    own('Choices', choices.map(choice => expressionItem(choice, choice.condition))),
+    own('Operators', operators.map(operator => expressionItem(operator, operator.expression)))
   ];
 
   const exchanges = [
@@ -177,7 +177,8 @@ function exchange(definition, collapsedGroup) {
       kind: 'toggle',
       key,
       type: '',
-      text: `${collapsed || !entries.length ? '▸' : '▾'} ${label} (${entries.length})`
+      text: `${label} (${entries.length})`,
+      collapsed: collapsed || !entries.length
     };
 
     if (collapsed || !entries.length) {
@@ -222,18 +223,26 @@ function guidanceCompartments(guidance) {
     key: `guidance:${definition.type}`,
     group: 'guidance',
     foldsWhole: true,
+
+    // guidance names itself as a compartment does, while the kinds it holds are set lighter beneath it: the
+    // fold is the heading here, and what it holds is a list within a list
+    emphasis: true,
     count: null,
     inherited: [],
     own: [
       ...group('Attributes', definition.attributes, attribute => [
-        { type: attribute.type || '', text: (attribute.name || attribute.id || '').trim() },
-        ...objectiveTerm(attribute)
+        {
+          type: attribute.type || '',
+          text: (attribute.name || attribute.id || '').trim(),
+          fallback: !(attribute.name || '').trim()
+        },
+        ...objectiveTerm(attribute, undefined, !(attribute.name || '').trim())
       ]),
       ...group('Operators', definition.operators, operator => [
-        { type: '', text: operator.expression || operator.id }
+        expressionItem(operator, operator.expression)
       ]),
       ...group('Restrictions', definition.restrictions, restriction => [
-        { type: '', text: restriction.expression || restriction.id }
+        expressionItem(restriction, restriction.expression)
       ])
     ]
   }));
@@ -245,7 +254,7 @@ function group(label, entries, item) {
     return [];
   }
 
-  return [ { kind: 'label', text: label }, ...entries.flatMap(item) ];
+  return [ { kind: 'label', text: label, subdued: true }, ...entries.flatMap(item) ];
 }
 
 /**
@@ -253,9 +262,23 @@ function group(label, entries, item) {
  * it is checked, and a full-scope one sits in all three.
  */
 function restrictionItem(restriction) {
+  return expressionItem(restriction, restriction.expression);
+}
+
+/**
+ * What a piece of content is shown as, and whether that is a stand-in.
+ *
+ * A restriction, an operator, a choice and a condition are shown as the expression they carry. Where a model
+ * carries none, the identifier stands in for it so that the entry is not blank, and is marked as the mistake
+ * it is: an expression is the whole of what such content says, and one without it does nothing.
+ */
+function expressionItem(content, expression) {
+  const written = (expression || '').trim();
+
   return {
     type: '',
-    text: restriction.expression || restriction.id
+    text: written || content.id,
+    fallback: !written
   };
 }
 
@@ -278,7 +301,13 @@ function titleOf(host) {
  * An attribute contributing to the objective is followed by its term.
  */
 function item(attribute, ownIds) {
-  const raw = (attribute.name || attribute.id).trim(),
+  const named = (attribute.name || '').trim();
+
+  // an attribute the engine cannot use, since it resolves an attribute by name; the identifier stands in for
+  // it so that the entry is not blank, and is marked as the mistake it is
+  const fallback = !named;
+
+  const raw = named || attribute.id,
         separator = raw.indexOf(':=');
 
   const initialized = separator !== -1 && ownIds.includes(attribute.declaringElement),
@@ -287,14 +316,15 @@ function item(attribute, ownIds) {
   return [
     {
       type: attribute.type || '',
-      text: initialized ? raw : name
+      text: initialized ? raw : name,
+      fallback
     },
-    ...objectiveTerm(attribute, name)
+    ...objectiveTerm(attribute, name, fallback)
   ];
 }
 
 /**
- * The objective term an attribute contributes: `→ minimize 1 * distance`.
+ * The objective term an attribute contributes: `➔ minimize 1 * distance`.
  *
  * Shown wherever the attribute is listed, as its type is, because the objective belongs to the attribute
  * rather than to the node reading it — unlike the initialization, which happens at the declaring element
@@ -305,7 +335,7 @@ function item(attribute, ownIds) {
  * is required whenever there is an objective; when a model omits it, the term is shown without one rather
  * than inventing a factor.
  */
-function objectiveTerm(attribute, name) {
+function objectiveTerm(attribute, name, fallback) {
   const objective = attribute.objective;
 
   if (!objective || objective === 'none') {
@@ -316,9 +346,15 @@ function objectiveTerm(attribute, name) {
     ? ''
     : `${attribute.weight} * `;
 
+  const named = name || attribute.name;
+
   return [ {
     type: '',
-    text: `→ ${objective} ${factor}${name || attribute.name || attribute.id}`,
+
+    // the term ends in the attribute it weighs, and only that is the identifier standing in for a name, so
+    // the term itself reads as any other while the stand-in alone is marked
+    text: fallback ? `\u2794 ${objective} ${factor}`.trimEnd() : `\u2794 ${objective} ${factor}${named}`,
+    fallbackText: fallback ? attribute.id : '',
     indent: 1
   } ];
 }

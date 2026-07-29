@@ -6,6 +6,8 @@ import { TextFieldEntry, SelectEntry, ListEntry } from '@bpmn-io/properties-pane
 
 import { useService } from 'bpmn-js-properties-panel';
 
+import IdEntry from './IdEntry';
+
 import { Parameter, ParameterEntries } from './ParameterEntries';
 
 import {
@@ -24,9 +26,9 @@ export default function TableEntries(props) {
 
   const entries = [ {
     id: idPrefix + '-id',
-    component: TableId,
+    component: IdEntry,
     idPrefix,
-    table
+    item: table
   },{
     id: idPrefix + '-source',
     component: TableSource,
@@ -45,41 +47,6 @@ export default function TableEntries(props) {
   } ];
 
   return entries;
-}
-
-function TableId(props) {
-  const {
-    idPrefix,
-    element,
-    table
-  } = props;
-
-  const commandStack = useService('commandStack');
-  const translate = useService('translate');
-  const debounce = useService('debounceInput');
-
-  const setValue = (value) => {
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: table,
-      properties: {
-        id: value
-      }
-    });
-  };
-
-  const getValue = () => {
-    return table.id;
-  };
-
-  return TextFieldEntry({
-    element: table,
-    id: idPrefix + '-id',
-    label: translate('Id'),
-    getValue,
-    setValue,
-    debounce
-  });
 }
 
 function TableSource(props) {

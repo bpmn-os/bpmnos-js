@@ -41,8 +41,19 @@ export function layout(box, executionData) {
       rows.push({
         kind: item.kind || 'item',
         key: item.key,
+
+        // a fold's own state, which the renderer turns into the direction of its caret
+        collapsed: item.collapsed || false,
         type: item.type,
         text: item.text,
+
+        // an entry standing in for a name the model does not carry, which the renderer marks; where only
+        // part of the row stands in, that part follows the text and is marked alone
+        fallback: item.fallback || false,
+        fallbackText: item.fallbackText || '',
+
+        // a label set lighter than a compartment's own, as the kinds within a guidance are
+        subdued: item.subdued || false,
         indent: item.indent || 0,
         y,
         height: ITEM_HEIGHT
@@ -92,7 +103,11 @@ export function layout(box, executionData) {
       rows.push({
         kind: 'toggle',
         key: compartment.key,
-        text: `${collapsed ? '▸' : '▾'} ${label}`,
+        text: label,
+        collapsed,
+
+        // a fold that stands for a compartment is set as a compartment label rather than as apparatus
+        emphasis: Boolean(compartment.emphasis),
         y,
         height: LABEL_HEIGHT
       });
@@ -109,7 +124,8 @@ export function layout(box, executionData) {
         rows.push({
           kind: 'toggle',
           key: compartment.key,
-          text: `${collapsed ? '▸' : '▾'} inherited (${inheritedCount})`,
+          text: `inherited (${inheritedCount})`,
+          collapsed,
           y,
           height: ITEM_HEIGHT
         });
@@ -129,7 +145,8 @@ export function layout(box, executionData) {
         rows.push({
           kind: 'toggle',
           key: compartment.ownKey,
-          text: `${ownCollapsed ? '▸' : '▾'} owned (${ownCount})`,
+          text: `owned (${ownCount})`,
+          collapsed: ownCollapsed,
           y,
           height: ITEM_HEIGHT
         });

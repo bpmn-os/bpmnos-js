@@ -10,14 +10,15 @@ import { useService } from 'bpmn-js-properties-panel';
 import { getStatus } from '../utils/StatusUtil';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
   getCustomItem,
   ensureCustomItem
 } from '../utils/CustomItemUtil';
+
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 import {
   isTimerSupported
@@ -120,7 +121,22 @@ function TimerParameterValue(props) {
   const bpmnFactory = useService('bpmnFactory');
 
   const setValue = (value) => {
-    const timer = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Timer'); 
+
+    // a timer whose trigger is cleared says nothing, so it is removed rather than left empty, and an empty
+    // value never brings one into being
+    if ( !value || !value.trim() ) {
+      const existing = getCustomItem( element, 'bpmnos:Timer' );
+      const declared = existing && existing.parameter ? existing.get('parameter')[0] : undefined;
+
+      if ( declared ) {
+        commandStack.execute('properties-panel.multi-command-executor',
+          removeCustomItemCommands(element, declared));
+      }
+
+      return;
+    }
+
+    const timer = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Timer');
 
     let parameter = timer.parameter ? timer.get('parameter')[0] : undefined;
     if ( !parameter ) {

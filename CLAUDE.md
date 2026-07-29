@@ -53,7 +53,8 @@ what caught every registry defect so far. Its output directory `doc/` is gitigno
 for optimization and simulation), for any bpmn-js host. Exposed via the package `exports` map:
 
 - **`.`** — the full BPMNOS DI module: the decision-task decorator + activity replace menu, the
-  properties panel, and the extension-element id replacer (`ReplaceIds`).
+  properties panel, and the naming of pasted extension content (`PasteIdentifiers`, service
+  `pasteIdentifiers`; was `ReplaceIds`/`replaceIds`).
 - **`./moddle`** (`bpmnos.json`) — the `bpmnos:` moddle extension (decisions, attributes, restrictions,
   operators, messages, guidance, lookup tables, etc.).
 - **`./decision-task`** — the decision-task renderer + `ActivityPopupMenu` (the type-change funnel and the
@@ -106,6 +107,38 @@ This is what keeps the modules publishable under any bundler; do not reintroduce
 `parent` is not set — so `BPMNOSPropertiesProvider` stays a normal properties-panel provider yet appears
 in the side panel. The **Issues tab** comes from `bpmn-workbench/issues` (self-registering).
 
+**Pasted identifiers** (`src/modules/bpmnos/PasteIdentifiers.js`). Runs at **paste**, not at copy, on
+`copyPaste.pasteElement` at priority 500 (after bpmn-js's handler, which is what produces
+`descriptor.businessObject`), with the target taken from `descriptor.parent` or the paste root captured at
+`copyPaste.pasteElements`. Keeps an identifier free in the target process and replaces only one it holds,
+generating the replacement from the prefix up to the last `_`. A `claimed` set spans the paste, since the
+registry is not rebuilt between one descriptor and the next. Testable under `node --test`
+(`test/paste.test.mjs`) because it imports no bpmn-js. The predecessor `ReplaceIds` was **broken**, not
+merely blind: it intercepted `moddleCopy.canCopyProperty` and returned `{ ...values }`, a shallow array over
+the *same* moddle objects, so a copy shared the original's content (`status === status`) and the rewrite
+renamed the **original's** identifiers on Ctrl+C. Dropping the interception is what restores bpmn-js's own
+deep copy (`ModdleCopy.copyProperty` recurses into model elements); bpmn-js leaves BPMNOS identifiers alone
+only because `bpmnos:Attribute.id` is a plain `String` attribute rather than `isId`.
+
+**Extension content containers** (`src/modules/bpmnos/utils/RemovalUtil.js`). `removeCustomItemCommands`
+returns the commands that remove a piece of content **and every container it leaves empty**, walking up
+`$parent` from the content to `bpmn:ExtensionElements` and stopping at the first container that still holds
+something. A container goes when every list of it would be empty **and** it holds no value of its own —
+derived from `$descriptor.properties` and the values set, not from a list of types, so `bpmnos:Status` and
+`bpmnos:Attributes` go while a `bpmnos:Guidance` (type) or `bpmnos:Message` (name, id) stays. Note
+`bpmn:ExtensionElements` itself declares `valueRef`/`extensionAttributeDefinition` per the BPMN spec, which
+is why the test is *holds* a value rather than *can hold* one. Commands are returned, not executed, so a
+caller appends them to its own and the whole removal is **one undo step**. Every remove factory in
+`properties/` calls it; the old hand-written variants each got the pruning subtly differently and one
+(`TableHandler`) wiped the element's entire `extensionElements`. Model-level (no bpmn-js import), hence
+tested under `node --test` in `test/removal.test.mjs`.
+
+**Type change** (`BPMNOSPropertiesUpdater.js`). An **event** that loses its message/timer event definition
+loses *all* extension content (`removeExtensionElements`) — deliberate: a changed element needs a different
+set and there is no reliable way to tell what is still meant. An **activity** keeps `bpmnos:Status`
+(attributes/restrictions/operators are valid on any activity) and loses only type-specific content, its
+choices and `bpmnos:Messages`.
+
 **Execution data registry** (`src/modules/bpmnos/ExecutionData.js`). Built from the moddle tree, so
 declaration order *is* document order. Per element it holds ordered `status`, `data` and `globals`, each
 entry naming its `declaringElement` (so "own" is `declaringElement === element.id`), plus `id → attribute`
@@ -121,13 +154,31 @@ process.**
 **Annotation box** (`src/modules/bpmnos/BPMNOSAnnotation*.js`). A `bpmn:TextAnnotation` marked
 `bpmnos:annotation="visible|hidden"`, attached to its element by a `bpmn:Association` — so dragging,
 west/east resizing, position and size come from bpmn-js and persist as ordinary BPMN DI, and the box
-appears in SVG exports. Content is derived at draw time and never stored; `bpmn:text` is the user's alone,
+appears in SVG exports. Content is derived when the box is rendered and never stored; `bpmn:text` is the user's alone,
 neither written nor read by us. The marker's value carries visibility, applied through diagram-js's
 `element.hidden`, which leaves geometry untouched so a hidden box returns exactly where it was. Height
 follows content and grows *away* from the host (a box above keeps its bottom edge, one below its top edge,
 one beside it its centre). Only the header drags; below it the mousedown is suppressed so it cannot
-swallow the click that folds a group. Inherited entries fold behind a chevron, collapsed by default,
+swallow the click that folds a group. Inherited entries fold behind a caret, collapsed by default,
 session-only state on the element.
+
+**Annotation box presentation.** Three greys and black: compartment labels (`STATUS`, `DATA`, guidance)
+10px dark `#555`, **uppercased at render time** so the model keeps its own casing (bpmnosdoc included);
+folds (`inherited (n)`, `owned (n)`) 10px light `#8a8a8a`; an attribute's type 11px dark italic, its name
+11px black; a stand-in identifier `#cc0000`. Guidance flips the two: the compartment fold is `emphasis`
+(drawn as a label), the `Attributes`/`Operators`/`Restrictions` within it are `subdued` (drawn as folds, not
+uppercased). The disclosure mark is `bpmn-js-side-panel`'s **caret path**, not a character — font-independent
+and it survives SVG export — rotated 90° when open. A row may carry `fallback` (the whole run is red) or
+`fallbackText` (only that trailing run is, used by the objective term, offset by `TYPE_GAP` because a
+trailing space is not measured). The objective arrow is U+2794 in the box and in `bpmnosdoc`.
+
+**Objective and weight** (`properties/AttributeEntries.js`). Two traps, both found by running it: the `none`
+option carries no value, so the browser hands back its **label** — `setValue` must treat `'none'` as
+clearing, and `getValue` maps a stored `objective="none"` to the empty selection. And `TextfieldEntry`
+**commits its value as it unmounts**, which is exactly when clearing the objective removes the weight entry,
+so the weight setter returns early unless an objective is present. A `validate` must be `useCallback`-stable
+or the panel's effect re-validates the *model's* (still valid) value on the next render and wipes the message
+— the same reason `IdEntry` memoises its check, and why a refused value shows an error at all.
 
 **Linting** is bpmnlint via `bpmn-js-bpmnlint` (`linting: { bpmnlint: getRules() }`). `src/modules/rules`
 composes the set: `rules.json` is the source of truth, mapping each rule **locator** to severity +

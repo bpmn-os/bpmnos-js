@@ -5,8 +5,7 @@ import {
 import AttributeEntries from './AttributeEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -15,7 +14,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 
 // Creates attributes entry and returns { items, add }
@@ -39,7 +38,8 @@ export function attributeHandler({ element, injector }) {
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
-        commandStack = injector.get('commandStack');
+        commandStack = injector.get('commandStack'),
+        identifiers = injector.get('identifiers');
 
   let attributes  = undefined;
   if ( dataElement || collaboration ) {
@@ -62,17 +62,17 @@ export function attributeHandler({ element, injector }) {
         attribute
       }),
       autoFocusEntry: id + '-name',
-      remove: removeFactory({ commandStack, element, attribute, dataElement, collaboration })
+      remove: removeFactory({ commandStack, element, attribute, dataElement })
     };
   });
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element, dataElement, collaboration })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element, dataElement, collaboration })
   };
 }
 
 // ADD FACTORY //
-function addFactory({ bpmnFactory, commandStack, element, dataElement, collaboration }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element, dataElement, collaboration }) {
   return function(event) {
     event.stopPropagation();
 
@@ -97,7 +97,7 @@ function addFactory({ bpmnFactory, commandStack, element, dataElement, collabora
     }
 
     // create 'bpmnos:Attribute'
-    const attribute = createElement('bpmnos:Attribute', { id: nextId('Attribute_') , type: 'decimal' }, attributes, bpmnFactory);
+    const attribute = createElement('bpmnos:Attribute', { id: identifiers.nextId(element, 'Attribute_') , type: 'decimal' }, attributes, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -118,54 +118,9 @@ function addFactory({ bpmnFactory, commandStack, element, dataElement, collabora
 }
 
 // REMOVE FACTORY //
-function removeFactory({ commandStack, element, attribute, dataElement, collaboration }) {
+function removeFactory({ commandStack, element, attribute, dataElement }) {
   return function(event) {
     event.stopPropagation();
-
-    const commands = [];
-
-    const businessObject = getRelevantBusinessObject(element);
-
-    let parent = undefined;
-    let attributes  = undefined;
-    if ( dataElement || collaboration ) {
-      attributes = getCustomItem( element, 'bpmnos:Attributes' ) || {};
-    }
-    else {
-      parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-      attributes = ( parent.get ? parent.get('attributes') || [] : [] )[0] || {};
-    }
-
-    if (!attributes) {
-      return;
-    }
-
-    const attributeList = without(attributes.get('attribute'), attribute);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: attributes,
-        properties: {
-          attribute: attributeList
-        }
-      }
-    });
-
-    if ( !dataElement && !collaboration && !attributeList.length) {
-      // remove 'bpmnos:Attributes' from 'bpmnos:Status' if there are no attributes anymore
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: parent,
-          properties: {
-            attributes: undefined
-          }
-        }
-      });
-    }
 
     if ( dataElement ) {
       // trigger update via fake change
@@ -175,7 +130,8 @@ function removeFactory({ commandStack, element, attribute, dataElement, collabor
       });
     }
 
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, attribute));
   };
 }
 

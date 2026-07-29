@@ -8,8 +8,7 @@ import { SelectEntry } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {

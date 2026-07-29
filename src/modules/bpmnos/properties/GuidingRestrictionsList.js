@@ -1,10 +1,9 @@
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import { 
@@ -28,6 +27,7 @@ export default function RestrictionsList(props) {
 
   const bpmnFactory = useService('bpmnFactory');
   const commandStack = useService('commandStack');
+  const identifiers = useService('identifiers');
   const translate = useService('translate');
 
   const businessObject = getBusinessObject(element);
@@ -50,7 +50,7 @@ export default function RestrictionsList(props) {
     }
 
     // create 'bpmnos:Restriction'
-    const restriction = createElement('bpmnos:Restriction', { id: nextId('Restriction_') }, restrictionList, bpmnFactory);
+    const restriction = createElement('bpmnos:Restriction', { id: identifiers.nextId(element, 'Restriction_') }, restrictionList, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -62,41 +62,8 @@ export default function RestrictionsList(props) {
   }
 
   function removeFactory(restriction) {
-    let restrictionList = guidance.restrictions ? guidance.get('restrictions')[0] : undefined;
-
-    if (!restrictionList) {
-      return;
-    }
-
-    const commands = [];
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: restrictionList,
-        properties: {
-          restriction: without(restrictionList.get('restriction'), restriction)
-        }
-      }
-    });
-
-    // remove 'bpmnos:Restrictions' if last restriction removed
-    if ( guidance.get('restrictions')[0].get('restriction').length <= 1) {
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: guidance,
-          properties: {
-            restrictions: undefined
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
-
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, restriction));
   }
 
   return <ListEntry

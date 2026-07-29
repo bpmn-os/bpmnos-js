@@ -117,24 +117,59 @@ describe('nextIdentifier', function() {
     ])
   };
 
-  it('counts up from the prefix', function() {
-    assert.equal(nextIdentifier(registry, 'Task_2', 'Attribute_'), 'Attribute_1');
+  // the generator is a parameter so that where a candidate comes from can be stated; the modeller never
+  // passes one and takes the random generator the module holds
+  function generatorYielding(...candidates) {
+    let next = 0;
+
+    return () => candidates[next++];
+  }
+
+  it('yields a candidate the process has not taken', function() {
+    assert.equal(
+      nextIdentifier(registry, 'Task_1', 'Attribute_', generatorYielding('Attribute_free')),
+      'Attribute_free');
   });
 
-  it('passes over what the process has taken', function() {
-    assert.equal(nextIdentifier(registry, 'Task_1', 'Attribute_'), 'Attribute_3');
+  it('generates again until a candidate is free', function() {
+    assert.equal(
+      nextIdentifier(registry, 'Task_1', 'Attribute_',
+        generatorYielding('Attribute_1', 'Attribute_2', 'Attribute_free')),
+      'Attribute_free');
   });
 
-  it('counts each process separately', function() {
-    assert.notEqual(
-      nextIdentifier(registry, 'Task_1', 'Attribute_'),
-      nextIdentifier(registry, 'Task_2', 'Attribute_'));
+  it('judges a candidate against the process the element belongs to', function() {
+
+    // taken in P and free in Q, so the same candidate is refused for one and taken for the other
+    assert.equal(
+      nextIdentifier(registry, 'Task_2', 'Attribute_', generatorYielding('Attribute_1')),
+      'Attribute_1');
+    assert.equal(
+      nextIdentifier(registry, 'Task_1', 'Attribute_', generatorYielding('Attribute_1', 'Attribute_free')),
+      'Attribute_free');
   });
 
   it('must be free in every namespace for content of the collaboration', function() {
 
     // an element in neither process stands for content seen from both, so it clears both
-    assert.equal(nextIdentifier(registry, 'Collaboration_1', 'Attribute_'), 'Attribute_3');
+    assert.equal(
+      nextIdentifier(registry, 'Collaboration_1', 'Attribute_',
+        generatorYielding('Attribute_1', 'Attribute_free')),
+      'Attribute_free');
+  });
+
+  it('generates at random when no generator is given, and never repeats itself', function() {
+    const generated = new Set();
+
+    for (let count = 0; count < 100; count++) {
+      const identifier = nextIdentifier(registry, 'Task_1', 'Attribute_');
+
+      assert.ok(identifier.startsWith('Attribute_'), `${identifier} carries the prefix`);
+      assert.equal(isTaken(registry, 'Task_1', identifier), false);
+      assert.equal(generated.has(identifier), false, `${identifier} was generated twice`);
+
+      generated.add(identifier);
+    }
   });
 });
 
@@ -194,7 +229,48 @@ describe('Identifiers', function() {
     const identifier = identifiers.nextId('JobProcess', 'Attribute_');
 
     assert.equal(identifiers.isTaken('JobProcess', identifier), false);
-    assert.equal(identifier, 'Attribute_1');
+    assert.ok(identifier.startsWith('Attribute_'));
+  });
+
+  it('follows an element renamed', async function() {
+    const model = await parse('job-shop-scheduling-problem');
+    const eventBus = eventBusStub(),
+          identifiers = new Identifiers(eventBus, { getDefinitions: () => model });
+
+    eventBus.fire('import.done');
+
+    const process = model.get('rootElements').find(rootElement => rootElement.id === 'JobProcess'),
+          task = process.get('flowElements').find(flowElement => flowElement.id === 'TaskActivity');
+
+    task.id = 'TaskActivityRenamed';
+    eventBus.fire('elements.changed');
+
+    assert.deepEqual(identifiers.getProcesses('TaskActivityRenamed'), [ 'JobProcess' ]);
+    assert.equal(identifiers.isTaken('TaskActivityRenamed', 'Index'), true);
+
+    // an id the model no longer holds is answered for in every namespace at once, which is the strictest
+    // answer rather than the emptiest: a stale lookup can refuse an identifier, never admit a duplicate
+    assert.deepEqual(identifiers.getProcesses('TaskActivity'), [ 'JobProcess', 'MachineProcess' ]);
+  });
+
+  it('follows a process renamed, and the pool that stands for it with it', async function() {
+    const model = await parse('job-shop-scheduling-problem');
+    const eventBus = eventBusStub(),
+          identifiers = new Identifiers(eventBus, { getDefinitions: () => model });
+
+    eventBus.fire('import.done');
+
+    const process = model.get('rootElements').find(rootElement => rootElement.id === 'JobProcess');
+
+    process.id = 'JobProcessRenamed';
+    eventBus.fire('elements.changed');
+
+    assert.deepEqual(identifiers.getProcesses('TaskActivity'), [ 'JobProcessRenamed' ]);
+    assert.deepEqual(identifiers.getProcesses('Participant_1c07lhk'), [ 'JobProcessRenamed' ]);
+
+    // the namespace moved with the process rather than being rebuilt around it
+    assert.equal(identifiers.isTaken('TaskActivity', 'Index'), true);
+    assert.equal(identifiers.isTaken('TaskActivity', 'Tasks'), false);
   });
 
   it('takes a diagram element, a business object or an id alike', function() {

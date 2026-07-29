@@ -1,12 +1,7 @@
-import {
-  is
-} from 'bpmn-js/lib/util/ModelUtil';
-
 import DecisionEntries from './DecisionEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -15,7 +10,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 
 // Creates decisions entry and returns { items, add }
@@ -33,7 +28,8 @@ export function decisionHandler({ element, injector }) {
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
-        commandStack = injector.get('commandStack');
+        commandStack = injector.get('commandStack'),
+        identifiers = injector.get('identifiers');
 
   const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
   const decisions = ( parent.get ? parent.get('decisions') || [] : [] )[0] || {};
@@ -56,12 +52,12 @@ export function decisionHandler({ element, injector }) {
 
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element })
   };
 }
 
 // ADD FACTORY //
-function addFactory({ bpmnFactory, commandStack, element }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
   return function(event) {
     event.stopPropagation();
 
@@ -81,7 +77,7 @@ function addFactory({ bpmnFactory, commandStack, element }) {
     }
 
     // create 'bpmnos:Decision'
-    let decision = createElement('bpmnos:Decision', { id: nextId('Decision_') }, decisions, bpmnFactory);
+    let decision = createElement('bpmnos:Decision', { id: identifiers.nextId(element, 'Decision_') }, decisions, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -98,45 +94,8 @@ function removeFactory({ commandStack, element, decision }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getRelevantBusinessObject(element);
-
-    const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-    let decisions = parent.decisions ? parent.get('decisions')[0] : {};
-
-    if (!decisions) {
-      return;
-    }
-
-    const decisionList = without(decisions.get('decision'), decision);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: decisions,
-        properties: {
-          decision: decisionList
-        }
-      }
-    });
-
-    // remove 'bpmnos:Decisions' if there are no decisions anymore
-    if (!decisionList.length) {
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: parent,
-          properties: {
-            decisions: undefined
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, decision));
   };
 }
 

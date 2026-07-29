@@ -6,8 +6,7 @@ import {
 import MessageEntries from './MessageEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -15,7 +14,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 // Creates messages entry and returns { items, add }
 export function multiMessageHandler({ element, injector }) {
@@ -79,47 +78,8 @@ function removeFactory({ commandStack, element, message }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getBusinessObject(element);
-
-    let messages = getCustomItem( element, 'bpmnos:Messages' );
-
-    if (!messages) {
-      return;
-    }
-
-    const messageList = without(messages.get('message'), message);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: messages,
-        properties: {
-          message: messageList
-        }
-      }
-    });
-
-
-    // remove 'bpmnos:Messages' if there are no messages anymore
-    if (!messageList.length) {
-      const extensionElements = businessObject.get('extensionElements');
-
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: extensionElements,
-          properties: {
-            values: without(extensionElements.values, messages)
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, message));
   };
 }
 

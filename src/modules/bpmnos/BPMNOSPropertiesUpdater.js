@@ -18,7 +18,7 @@ export default function BPMNOSPropertiesUpdater(eventBus,commandStack) {
         removeExtensionElements(element,'bpmnos:Message',commandStack);
       }
       if ( !eventDefinitions || !eventDefinitions.find(definition => definition.$type == 'bpmn:TimerEventDefinition') ) {
-        removeExtensionElements(element,'bpmnos:Parameter',commandStack);
+        removeExtensionElements(element,'bpmnos:Timer',commandStack);
       }
     }
 

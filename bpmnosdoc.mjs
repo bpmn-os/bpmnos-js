@@ -257,7 +257,7 @@ function attributeItem(attribute, ownIds, anchors) {
 
 /**
  * The objective term an attribute contributes, as a line beneath its declaration:
- * `→ minimize 1 * distance`.
+ * `➔ minimize 1 * distance`.
  *
  * Shown wherever the attribute is listed, as its type is, because the objective belongs to the attribute
  * rather than to the node reading it — which is what lets a global's objective be seen at all, globals
@@ -276,7 +276,7 @@ function objectiveTerm(attribute, name) {
 
   const factor = weight === undefined || weight === null || weight === '' ? '' : `${weight} * `;
 
-  return [ `  - \`→ ${objective} ${factor}${name || attribute.id}\`` ];
+  return [ `  - \`\u2794 ${objective} ${factor}${name || attribute.id}\`` ];
 }
 
 /**

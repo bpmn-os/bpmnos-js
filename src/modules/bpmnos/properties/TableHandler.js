@@ -5,8 +5,7 @@ import {
 import TableEntries from './TableEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -15,7 +14,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 
 // Creates tables entry and returns { items, add }
@@ -32,7 +31,8 @@ export function tableHandler({ element, injector }) {
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
-        commandStack = injector.get('commandStack');
+        commandStack = injector.get('commandStack'),
+        identifiers = injector.get('identifiers');
 
   let tables  = undefined;
   tables = getCustomItem( element, 'bpmnos:Tables' ) || {};
@@ -54,19 +54,19 @@ export function tableHandler({ element, injector }) {
   });
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element })
   };
 }
 
 // ADD FACTORY //
-function addFactory({ bpmnFactory, commandStack, element }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
   return function(event) {
     event.stopPropagation();
 
     let tables  = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Tables'); 
 
     // create 'bpmnos:Table'
-    const table = createElement('bpmnos:Table', { id: nextId('Table_') }, tables, bpmnFactory);
+    const table = createElement('bpmnos:Table', { id: identifiers.nextId(element, 'Table_') }, tables, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -83,39 +83,8 @@ function removeFactory({ commandStack, element, table }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getRelevantBusinessObject(element);
-
-    let tables  = getCustomItem( element, 'bpmnos:Tables' ) || {};
-
-    const tableList = without(tables.get('table'), table);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: tables,
-        properties: {
-          table: tableList
-        }
-      }
-    });
-
-    // remove 'bpmnos:Tables' if there are no operators anymore
-    if (!tableList.length) {
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: businessObject.get('extensionElements'),
-          properties: {
-            values: []
-          }
-        }
-      });
-    }
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, table));
   };
 }
 

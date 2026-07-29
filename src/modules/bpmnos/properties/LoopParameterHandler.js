@@ -6,8 +6,7 @@ import {
 import LoopParameterEntries from './LoopParameterEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -15,7 +14,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 // Creates loop entry and returns { items, add }
 export function loopParameterHandler({ element, injector }) {
@@ -78,47 +77,8 @@ function removeFactory({ commandStack, element, parameter }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getBusinessObject(element);
-
-    let loopCharacteristics = getCustomItem( element, 'bpmnos:LoopCharacteristics' );
-
-    if (!loopCharacteristics) {
-      return;
-    }
-
-    const parameters = without(loopCharacteristics.get('parameter'), parameter);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: loopCharacteristics,
-        properties: {
-          parameter: parameters
-        }
-      }
-    });
-
-
-    // remove 'bpmnos:LoopCharacteristics' if there are no loop characteristics anymore
-    if (!parameters.length) {
-      const extensionElements = businessObject.get('extensionElements');
-
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: extensionElements,
-          properties: {
-            values: without(extensionElements.values, loopCharacteristics)
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, parameter));
   };
 }
 

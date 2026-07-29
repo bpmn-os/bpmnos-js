@@ -2,6 +2,8 @@ import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
+import IdEntry from './IdEntry';
+
 import { getStatus, getBusinessObject } from '../utils/StatusUtil';
 
 import {
@@ -20,9 +22,9 @@ export default function OperatorEntries(props) {
 
   const entries = [ {
     id: idPrefix + '-id',
-    component: OperatorId,
+    component: IdEntry,
     idPrefix,
-    operator
+    item: operator
   },{
     id: element.id + '-expression',
     component: OperatorExpression,
@@ -31,43 +33,6 @@ export default function OperatorEntries(props) {
   } ];
 
   return entries;
-}
-
-function OperatorId(props) {
-  const {
-    idPrefix,
-    element,
-    operator
-  } = props;
-
-  const commandStack = useService('commandStack');
-  const translate = useService('translate');
-  const debounce = useService('debounceInput');
-
-  const setValue = (value) => {
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: operator,
-      properties: {
-        id: value
-      }
-    });
-  };
-
-  const getValue = () => {
-    if ( operator ) {
-      return operator.get('id');
-    }
-  };
-
-  return TextFieldEntry({
-    element: operator,
-    id: idPrefix + '-id',
-    label: translate('Id'),
-    getValue,
-    setValue,
-    debounce
-  });
 }
 
 function OperatorExpression(props) {

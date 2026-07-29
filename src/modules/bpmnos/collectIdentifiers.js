@@ -1,5 +1,7 @@
 import { is } from 'bpmnlint-utils';
 
+import Ids from 'ids';
+
 /**
  * The identifiers of the extension content a model declares, bounded by the process that declares it.
  *
@@ -115,21 +117,37 @@ export function isTaken(registry, elementId, identifier, except) {
 }
 
 /**
- * The next identifier free in every namespace the element's content belongs to, formed by appending the
- * smallest counting number that is free to the prefix.
+ * An identifier free in every namespace the element's content belongs to, formed from the prefix.
  *
- * Deterministic rather than random, so that a model reads as it was built and a test may state what
- * generation yields. Uniqueness is a property of the registry it draws from rather than of the improbability
- * of a collision.
+ * The identifier is generated at random rather than counted up, since the order in which content happened to
+ * be created carries no meaning and a number would invite one to be read into it. Uniqueness comes from the
+ * registry each candidate is checked against rather than from the improbability of a collision, which is the
+ * whole of the difference to generating one blindly.
+ *
+ * Two candidates are never equal even before the registry has been rebuilt, because the generator is one
+ * instance for the lifetime of the module and `Ids` does not repeat a value it has issued. Content created
+ * in a single command, a paste among them, is therefore safe without the registry being rebuilt between one
+ * identifier and the next.
+ *
+ * @param {Object} registry
+ * @param {String} elementId
+ * @param {String} prefix       e.g. `Attribute_`
+ * @param {Function} [generate] the candidate generator, replaced only by a test
  */
-export function nextIdentifier(registry, elementId, prefix) {
-  for (let count = 1; ; count++) {
-    const identifier = `${prefix}${count}`;
+export function nextIdentifier(registry, elementId, prefix, generate = randomIdentifier) {
+  for (;;) {
+    const identifier = generate(prefix);
 
     if (!isTaken(registry, elementId, identifier)) {
       return identifier;
     }
   }
+}
+
+const ids = new Ids([ 32, 32, 1 ]);
+
+function randomIdentifier(prefix) {
+  return ids.nextPrefixed(prefix);
 }
 
 /**
@@ -159,17 +177,19 @@ function record(registry, businessObject, processId) {
 
   const taken = registry.byProcess.get(processId);
 
-  (extensionElements.get('values') || []).forEach(value =>
-    identifiersOf(value).forEach(({ id, type, moddleElement }) => {
-      const holders = taken.get(id) || [];
+  identifiedContent(extensionElements).forEach(moddleElement => {
+    const id = moddleElement.id,
+          holders = taken.get(id) || [];
 
-      holders.push({ id, type, declaringElement: businessObject.id, moddleElement });
-      taken.set(id, holders);
-    }));
+    holders.push({ id, type: moddleElement.$type, declaringElement: businessObject.id, moddleElement });
+    taken.set(id, holders);
+  });
 }
 
 /**
- * The identified content within a piece of extension content, itself included.
+ * The `bpmnos:` content carrying an identifier within a piece of extension content, itself included.
+ *
+ * Exported because naming pasted content asks the same question of the same tree.
  *
  * The descent is over the containment properties moddle writes onto an element, skipping the `$`-prefixed
  * ones, which are moddle's own and among which `$parent` points back up. Only `bpmnos:` content is reported,
@@ -177,7 +197,7 @@ function record(registry, businessObject, processId) {
  * unique. Elements already met are not descended into again, since an extension of another namespace may
  * hold a resolved reference and so a cycle; the BPMNOS extension declares none.
  */
-function identifiersOf(moddleElement, seen = new Set()) {
+export function identifiedContent(moddleElement, seen = new Set()) {
   if (!moddleElement || typeof moddleElement !== 'object' || seen.has(moddleElement)) {
     return [];
   }
@@ -186,10 +206,8 @@ function identifiersOf(moddleElement, seen = new Set()) {
 
   const found = [];
 
-  const type = moddleElement.$type || '';
-
-  if (type.startsWith('bpmnos:') && moddleElement.id) {
-    found.push({ id: moddleElement.id, type, moddleElement });
+  if ((moddleElement.$type || '').startsWith('bpmnos:') && moddleElement.id) {
+    found.push(moddleElement);
   }
 
   Object.keys(moddleElement)
@@ -198,9 +216,9 @@ function identifiersOf(moddleElement, seen = new Set()) {
       const value = moddleElement[key];
 
       if (Array.isArray(value)) {
-        value.forEach(entry => found.push(...identifiersOf(entry, seen)));
+        value.forEach(entry => found.push(...identifiedContent(entry, seen)));
       } else if (value && typeof value === 'object' && value.$type) {
-        found.push(...identifiersOf(value, seen));
+        found.push(...identifiedContent(value, seen));
       }
     });
 

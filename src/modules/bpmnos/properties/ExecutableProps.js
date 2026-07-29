@@ -11,8 +11,7 @@ import { CheckboxEntry, isCheckboxEntryEdited } from '@bpmn-io/properties-panel'
 import { useService } from 'bpmn-js-properties-panel';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -146,7 +145,7 @@ function ensureDefaultAttributes(element,bpmnFactory,commandStack) {
   let attributes = status.get('attributes') ? status.attributes[0] : undefined;
   if ( !attributes ) {
     // create 'bpmnos:Attributes'
-    attributes = createElement('bpmnos:Attributes', {}, parent, bpmnFactory);
+    attributes = createElement('bpmnos:Attributes', {}, status, bpmnFactory);
     commandStack.execute('element.updateModdleProperties', {
       element,
       moddleElement: status,

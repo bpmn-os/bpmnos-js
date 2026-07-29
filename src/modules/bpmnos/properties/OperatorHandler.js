@@ -5,8 +5,7 @@ import {
 import OperatorEntries from './OperatorEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -15,7 +14,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 // Creates operators entry and returns { items, add }
 export function operatorHandler({ element, injector }) {
@@ -37,7 +36,8 @@ export function operatorHandler({ element, injector }) {
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
-        commandStack = injector.get('commandStack');
+        commandStack = injector.get('commandStack'),
+        identifiers = injector.get('identifiers');
 
   const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
   const operators = ( parent.get ? parent.get('operators') || [] : [] )[0] || {};
@@ -61,13 +61,13 @@ export function operatorHandler({ element, injector }) {
 
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element })
   };
 }
 
 // ADD FACTORY //
 
-function addFactory({ bpmnFactory, commandStack, element }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
   return function(event) {
     event.stopPropagation();
 
@@ -87,7 +87,7 @@ function addFactory({ bpmnFactory, commandStack, element }) {
     }
 
     // create 'bpmnos:Operator'
-    let operator = createElement('bpmnos:Operator', { id: nextId('Operator_') }, operators, bpmnFactory);
+    let operator = createElement('bpmnos:Operator', { id: identifiers.nextId(element, 'Operator_') }, operators, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -104,45 +104,8 @@ function removeFactory({ commandStack, element, operator }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getRelevantBusinessObject(element);
-
-    const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-    let operators = ( parent.get ? parent.get('operators') || [] : [] )[0] || {};
-
-    if (!operators) {
-      return;
-    }
-
-    const operatorList = without(operators.get('operator'), operator);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: operators,
-        properties: {
-          operator: operatorList
-        }
-      }
-    });
-
-    // remove 'bpmnos:Operators' if there are no operators anymore
-    if (!operatorList.length) {
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: parent,
-          properties: {
-            operators: undefined
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, operator));
   };
 }
 

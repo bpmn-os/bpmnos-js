@@ -6,6 +6,8 @@ import {
 
 import { useService } from 'bpmn-js-properties-panel';
 
+import IdEntry from './IdEntry';
+
 import { getStatus, getBusinessObject } from '../utils/StatusUtil';
 
 import {
@@ -24,9 +26,9 @@ export default function RestrictionEntries(props) {
 
   const entries = [ {
     id: idPrefix + '-id',
-    component: RestrictionId,
+    component: IdEntry,
     idPrefix,
-    restriction
+    item: restriction
   },{
     id: element.id + '-scope',
     component: RestrictionScope,
@@ -40,42 +42,6 @@ export default function RestrictionEntries(props) {
   } ];
 
   return entries;
-}
-
-function RestrictionId(props) {
-  const {
-    idPrefix,
-    element,
-    restriction
-  } = props;
-
-  const commandStack = useService('commandStack');
-  const translate = useService('translate');
-  const debounce = useService('debounceInput');
-  const bpmnFactory = useService('bpmnFactory');
-
-  const setValue = (value) => {
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: restriction,
-      properties: {
-        id: value
-      }
-    });
-  };
-
-  const getValue = () => {
-    return restriction.id;
-  };
-
-  return TextFieldEntry({
-    element: restriction,
-    id: idPrefix + '-id',
-    label: translate('Id'),
-    getValue,
-    setValue,
-    debounce
-  });
 }
 
 function RestrictionScope(props) {

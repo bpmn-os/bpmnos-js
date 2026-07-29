@@ -12,7 +12,7 @@ point, `bpmnos-js`, brings the decision task and the properties panel together.
 
 - **`bpmnos-js/moddle`**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
   operators, messages, guidance, and lookup tables.
-- **`bpmnos-js/decision-task`**: draws the decision-task glyph and provides the activity replace menu
+- **`bpmnos-js/decision-task`**: displays the decision-task glyph and provides the activity replace menu
   (the context-pad wrench). The menu adds the decision task and keeps type changes consistent: a task,
   a typed task (user task, decision task, ...), and a sub-process convert only through an untyped task,
   so a sub-process never becomes a typed task directly. Flipping an activity's `triggeredByEvent`
@@ -50,11 +50,71 @@ would make such a model unmodellable.
 The `identifiers` service holds that namespace for the model being edited, rebuilding as the model is
 imported and edited and announcing `identifiers.changed` when it has. It answers `isTaken(element,
 identifier)`, where the element is the one the content belongs to and decides which namespace is consulted,
-and `nextId(element, prefix)`, which appends the smallest counting number that is free. A pool is answered
-for as the process it stands for, and an element belonging to no process, the collaboration among them, is
+and `nextId(element, prefix)`, which generates an identifier at random and returns the first one the
+process has not taken, so that uniqueness rests on the registry rather than on the improbability of a
+collision and no order is implied that a counter would invite a reader to look for. A pool is answered for
+as the process it stands for, and an element belonging to no process, the collaboration among them, is
 answered for in every namespace at once. The same questions are put to a model outside a modeller through
 `collectIdentifiers(definitions)` and the pure functions `isTaken`, `nextIdentifier`, `getHolders` and
 `spacesOf` over the registry it returns.
+
+Copying and pasting obeys the same rule. Content pasted into a process that already holds one of its
+identifiers is given a new one, generated from the identifier it replaces, so that `Index` becomes `Index_`
+and a suffix rather than something unrecognisable; content pasted into a process that holds none of them
+keeps the identifiers it has, since the identifiers of one process say nothing about another and a task
+copied from one pool to the next is more useful with its own names intact. This is settled when the content
+is pasted rather than when it is copied, because one clipboard may be pasted into either process, and which
+identifiers are free is not known until it is known where the content lands.
+
+## Extension content and its containers
+
+BPMN-OS content is held in containers. An attribute sits in a `bpmnos:Attributes`, which sits in a
+`bpmnos:Status` when an activity or a process declares it, and every one of them sits in the element's
+`bpmn:ExtensionElements`. The properties panel creates each container as it is needed, and removes each one
+again when the content it held is gone, so that removing the last attribute of an element leaves that
+element exactly as it was before the first one was added, with no empty `bpmnos:status` and no empty
+`bpmn:extensionElements` left in the file.
+
+A container is removed only when it becomes meaningless, which is when every list of it is empty and it
+holds no value of its own. A `bpmnos:Guidance` with its type, a `bpmnos:Message` with its name and
+identifier, and a `bpmnos:Signal` are content in their own right and therefore stay when their lists run
+empty; whether they are wanted is the user's to say. The judgement is made from what the element holds
+rather than from a list of types, so a type added to the moddle extension is treated correctly without
+anything being changed.
+
+The removal of a piece of content and of the containers it empties is one command, hence one step of the
+undo history. A timer is removed when its trigger is cleared, since a timer that names no trigger states
+nothing, and an empty trigger no longer creates one.
+
+When an element's type changes, content that no longer applies is discarded. An event that ceases to be a
+message event or a timer event loses its extension content altogether, because what a changed element needs
+is a different set of content and there is no reliable way to tell which of the old is still meant. An
+activity keeps its `bpmnos:Status`, whose attributes, restrictions and operators are valid whatever the
+activity is, and loses only what belongs to the type it no longer has, its choices and its messages.
+
+## Objectives and weights
+
+An attribute may contribute to the objective a run optimises, by minimizing or by maximizing, and it does so
+with a weight by which its value is multiplied. The two belong together. Giving an attribute an objective
+gives it a weight of one where it carries none; changing between minimizing and maximizing leaves the weight
+as it stands, since that choice says nothing about it; and taking the objective away takes the weight with
+it. For as long as there is an objective the weight is required and must be a number, and a weight that is
+neither is refused as it is typed and never reaches the model.
+
+## The annotation box
+
+The box attached to an element shows what that element declares and what it inherits, in the order a token
+carries it. Each compartment is named in capitals, and what the element inherits and what it declares itself
+fold separately, so a box can be read at the depth wanted and left there.
+
+An attribute is shown as its type followed by its name, and where it contributes to the objective its term
+follows beneath, as `➔ minimize 1 * distance`. A restriction, an operator and a choice are shown as the
+expression they carry.
+
+Red marks a fault in the model rather than a decoration. An attribute to which the model gives no name, and a
+restriction, operator or choice that carries no expression, are shown by their identifier in red, because
+that identifier is standing in for something that ought to be there: the engine resolves an attribute by its
+name, and content without an expression says nothing at all.
 
 ## Demo modeller
 

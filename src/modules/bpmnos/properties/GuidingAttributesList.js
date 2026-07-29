@@ -1,10 +1,9 @@
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import { 
@@ -28,6 +27,7 @@ export default function AttributesList(props) {
 
   const bpmnFactory = useService('bpmnFactory');
   const commandStack = useService('commandStack');
+  const identifiers = useService('identifiers');
   const translate = useService('translate');
 
   const businessObject = getBusinessObject(element);
@@ -50,7 +50,7 @@ export default function AttributesList(props) {
     }
 
     // create 'bpmnos:Attribute'
-    const attribute = createElement('bpmnos:Attribute', { id: nextId('Attribute_') , type: 'decimal' }, attributeList, bpmnFactory);
+    const attribute = createElement('bpmnos:Attribute', { id: identifiers.nextId(element, 'Attribute_') , type: 'decimal' }, attributeList, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -62,41 +62,8 @@ export default function AttributesList(props) {
   }
 
   function removeFactory(attribute) {
-    let attributeList = guidance.attributes ? guidance.get('attributes')[0] : undefined;
-
-    if (!attributeList) {
-      return;
-    }
-
-    const commands = [];
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: attributeList,
-        properties: {
-          attribute: without(attributeList.get('attribute'), attribute)
-        }
-      }
-    });
-
-    // remove 'bpmnos:Attributes' if last attribute removed
-    if ( guidance.get('attributes')[0].get('attribute').length <= 1) {
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: guidance,
-          properties: {
-            attributes: undefined
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
-
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, attribute));
   }
 
   return <ListEntry

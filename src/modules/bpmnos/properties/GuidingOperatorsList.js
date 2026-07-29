@@ -1,10 +1,9 @@
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import { 
@@ -28,6 +27,7 @@ export default function OperatorsList(props) {
 
   const bpmnFactory = useService('bpmnFactory');
   const commandStack = useService('commandStack');
+  const identifiers = useService('identifiers');
   const translate = useService('translate');
 
   const businessObject = getBusinessObject(element);
@@ -50,7 +50,7 @@ export default function OperatorsList(props) {
     }
 
     // create 'bpmnos:Operator'
-    const operator = createElement('bpmnos:Operator', { id: nextId('Operator_') , type: 'decimal' }, operatorList, bpmnFactory);
+    const operator = createElement('bpmnos:Operator', { id: identifiers.nextId(element, 'Operator_') , type: 'decimal' }, operatorList, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -62,41 +62,8 @@ export default function OperatorsList(props) {
   }
 
   function removeFactory(operator) {
-    let operatorList = guidance.operators ? guidance.get('operators')[0] : undefined;
-
-    if (!operatorList) {
-      return;
-    }
-
-    const commands = [];
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: operatorList,
-        properties: {
-          operator: without(operatorList.get('operator'), operator)
-        }
-      }
-    });
-
-    // remove 'bpmnos:Operators' if last operator removed
-    if ( guidance.get('operators')[0].get('operator').length <= 1) {
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: guidance,
-          properties: {
-            operators: undefined
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
-
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, operator));
   }
 
   return <ListEntry

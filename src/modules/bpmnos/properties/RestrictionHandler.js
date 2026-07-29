@@ -6,8 +6,7 @@ import {
 import RestrictionEntries from './RestrictionEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -16,7 +15,7 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
-import { without } from 'min-dash';
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
 
 // Creates restrictions entry and returns { items, add }
 export function restrictionHandler({ element, injector }) {
@@ -32,7 +31,8 @@ export function restrictionHandler({ element, injector }) {
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
-        commandStack = injector.get('commandStack');
+        commandStack = injector.get('commandStack'),
+        identifiers = injector.get('identifiers');
   let parent = getCustomItem( element, 'bpmnos:Status' ) || {};
   let restrictions = ( parent.get ? parent.get('restrictions') || [] : [] )[0] || {};
 
@@ -53,13 +53,13 @@ export function restrictionHandler({ element, injector }) {
 
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element })
   };
 }
 
 // ADD FACTORY //
 
-function addFactory({ bpmnFactory, commandStack, element }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
   return function(event) {
     event.stopPropagation();
 //console.log(element);
@@ -80,7 +80,7 @@ function addFactory({ bpmnFactory, commandStack, element }) {
     }
 
     // create 'bpmnos:Restriction'
-    const restriction = createElement('bpmnos:Restriction', { id: nextId('Restriction_') }, restrictions, bpmnFactory);
+    const restriction = createElement('bpmnos:Restriction', { id: identifiers.nextId(element, 'Restriction_') }, restrictions, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -110,45 +110,8 @@ function removeFactory({ commandStack, element, restriction }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getRelevantBusinessObject(element);
-
-    let parent = getCustomItem( element, 'bpmnos:Status' ) || {};
-    let restrictions = ( parent.get ? parent.get('restrictions') || [] : [] )[0] || {};
-
-    if (!restrictions) {
-      return;
-    }
-
-    const restrictionList = without(restrictions.get('restriction'), restriction);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: restrictions,
-        properties: {
-          restriction: restrictionList
-        }
-      }
-    });
-
-    if (!restrictionList.length) {
-      // remove 'bpmnos:Restrictions' from parent if there are no restrictions anymore
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: parent,
-          properties: {
-            restrictions: undefined
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, restriction));
   };
 }
 

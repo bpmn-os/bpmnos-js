@@ -6,8 +6,7 @@ import {
 import RestrictionEntries from './RestrictionEntries';
 
 import {
-  createElement,
-  nextId
+  createElement
 } from '../utils/ElementUtil';
 
 import {
@@ -16,11 +15,11 @@ import {
   ensureCustomItem
 } from '../utils/CustomItemUtil';
 
+import { removeCustomItemCommands } from '../utils/RemovalUtil';
+
 import {
   isConditionSupported
 } from '../utils/EventDefinitionUtil';
-
-import { without } from 'min-dash';
 
 // Creates restrictions entry and returns { items, add }
 export function conditionHandler({ element, injector }) {
@@ -39,7 +38,8 @@ export function conditionHandler({ element, injector }) {
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
-        commandStack = injector.get('commandStack');
+        commandStack = injector.get('commandStack'),
+        identifiers = injector.get('identifiers');
   let restrictions = getCustomItem( element, 'bpmnos:Restrictions' ) || {};
 
   const items = ( restrictions.restriction || []).map((restriction, index) => {
@@ -59,13 +59,13 @@ export function conditionHandler({ element, injector }) {
 
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element })
   };
 }
 
 // ADD FACTORY //
 
-function addFactory({ bpmnFactory, commandStack, element }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
   return function(event) {
     event.stopPropagation();
 //console.log(element);
@@ -74,7 +74,7 @@ function addFactory({ bpmnFactory, commandStack, element }) {
     let restrictions = ensureCustomItem( bpmnFactory, commandStack, element, 'bpmnos:Restrictions' );
 
     // create 'bpmnos:Restriction'
-    const restriction = createElement('bpmnos:Restriction', { id: nextId('Condition_') }, restrictions, bpmnFactory);
+    const restriction = createElement('bpmnos:Restriction', { id: identifiers.nextId(element, 'Condition_') }, restrictions, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
@@ -102,44 +102,8 @@ function removeFactory({ commandStack, element, restriction }) {
   return function(event) {
     event.stopPropagation();
 
-    const commands = [];
-
-    const businessObject = getRelevantBusinessObject(element);
-
-    let restrictions = getCustomItem( element, 'bpmnos:Restrictions' ) || {};
-
-    if (!restrictions) {
-      return;
-    }
-
-    const restrictionList = without(restrictions.get('restriction'), restriction);
-
-    commands.push({
-      cmd: 'element.updateModdleProperties',
-      context: {
-        element,
-        moddleElement: restrictions,
-        properties: {
-          restriction: restrictionList
-        }
-      }
-    });
-
-    if (!restrictionList.length) {
-      const extensionElements = businessObject.get('extensionElements');
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: extensionElements,
-          properties: {
-            values: without(extensionElements.values, restrictions)
-          }
-        }
-      });
-    }
-
-    commandStack.execute('properties-panel.multi-command-executor', commands);
+    commandStack.execute('properties-panel.multi-command-executor',
+      removeCustomItemCommands(element, restriction));
   };
 }
 
