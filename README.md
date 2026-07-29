@@ -27,6 +27,34 @@ point, `bpmnos-js`, brings the decision task and the properties panel together.
   `collectExecutionData(definitions)`, which reads a parsed `bpmn:Definitions` and returns the same
   registry. It touches no canvas and depends on no part of bpmn-js, so it serves a headless consumer, a
   test or a lint rule as well as the modeller does.
+- **`bpmnos-js/identifiers`**: the identifier registry, a diagram-js module providing the `identifiers`
+  service, which answers whether an identifier is taken and yields the next one that is free.
+- **`bpmnos-js/collect-identifiers`**: the function that registry is built from,
+  `collectIdentifiers(definitions)`, together with the pure queries over it, and model-level in the same
+  sense as the collector above.
+
+## Identifiers
+
+Every piece of extension content that carries an identifier, an attribute, a restriction, an operator, a
+choice, a message, a signal and a lookup table alike, shares one namespace with all the others, and that
+namespace is bounded by the process rather than by the model. Within one process no two pieces of content
+may hold the same identifier, since the identifier is the key every lookup is built on; two processes are
+independent of each other. Content declared on the collaboration, the globals and the tables it holds, is
+seen from every process and therefore belongs to the namespace of each, and must be free in all of them.
+
+The boundary is the process because BPMN-OS itself requires it. The engine identifies two attributes by
+their identifier rather than by their name, `Instance` and `Timestamp`, and every process declares its own
+pair, so a collaboration carries one of each per participant. A rule demanding uniqueness across the model
+would make such a model unmodellable.
+
+The `identifiers` service holds that namespace for the model being edited, rebuilding as the model is
+imported and edited and announcing `identifiers.changed` when it has. It answers `isTaken(element,
+identifier)`, where the element is the one the content belongs to and decides which namespace is consulted,
+and `nextId(element, prefix)`, which appends the smallest counting number that is free. A pool is answered
+for as the process it stands for, and an element belonging to no process, the collaboration among them, is
+answered for in every namespace at once. The same questions are put to a model outside a modeller through
+`collectIdentifiers(definitions)` and the pure functions `isTaken`, `nextIdentifier`, `getHolders` and
+`spacesOf` over the registry it returns.
 
 ## Demo modeller
 
@@ -45,7 +73,16 @@ npm install
 npm run dev       # Vite dev server (hot reload)
 npm run build     # production build to dist/
 npm run preview   # serve the production build
+npm test          # node --test test/*.test.mjs
 ```
+
+The tests run under Node's own test runner, without a browser and without a modeller. What this package
+collects from a model, the execution data and the identifiers alike, is a function of the moddle tree
+alone, so a test parses a fixture with `bpmn-moddle` through the helper in `test/helper.mjs`, which
+registers the BPMNOS moddle extension. Without that registration the extension elements parse as anonymous
+content and a collector reports an empty model rather than failing, which is worth knowing wherever a model
+is parsed outside the modeller. The fixtures in `test/fixtures` are copies of the BPMN-OS benchmark
+instances, kept here so that the tests depend on nothing outside this repository.
 
 ## Rendering diagrams to SVG (`bpmnos2svg`)
 

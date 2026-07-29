@@ -12,7 +12,8 @@ bpmn-workbench; the BPMNOS-specific lint rules are added on top. All source is E
 bundler.
 
 Added since: the **execution data registry** (what a node declares and inherits), the **annotation box**
-that renders it on the canvas, and **bpmnosdoc**, which generates model documentation from it.
+that renders it on the canvas, **bpmnosdoc**, which generates model documentation from it, and the
+**identifier registry** (which identifiers a process has taken), with the first tests.
 
 ## Commands
 
@@ -21,8 +22,14 @@ npm install
 npm run dev       # Vite dev server (HMR)
 npm run build     # production build → dist/
 npm run preview   # serve the production build
-npm test          # node --test test/*.test.mjs  (no tests yet)
+npm test          # node --test test/*.test.mjs
 ```
+
+Tests run without a browser and without a modeller: what this package collects from a model is a function
+of the moddle tree, so `test/helper.mjs` parses a fixture with `bpmn-moddle` and the BPMNOS moddle
+extension registered — omit the extension and a collector reports an empty model rather than failing.
+Fixtures in `test/fixtures` are copies of the BPMNOSInstances corpus, so the suite depends on nothing
+outside the repo.
 
 Runtime smoke test (no browser test harness yet): with `npm run dev` running, `google-chrome
 --headless=new --dump-dom --virtual-time-budget=12000 http://localhost:5173/` and check the DOM for
@@ -133,9 +140,10 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
 
 ## Open
 
-- **No test suite** (`npm test` matches nothing). Add `test/*.test.mjs` covering the rules, the moddle,
-  and the `exports` API; `bpmnosdoc` over the BPMNOSInstances corpus is the current stand-in, and its
-  markdown would make usable golden files.
+- **The test suite covers the identifier registry only.** `test/*.test.mjs` and its `bpmn-moddle` harness
+  exist; the rules, the moddle and the `exports` API are still untested, and the execution data registry is
+  covered by `bpmnosdoc` over the BPMNOSInstances corpus rather than by a test, whose markdown would make
+  usable golden files.
 - **Collapsed state is session-only** — whether folding should persist in the file is deliberately
   undecided.
 - **How to show `objective` and `weight` is unsettled.** The registry collects both and nothing renders
