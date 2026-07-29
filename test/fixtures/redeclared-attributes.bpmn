@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmnos="https://bpmnos.telematique.eu"
+                  id="Definitions_Redeclared"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_Redeclared" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
+          <bpmnos:attribute id="Shared" name="shared" type="decimal" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+
+    <bpmn:task id="DuplicateIdHere">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:attributes>
+            <bpmnos:attribute id="Twice" name="first" type="decimal" />
+            <bpmnos:attribute id="Twice" name="second" type="decimal" />
+          </bpmnos:attributes>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:task>
+
+    <bpmn:task id="DuplicateNameHere">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:attributes>
+            <bpmnos:attribute id="FirstOfTwo" name="same" type="decimal" />
+            <bpmnos:attribute id="SecondOfTwo" name="same := 1" type="decimal" />
+          </bpmnos:attributes>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:task>
+
+    <bpmn:task id="RedeclaresInheritedId">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:attributes>
+            <bpmnos:attribute id="Shared" name="other" type="decimal" />
+          </bpmnos:attributes>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:task>
+
+    <bpmn:task id="ShadowsInheritedName">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:attributes>
+            <bpmnos:attribute id="Other" name="shared" type="decimal" />
+          </bpmnos:attributes>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:task>
+
+    <bpmn:task id="Clean">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:attributes>
+            <bpmnos:attribute id="One" name="one" type="decimal" />
+            <bpmnos:attribute id="Two" name="two := one + 1" type="decimal" />
+          </bpmnos:attributes>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:task>
+  </bpmn:process>
+</bpmn:definitions>

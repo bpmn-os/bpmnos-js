@@ -213,7 +213,7 @@
   },
   "bpmnos/attribute-redeclared.js": {
     "severity": "error",
-    "description": "An attribute must not redeclare an id it inherits \u2014 ids are unique model-wide and the engine looks attributes up by them \u2014 nor reuse an inherited name, which shadows that attribute for every expression in this scope."
+    "description": "An attribute must not be declared twice at one element, nor redeclare an id or a name it inherits. An id is the key every lookup is built on and is unique within the process declaring it; a repeated name shadows the other attribute for every expression in this scope, and the engine refuses to load a model where one name denotes two attributes visible at a node."
   },
   "bpmnos/attribute-undeclared.js": {
     "severity": "error",
