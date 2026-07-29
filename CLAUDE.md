@@ -31,9 +31,13 @@ extension registered — omit the extension and a collector reports an empty mod
 Fixtures in `test/fixtures` are copies of the BPMNOSInstances corpus, so the suite depends on nothing
 outside the repo.
 
-Runtime smoke test (no browser test harness yet): with `npm run dev` running, `google-chrome
---headless=new --dump-dom --virtual-time-budget=12000 http://localhost:5173/` and check the DOM for
-`djs-container`, the `Properties`/`Issues` side-panel tabs, and `bjsl-` (lint output).
+Runtime smoke test: drive the page with puppeteer-core (a devDependency) and **fail on `pageerror` or a
+console error**, then assert `document.querySelectorAll('.djs-element').length > 0`. Do **not** grep the
+dumped DOM for `djs-container`: that div is created before the diagram is imported, so the check passes
+while the app is broken — it did, after a bad import sweep left `is` undefined and the canvas empty. The
+app exposes `window.modeler`, so a probe can `importXML` a fixture, drive services (`copyPaste`,
+`bpmnosAnnotation`) and read `saveXML` back, which is how the paste, container and panel behaviour were
+verified.
 
 Two CLI tools, both driving this app headlessly (they start their own Vite, so no server need be
 running):
@@ -141,8 +145,15 @@ choices and `bpmnos:Messages`.
 
 **Execution data registry** (`src/modules/bpmnos/ExecutionData.js`). Built from the moddle tree, so
 declaration order *is* document order. Per element it holds ordered `status`, `data` and `globals`, each
-entry naming its `declaringElement` (so "own" is `declaringElement === element.id`), plus `id → attribute`
-and `id → element ids` — the latter is what a `DataUpdate` resolves against at playback. Status comes from
+entry naming its `declaringElement` (so "own" is `declaringElement === element.id`), plus, **per process**,
+`id → attribute` and `id → element ids` — the latter is what a `DataUpdate` resolves against at playback.
+`byId`/`elementsById` are keyed by process first because an identifier is unique within a process only (each
+participant declares `Instance`/`Timestamp`); model-wide maps returned whichever process was walked last and
+merged both processes' elements. `processOf` places an element; the collaboration's globals are recorded in
+every process's namespace. The service and the collector share one shape: `getAttribute(element, id)`,
+`getElements(element, id)`, `getProcesses(element)` on `executionData`, and the pure `getAttribute`,
+`getElements`, `spacesOf` over a registry from `collectExecutionData` — the same idiom the identifier
+registry uses, so a headless consumer and the modeller ask the same way. Status comes from
 `bpmnos:Status` on a process or activity, data from the `bpmn:DataObject`s a **scope** contains (never
 from a `bpmn:DataObjectReference`, which per BPMN refers to data rather than owning it, and a model may
 hold an object no reference points at), globals from the collaboration. All are inherited by every
@@ -180,6 +191,13 @@ so the weight setter returns early unless an objective is present. A `validate` 
 or the panel's effect re-validates the *model's* (still valid) value on the next render and wipes the message
 — the same reason `IdEntry` memoises its check, and why a refused value shows an error at all.
 
+**`bpmnos/attribute-redeclared`** compares a node's own declarations against the inherited ones **and
+against each other**: the engine's `AttributeRegistry::add` throws on a duplicate name among the attributes
+visible at a node wherever declared, so two on one element fail to load and are worth reporting while the
+model is edited. Id and name stay two faults with two messages, so the name half can be re-graded if
+shadowing is ever permitted. The second of a pair is reported, not both. Tested against
+`test/fixtures/redeclared-attributes.bpmn`, written for the purpose since the corpus contains no violation.
+
 **Linting** is bpmnlint via `bpmn-js-bpmnlint` (`linting: { bpmnlint: getRules() }`). `src/modules/rules`
 composes the set: `rules.json` is the source of truth, mapping each rule **locator** to severity +
 rationale — the reused bpmn-workbench essentials (`@bpmn-workbench/bpmn/*.js`, severities adapted) plus
@@ -191,10 +209,14 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
 
 ## Open
 
-- **The test suite covers the identifier registry only.** `test/*.test.mjs` and its `bpmn-moddle` harness
-  exist; the rules, the moddle and the `exports` API are still untested, and the execution data registry is
-  covered by `bpmnosdoc` over the BPMNOSInstances corpus rather than by a test, whose markdown would make
-  usable golden files.
+- **What the test suite does not cover.** 55 tests over the identifier registry, the execution data
+  registry, the removal of empty containers, the naming of pasted content and `attribute-redeclared`. Still
+  untested: the other lint rules, the moddle, the `exports` API, and everything that imports bpmn-js and so
+  cannot load under Node — `AnnotationContent.js` above all, which decides what the box shows and when an
+  entry is marked red. Making that module model-level, as `collectExecutionData` and `RemovalUtil` are,
+  would bring it into reach; it needs only `is` and `getBusinessObject`, both of which have model-level
+  equivalents. `bpmnosdoc` over the corpus remains the check for the rendering path, and its markdown would
+  make usable golden files.
 - **Collapsed state is session-only** — whether folding should persist in the file is deliberately
   undecided.
 - **How to show `objective` and `weight` is unsettled.** The registry collects both and nothing renders
@@ -214,8 +236,9 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   cardinality nor a message (`StateMachine.cpp:433-444`) and a `maximum` without an `index`
   (`Token.cpp:442-446`) — and are decidable at load. `bpmnos/loop-parameters.js` flags all seven here, so
   the lint rule and such an engine check should be kept in step.
-- The registry holds attributes only; **operators and restrictions** are to follow, and `bpmnosdoc` grows
-  with it.
+- The registry reports operators, restrictions, choices, conditions, timers, loop parameters, messages,
+  signals, guidance and lookup tables beside the attributes; what `bpmnosdoc` emits for each of them is
+  where it still grows.
 - `~/Code/bpmndoc` (C++, Xerces + bpmn++) is superseded by `bpmnosdoc` and can go once the latter covers
   what it emitted.
 - **`src/context-pad-compat.js` is a shim to delete on an upstream bump, not before.** It reimplements

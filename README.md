@@ -22,7 +22,8 @@ point, `bpmnos-js`, brings the decision task and the properties panel together.
   the side panel.
 - **`bpmnos-js/execution-data`**: the execution data registry, a diagram-js module providing the
   `executionData` service, which reports the status, data and global attributes each element declares and
-  inherits, outermost first and the element's own last, which is the order a token carries them in.
+  inherits, outermost first and the element's own last, which is the order a token carries them in, and
+  resolves an attribute from its identifier within the process asked about.
 - **`bpmnos-js/collect-execution-data`**: the function that registry is built from,
   `collectExecutionData(definitions)`, which reads a parsed `bpmn:Definitions` and returns the same
   registry. It touches no canvas and depends on no part of bpmn-js, so it serves a headless consumer, a
@@ -57,6 +58,13 @@ as the process it stands for, and an element belonging to no process, the collab
 answered for in every namespace at once. The same questions are put to a model outside a modeller through
 `collectIdentifiers(definitions)` and the pure functions `isTaken`, `nextIdentifier`, `getHolders` and
 `spacesOf` over the registry it returns.
+
+Reading an attribute by its identifier obeys the same boundary. `executionData.getAttribute(element, id)`
+returns the attribute of that identifier as the element sees it, and `executionData.getElements(element, id)`
+the elements that see it, both answered within the process the element belongs to, or within every process
+for an element belonging to none. Naming the element is what makes the answer well defined: in a
+collaboration each participant declares an `Instance` and a `Timestamp` of its own, and a lookup that did
+not say where would report whichever process happened to be read last.
 
 Copying and pasting obeys the same rule. Content pasted into a process that already holds one of its
 identifiers is given a new one, generated from the identifier it replaces, so that `Index` becomes `Index_`
