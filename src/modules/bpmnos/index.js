@@ -1,6 +1,6 @@
-import DecisionTaskModule from './decision-task';
-import PropertiesModule from './properties';
-import ReplaceIds from './ReplaceIds';
+import DecisionTaskModule from './decision-task.js';
+import PropertiesModule from './properties.js';
+import ReplaceIds from './ReplaceIds.js';
 
 // The full BPMNOS bpmn-js module: the decision-task decorator and activity menu, the properties panel, and
 // the extension-element id replacer. Import the sub-modules (bpmnos-js/decision-task, bpmnos-js/properties)

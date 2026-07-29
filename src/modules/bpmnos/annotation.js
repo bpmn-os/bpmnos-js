@@ -1,10 +1,10 @@
-import ExecutionDataModule from './execution-data';
+import ExecutionDataModule from './execution-data.js';
 
-import BPMNOSAnnotation from './BPMNOSAnnotation';
-import BPMNOSAnnotationBehavior from './BPMNOSAnnotationBehavior';
-import BPMNOSAnnotationContextPad from './BPMNOSAnnotationContextPad';
-import BPMNOSAnnotationRenderer from './BPMNOSAnnotationRenderer';
-import BPMNOSAnnotationRules from './BPMNOSAnnotationRules';
+import BPMNOSAnnotation from './BPMNOSAnnotation.js';
+import BPMNOSAnnotationBehavior from './BPMNOSAnnotationBehavior.js';
+import BPMNOSAnnotationContextPad from './BPMNOSAnnotationContextPad.js';
+import BPMNOSAnnotationRenderer from './BPMNOSAnnotationRenderer.js';
+import BPMNOSAnnotationRules from './BPMNOSAnnotationRules.js';
 
 // Execution data boxes: a bpmn:TextAnnotation marked with bpmnos:annotation, attached to the element it
 // describes by a bpmn:Association, its content rendered from the element's BPMNOS extensions.

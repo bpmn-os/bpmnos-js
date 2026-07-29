@@ -1,4 +1,4 @@
-import ExecutionData from './ExecutionData';
+import ExecutionData from './ExecutionData.js';
 
 // The execution data registry: which attributes a node declares and inherits, an attribute by id, and the
 // nodes an attribute id is visible at. Depends on nothing else of BPMNOS and touches no canvas API.

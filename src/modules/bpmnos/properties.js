@@ -1,5 +1,5 @@
-import BPMNOSPropertiesProvider from './BPMNOSPropertiesProvider';
-import BPMNOSPropertiesUpdater from './BPMNOSPropertiesUpdater';
+import BPMNOSPropertiesProvider from './BPMNOSPropertiesProvider.js';
+import BPMNOSPropertiesUpdater from './BPMNOSPropertiesUpdater.js';
 
 // The properties-panel provider for the BPMNOS attributes plus its updater.
 export default {

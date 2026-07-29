@@ -7,8 +7,8 @@ The demo is available online at [bpmn-os.github.io/bpmnos-js](https://bpmn-os.gi
 
 ## Modules
 
-The BPMNOS extension is three reusable modules, importable individually or together (`bpmnos-js`
-bundles all three):
+The BPMNOS extension is a set of reusable modules, each importable on its own. The package's own entry
+point, `bpmnos-js`, brings the decision task and the properties panel together.
 
 - **`bpmnos-js/moddle`**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
   operators, messages, guidance, and lookup tables.
@@ -20,6 +20,13 @@ bundles all three):
   `activityPopupMenu: { unlockedTriggeredByEvent: true }`.
 - **`bpmnos-js/properties`**: a properties-panel provider for the BPMNOS attributes, shown as a tab in
   the side panel.
+- **`bpmnos-js/execution-data`**: the execution data registry, a diagram-js module providing the
+  `executionData` service, which reports the status, data and global attributes each element declares and
+  inherits, outermost first and the element's own last, which is the order a token carries them in.
+- **`bpmnos-js/collect-execution-data`**: the function that registry is built from,
+  `collectExecutionData(definitions)`, which reads a parsed `bpmn:Definitions` and returns the same
+  registry. It touches no canvas and depends on no part of bpmn-js, so it serves a headless consumer, a
+  test or a lint rule as well as the modeller does.
 
 ## Demo modeller
 
