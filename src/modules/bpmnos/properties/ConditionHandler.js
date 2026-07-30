@@ -3,23 +3,23 @@ import {
   isAny
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import RestrictionEntries from './RestrictionEntries';
+import RestrictionEntries from './RestrictionEntries.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getRelevantBusinessObject,
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 import {
   isConditionSupported
-} from '../utils/EventDefinitionUtil';
+} from '../utils/EventDefinitionUtil.js';
 
 // Creates restrictions entry and returns { items, add }
 export function conditionHandler({ element, injector }) {

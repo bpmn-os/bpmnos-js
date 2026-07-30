@@ -5,7 +5,7 @@ import {
 
 import { without } from 'min-dash';
 
-import { getCustomItem } from './utils/CustomItemUtil';
+import { getCustomItem } from './utils/CustomItemUtil.js';
 
 export default function BPMNOSPropertiesUpdater(eventBus,commandStack) {
 

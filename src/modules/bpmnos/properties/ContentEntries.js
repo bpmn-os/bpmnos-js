@@ -2,7 +2,7 @@ import { CollapsibleEntry, TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import { getStatus, getBusinessObject } from '../utils/StatusUtil';
+import { getStatus, getBusinessObject } from '../utils/StatusUtil.js';
 
 export function Content(props) {
   const {

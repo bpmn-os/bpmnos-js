@@ -19,23 +19,23 @@ import CollapseEventSubProcessModule from 'bpmn-js-collapse-event-subprocess'; /
 import EventSubProcessPaletteModule from 'bpmn-js-collapse-event-subprocess/palette'; // palette entry to create event sub-processes
 
 import LintModule from 'bpmn-js-bpmnlint';
-import getRules from './modules/rules'; // reused essential + BPMNOS engine/execution lint rules (bundle carries descriptions)
+import getRules from './modules/rules/index.js'; // reused essential + BPMNOS engine/execution lint rules (bundle carries descriptions)
 import IssuesPanelModule from 'bpmn-workbench/issues'; // self-registering "Issues" side-panel tab (owned by bpmn-workbench)
 import createToolbar from 'bpmn-workbench/toolbar'; // on-canvas file/view toolbar (open/save/export/zoom)
 
 import BPMNOSModdleDescriptor from './modules/bpmnos/bpmnos.json';
-import BPMNOSModule from './modules/bpmnos'; // moddle-backed properties panel, decision-task decorator + popup menu
+import BPMNOSModule from './modules/bpmnos/index.js'; // moddle-backed properties panel, decision-task decorator + popup menu
 
 // BPMNOS annotations: a marked bpmn:TextAnnotation per element, attached by an association, showing the
 // element's execution data
-import BPMNOSAnnotationModule from './modules/bpmnos/annotation';
+import BPMNOSAnnotationModule from './modules/bpmnos/annotation.js';
 
 // the execution data registry the annotation (and bpmnosdoc) read from
-import ExecutionDataModule from './modules/bpmnos/execution-data';
+import ExecutionDataModule from './modules/bpmnos/execution-data.js';
 
 import newDiagram from './newDiagram.bpmn?raw';
 
-import ContextPadCompatModule from './context-pad-compat'; // shim bpmn-js's deprecated ContextPad#getPad call
+import ContextPadCompatModule from './context-pad-compat.js'; // shim bpmn-js's deprecated ContextPad#getPad call
 
 var moddleExtensions = {
   bpmnos: BPMNOSModdleDescriptor

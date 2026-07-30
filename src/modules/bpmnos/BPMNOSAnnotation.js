@@ -1,5 +1,5 @@
-import { getAnnotation, isHidden, VISIBLE, HIDDEN } from './utils/AnnotationUtil';
-import { layout } from './utils/AnnotationLayout';
+import { getAnnotation, isHidden, VISIBLE, HIDDEN } from './utils/AnnotationUtil.js';
+import { layout } from './utils/AnnotationLayout.js';
 
 // default width; the user owns it from then on, while the height always follows the content
 export const DEFAULT_WIDTH = 180;

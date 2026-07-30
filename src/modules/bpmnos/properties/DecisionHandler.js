@@ -1,16 +1,16 @@
-import DecisionEntries from './DecisionEntries';
+import DecisionEntries from './DecisionEntries.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getRelevantBusinessObject,
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 
 // Creates decisions entry and returns { items, add }

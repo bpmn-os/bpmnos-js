@@ -3,7 +3,7 @@ import {
   isAny
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import SignalEntries from './SignalEntries';
+import SignalEntries from './SignalEntries.js';
 
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
@@ -11,11 +11,11 @@ import { useService } from 'bpmn-js-properties-panel';
 
 import {
   getCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
 import {
   isSignalSupported
-} from '../utils/EventDefinitionUtil';
+} from '../utils/EventDefinitionUtil.js';
 
 
 /**

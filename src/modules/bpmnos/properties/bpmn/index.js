@@ -1,4 +1,4 @@
-export { DocumentationProps } from './DocumentationProps';
-export { IdProps } from './IdProps';
-export { NameProps } from './NameProps';
-export { ProcessProps } from './ProcessProps';
+export { DocumentationProps } from './DocumentationProps.js';
+export { IdProps } from './IdProps.js';
+export { NameProps } from './NameProps.js';
+export { ProcessProps } from './ProcessProps.js';

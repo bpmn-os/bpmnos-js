@@ -6,13 +6,13 @@ import { TextFieldEntry, SelectEntry, ListEntry } from '@bpmn-io/properties-pane
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import IdEntry from './IdEntry';
+import IdEntry from './IdEntry.js';
 
-import { Parameter, ParameterEntries } from './ParameterEntries';
+import { Parameter, ParameterEntries } from './ParameterEntries.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import { without } from 'min-dash';
 

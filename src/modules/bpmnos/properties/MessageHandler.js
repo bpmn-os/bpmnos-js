@@ -3,7 +3,7 @@ import {
   isAny
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import MessageEntries from './MessageEntries';
+import MessageEntries from './MessageEntries.js';
 
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
@@ -11,11 +11,11 @@ import { useService } from 'bpmn-js-properties-panel';
 
 import {
   getCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
 import {
   isMessageSupported
-} from '../utils/EventDefinitionUtil';
+} from '../utils/EventDefinitionUtil.js';
 
 
 /**

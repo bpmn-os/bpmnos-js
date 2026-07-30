@@ -2,19 +2,19 @@ import {
   is
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import OperatorEntries from './OperatorEntries';
+import OperatorEntries from './OperatorEntries.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getRelevantBusinessObject,
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 // Creates operators entry and returns { items, add }
 export function operatorHandler({ element, injector }) {

@@ -1,4 +1,4 @@
-import { unsupportedNode } from './helper';
+import { unsupportedNode } from './helper.js';
 
 /**
  * A rule reporting inclusive gateways, which the engine does not run.

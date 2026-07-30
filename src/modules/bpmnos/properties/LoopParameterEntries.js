@@ -2,7 +2,7 @@ import { CollapsibleEntry, TextFieldEntry, SelectEntry } from '@bpmn-io/properti
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import { getStatus, getBusinessObject } from '../utils/StatusUtil';
+import { getStatus, getBusinessObject } from '../utils/StatusUtil.js';
 
 export function LoopParameter(props) {
   const {

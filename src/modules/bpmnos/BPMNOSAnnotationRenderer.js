@@ -8,8 +8,8 @@ import {
 
 import BpmnRenderer from 'bpmn-js/lib/draw/BpmnRenderer';
 
-import { isAnnotation } from './utils/AnnotationUtil';
-import { layout, DOUBLE_GAP, PADDING_X } from './utils/AnnotationLayout';
+import { isAnnotation } from './utils/AnnotationUtil.js';
+import { layout, DOUBLE_GAP, PADDING_X } from './utils/AnnotationLayout.js';
 
 /**
  * The disclosure caret of `bpmn-js-side-panel`, so a fold on the canvas is the same sign as a fold in the

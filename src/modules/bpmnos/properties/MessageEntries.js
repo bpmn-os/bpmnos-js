@@ -2,17 +2,17 @@ import { ListEntry, TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import { Content, ContentEntries } from './ContentEntries';
-import { Parameter, ParameterEntries } from './ParameterEntries';
+import { Content, ContentEntries } from './ContentEntries.js';
+import { Parameter, ParameterEntries } from './ParameterEntries.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
 import { without } from 'min-dash';
 

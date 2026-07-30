@@ -1,5 +1,5 @@
-import { getAnnotationContent } from './AnnotationContent';
-import { getHost, isCollapsed } from './AnnotationUtil';
+import { getAnnotationContent } from './AnnotationContent.js';
+import { getHost, isCollapsed } from './AnnotationUtil.js';
 
 // Row metrics of the box. A UML-class-diagram shape in spirit: the header names the element, then one
 // compartment per kind of declaration, separated by full-width rules.

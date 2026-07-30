@@ -7,22 +7,22 @@ import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import { getStatus } from '../utils/StatusUtil';
+import { getStatus } from '../utils/StatusUtil.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 import {
   isTimerSupported
-} from '../utils/EventDefinitionUtil';
+} from '../utils/EventDefinitionUtil.js';
 
 /**
  * @returns {Array<Entry>} entries

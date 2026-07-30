@@ -2,7 +2,7 @@ import { TextFieldEntry, SelectEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import IdEntry from './IdEntry';
+import IdEntry from './IdEntry.js';
 
 export default function DecisionEntries(props) {
 

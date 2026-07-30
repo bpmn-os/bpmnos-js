@@ -6,7 +6,7 @@ import { useService } from 'bpmn-js-properties-panel';
 
 import {
   isIdValid
-} from '../../utils/ValidationUtil';
+} from '../../utils/ValidationUtil.js';
 
 /**
  * @typedef { import('@bpmn-io/properties-panel').EntryDefinition } Entry

@@ -7,17 +7,17 @@ import {
 
 import {
   getRelevantBusinessObject,
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
 import {
   isMessageSupported
-} from '../utils/EventDefinitionUtil';
+} from '../utils/EventDefinitionUtil.js';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import AttributesList from './GuidingAttributesList';
-import RestrictionsList from './GuidingRestrictionsList';
-import OperatorsList from './GuidingOperatorsList';
+import AttributesList from './GuidingAttributesList.js';
+import RestrictionsList from './GuidingRestrictionsList.js';
+import OperatorsList from './GuidingOperatorsList.js';
 
 export default function GuidanceEntries(props) {
   const {

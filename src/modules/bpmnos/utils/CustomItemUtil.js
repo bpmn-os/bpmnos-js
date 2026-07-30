@@ -1,10 +1,10 @@
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 
-import { getExtensionElementsList } from './ExtensionElementsUtil';
+import { getExtensionElementsList } from './ExtensionElementsUtil.js';
 
 import {
   createElement,
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 export function getCustomItems(element, type = undefined) {
   var businessObject = getRelevantBusinessObject(element);

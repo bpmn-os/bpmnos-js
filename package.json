@@ -46,7 +46,7 @@
     "bpmn-js-collapse-event-subprocess": "^0.3.0",
     "bpmn-js-properties-panel": "^5.60.0",
     "bpmn-js-side-panel": "github:bpmn-os/bpmn-js-side-panel#d037036f451a1d722915405a50072e4d34c7599f",
-    "bpmn-workbench": "github:bpmn-os/bpmn-workbench#8ba110b424cd5589df891ba2c0d93c7b661acf5c",
+    "bpmn-workbench": "github:bpmn-os/bpmn-workbench#0f33722f0b5c6505cff9adcf82a6bd5e28996aa8",
     "bpmnlint": "^10.3.0",
     "bpmnlint-utils": "^1.1.1",
     "diagram-js": "^15.18.0",

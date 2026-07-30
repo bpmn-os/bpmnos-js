@@ -1,10 +1,10 @@
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import { 
   CollapsibleEntry,
@@ -13,7 +13,7 @@ import {
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import OperatorEntries from './OperatorEntries';
+import OperatorEntries from './OperatorEntries.js';
 
 
 export default function OperatorsList(props) {

@@ -1,5 +1,5 @@
-import { getStatus } from '../../bpmnos/utils/StatusUtil';
-import { getCustomElements } from '../../bpmnos/utils/StatusUtil';
+import { getStatus } from '../../bpmnos/utils/StatusUtil.js';
+import { getCustomElements } from '../../bpmnos/utils/StatusUtil.js';
 
 import { is, isAny } from 'bpmnlint-utils';
 

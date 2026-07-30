@@ -9,8 +9,8 @@ import {
   getHost,
   isProtectedAssociation,
   toggleCollapsed
-} from './utils/AnnotationUtil';
-import { layout, HEADER_HEIGHT } from './utils/AnnotationLayout';
+} from './utils/AnnotationUtil.js';
+import { layout, HEADER_HEIGHT } from './utils/AnnotationLayout.js';
 
 // runs after bpmn-js's TextAnnotationBehavior, which would otherwise derive the height from the (empty) text
 const RESIZE_PRIORITY = 500;

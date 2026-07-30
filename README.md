@@ -152,6 +152,18 @@ essential rules and adds engine and execution rules, applied more strictly for e
 
 Simulation is out of scope here. It is reserved for a future bpmnos-workbench.
 
+## Loading the package outside a bundle
+
+Every relative import names the file it resolves to and JSON is imported with the attribute Node requires, so
+the modules of this package load in Node as they do in a bundler. That is what makes a rule testable, a
+corpus checkable with `bpmnosdoc`, and the execution data registry usable by any tool holding a parsed
+`bpmn:Definitions`.
+
+The properties panel is the exception, and deliberately so: it is preact JSX written in `.js` files, which
+Node cannot parse whatever its imports say. `bpmnos-js`, `bpmnos-js/properties` and `bpmnos-js/decision-task`
+are therefore for a bundler; `./rules`, `./execution-data`, `./collect-execution-data`, `./identifiers`,
+`./collect-identifiers`, `./annotation` and `./moddle` load anywhere.
+
 ## Development
 
 ```sh

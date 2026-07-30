@@ -4,7 +4,9 @@
 // The bundle carries the rule descriptions, so the Issues panel needs no extra wiring.
 
 import { createRules, createContext, ruleContext } from "bpmn-workbench/rules";
-import rules from "./rules.json";
+// the import attribute is what Node requires of a JSON module, and every bundler in use accepts it, so the
+// rule set is loadable outside a bundle — which is what makes a rule testable and a corpus checkable
+import rules from "./rules.json" with { type: 'json' };
 
 // This package's rule implementations, imported explicitly and assembled into a context with
 // createContext. No require.context or import.meta.glob, so the module is bundler-agnostic (works under

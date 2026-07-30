@@ -1,6 +1,6 @@
 import {
   getRelevantBusinessObject
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
 import {
   is
@@ -12,12 +12,12 @@ import { useService } from 'bpmn-js-properties-panel';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
 /**
  * @typedef { import('@bpmn-io/properties-panel').EntryDefinition } Entry

@@ -1,4 +1,4 @@
-import { canHaveAnnotation, isAnnotation, isHidden, getHost } from './utils/AnnotationUtil';
+import { canHaveAnnotation, isAnnotation, isHidden, getHost } from './utils/AnnotationUtil.js';
 
 // bpmn-js puts "Add text annotation" in the 'model' group; joining it and following that key puts our entry
 // right next to the annotation icon in the pad.

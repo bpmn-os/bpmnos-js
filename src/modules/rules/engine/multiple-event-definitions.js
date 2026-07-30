@@ -1,4 +1,4 @@
-import { requiresCheck } from './helper';
+import { requiresCheck } from './helper.js';
 
 import { is, } from 'bpmnlint-utils';
 

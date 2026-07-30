@@ -1,6 +1,6 @@
 import { is, isAny } from 'bpmnlint-utils';
 
-import { requiresCheck } from './helper';
+import { requiresCheck } from './helper.js';
 
 export default function () {
   function check(node, reporter) {

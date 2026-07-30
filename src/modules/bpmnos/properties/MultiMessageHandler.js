@@ -3,18 +3,18 @@ import {
   isAny
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import MessageEntries from './MessageEntries';
+import MessageEntries from './MessageEntries.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import {
   getCustomItem,
   ensureCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 // Creates messages entry and returns { items, add }
 export function multiMessageHandler({ element, injector }) {

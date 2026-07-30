@@ -8,11 +8,11 @@ import { useCallback } from '@bpmn-io/properties-panel/preact/hooks';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import IdEntry from './IdEntry';
+import IdEntry from './IdEntry.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import { without } from 'min-dash';
 

@@ -6,13 +6,13 @@ import {
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import IdEntry from './IdEntry';
+import IdEntry from './IdEntry.js';
 
-import { getStatus, getBusinessObject } from '../utils/StatusUtil';
+import { getStatus, getBusinessObject } from '../utils/StatusUtil.js';
 
 import {
   createElement
-} from '../utils/ElementUtil';
+} from '../utils/ElementUtil.js';
 
 import { without } from 'min-dash';
 

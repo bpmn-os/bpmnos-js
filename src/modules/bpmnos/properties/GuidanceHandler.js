@@ -2,19 +2,19 @@ import {
   is
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import GuidanceEntries from './GuidanceEntries';
+import GuidanceEntries from './GuidanceEntries.js';
 
 import {
   getRelevantBusinessObject,
   getCustomItems,
   createCustomItem
-} from '../utils/CustomItemUtil';
+} from '../utils/CustomItemUtil.js';
 
-import { removeCustomItemCommands } from '../utils/RemovalUtil';
+import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
 import {
   isMessageSupported
-} from '../utils/EventDefinitionUtil';
+} from '../utils/EventDefinitionUtil.js';
 
 
 // Creates guidance entry and returns { items, add }

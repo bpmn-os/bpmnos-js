@@ -2,7 +2,7 @@ import inherits from 'inherits';
 
 import RuleProvider from 'diagram-js/lib/features/rules/RuleProvider';
 
-import { isProtectedAssociation, isAnnotationAssociation } from './utils/AnnotationUtil';
+import { isProtectedAssociation, isAnnotationAssociation } from './utils/AnnotationUtil.js';
 
 const HIGH_PRIORITY = 1500;
 

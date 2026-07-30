@@ -5,24 +5,24 @@ import {
   IdProps,
   NameProps,
   DocumentationProps
-} from './properties/bpmn/';
+} from './properties/bpmn/index.js';
 
 
-import { ExecutableProps } from './properties/ExecutableProps';
-import { SequentialPerformerProps } from './properties/SequentialPerformerProps';
-import { AdHocOrderingProps } from './properties/AdHocOrderingProps';
-import { loopParameterHandler } from './properties/LoopParameterHandler';
-import { attributeHandler } from './properties/AttributeHandler';
-import { decisionHandler } from './properties/DecisionHandler';
-import { restrictionHandler } from './properties/RestrictionHandler';
-import { conditionHandler } from './properties/ConditionHandler';
-import { operatorHandler } from './properties/OperatorHandler';
-import { multiMessageHandler } from './properties/MultiMessageHandler';
-import { messageHandler } from './properties/MessageHandler';
-import { signalHandler } from './properties/SignalHandler';
-import { timerHandler } from './properties/TimerHandler';
-import { guidanceHandler } from './properties/GuidanceHandler';
-import { tableHandler } from './properties/TableHandler';
+import { ExecutableProps } from './properties/ExecutableProps.js';
+import { SequentialPerformerProps } from './properties/SequentialPerformerProps.js';
+import { AdHocOrderingProps } from './properties/AdHocOrderingProps.js';
+import { loopParameterHandler } from './properties/LoopParameterHandler.js';
+import { attributeHandler } from './properties/AttributeHandler.js';
+import { decisionHandler } from './properties/DecisionHandler.js';
+import { restrictionHandler } from './properties/RestrictionHandler.js';
+import { conditionHandler } from './properties/ConditionHandler.js';
+import { operatorHandler } from './properties/OperatorHandler.js';
+import { multiMessageHandler } from './properties/MultiMessageHandler.js';
+import { messageHandler } from './properties/MessageHandler.js';
+import { signalHandler } from './properties/SignalHandler.js';
+import { timerHandler } from './properties/TimerHandler.js';
+import { guidanceHandler } from './properties/GuidanceHandler.js';
+import { tableHandler } from './properties/TableHandler.js';
 
 const LOW_PRIORITY = 500;
 
