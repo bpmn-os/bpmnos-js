@@ -13,7 +13,11 @@ bundler.
 
 Added since: the **execution data registry** (what a node declares and inherits), the **annotation box**
 that renders it on the canvas, **bpmnosdoc**, which generates model documentation from it, and the
-**identifier registry** (which identifiers a process has taken), with the first tests.
+**identifier registry** (which identifiers a process has taken), with the first tests. Added with sprint 02:
+the **message rules**, `bpmnos/message-header.js` and `bpmnos/message-candidate.js`, which hold a model to
+what the engine requires of a header (an attribute or a quoted string, so that every entry has a type) and
+to being paired with an event that may exchange the message (same name, same keys of the same type, message
+flows permitting it); both read a model through `bpmnos/message.js`.
 
 ## Commands
 

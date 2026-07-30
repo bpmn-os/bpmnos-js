@@ -26,6 +26,8 @@ import * as attributeObjective from "./bpmnos/attribute-objective.js";
 import * as gatekeeper from "./bpmnos/gatekeeper.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
 import * as loopParameters from "./bpmnos/loop-parameters.js";
+import * as messageHeader from "./bpmnos/message-header.js";
+import * as messageCandidate from "./bpmnos/message-candidate.js";
 
 // Rule sources: '' = this package's local rules (engine/**, bpmnos/**); '@bpmn-workbench' = the
 // essential rules, via the context bpmn-workbench exports.
@@ -44,7 +46,9 @@ const sources = {
     "./bpmnos/attribute-objective.js": attributeObjective,
     "./bpmnos/gatekeeper.js": gatekeeper,
     "./bpmnos/event-trigger.js": eventTrigger,
-    "./bpmnos/loop-parameters.js": loopParameters
+    "./bpmnos/loop-parameters.js": loopParameters,
+    "./bpmnos/message-header.js": messageHeader,
+    "./bpmnos/message-candidate.js": messageCandidate
   }),
   "@bpmn-workbench": ruleContext
 };

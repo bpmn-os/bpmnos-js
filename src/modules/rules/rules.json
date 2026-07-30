@@ -280,5 +280,30 @@
         "description": "A loop maximum bounds the loop index, so the activity must name an index attribute to count in. Without it the engine fails when the activity is entered."
       }
     }
+  },
+  "bpmnos/message-header.js": {
+    "severity": "error",
+    "subtypes": {
+      "illegalValue": {
+        "description": "A header parameter states the name of a declared attribute or a quoted string. The engine needs the type of every header entry when it reads the model, and only these two state one: an unquoted string names no attribute, and an expression states a value whose type follows from a run. A parameter without a value is permitted and means that the entry holds no value, which every value held under that name matches."
+      },
+      "identifierNotString": {
+        "description": "The header entries name, sender and recipient hold a message name and the instance identifiers of the sending and the receiving token, so a parameter stating one of them states a string."
+      }
+    }
+  },
+  "bpmnos/message-candidate.js": {
+    "severity": "error",
+    "subtypes": {
+      "noMessage": {
+        "description": "A message event exchanges the message it defines, so an event without a bpmnos:message exchanges nothing."
+      },
+      "noRecipient": {
+        "description": "A message is delivered only to an event the engine pairs with the sender, which requires the same message name, the same header keys holding values of the same type, and message flows permitting the pair. A message no catching event is paired with is never delivered, whatever a run computes. Whether the values of a header agree is decided by a run and is not checked here."
+      },
+      "noSender": {
+        "description": "A message is received only from an event the engine pairs with the recipient, which requires the same message name, the same header keys holding values of the same type, and message flows permitting the pair. A message no throwing event is paired with is never received, whatever a run computes. Whether the values of a header agree is decided by a run and is not checked here."
+      }
+    }
   }
 }

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="messages" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration">
+    <bpmn:participant id="Sender" processRef="SendingProcess" />
+    <bpmn:participant id="Recipient" processRef="ReceivingProcess" />
+    <bpmn:participant id="Bystander" processRef="BystandingProcess" />
+    <bpmn:messageFlow id="RequestFlow" sourceRef="SendRequest" targetRef="ReceiveRequest" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="SendingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
+          <bpmnos:attribute id="Machine" name="machine" type="string" />
+          <bpmnos:attribute id="Count" name="count" type="integer" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:sendTask id="SendRequest">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Request">
+            <bpmnos:parameter name="machine" value="machine" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="SendIllegal">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Illegal">
+            <bpmnos:parameter name="machine" value="count + 1" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="SendToNumber">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Numbered">
+            <bpmnos:parameter name="recipient" value="count" />
+            <bpmnos:parameter name="machine" value="machine" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="SendCounted">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Counted">
+            <bpmnos:parameter name="key" value="count" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="SendUnheard">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Unheard" />
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:sendTask>
+  </bpmn:process>
+
+  <bpmn:process id="ReceivingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
+          <bpmnos:attribute id="Machine" name="machine" type="string" />
+          <bpmnos:attribute id="Label" name="label" type="string" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:receiveTask id="ReceiveRequest">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Request">
+            <bpmnos:parameter name="machine" value="machine" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+    <bpmn:receiveTask id="ReceiveIllegal">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Illegal">
+            <bpmnos:parameter name="machine" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+    <bpmn:receiveTask id="ReceiveNumbered">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Numbered">
+            <bpmnos:parameter name="machine" value="machine" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+    <bpmn:receiveTask id="ReceiveLabelled">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Counted">
+            <bpmnos:parameter name="key" value="label" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+    <bpmn:intermediateCatchEvent id="CatchWithoutMessage">
+      <bpmn:messageEventDefinition id="MessageEventDefinition" />
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+
+  <bpmn:process id="BystandingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
+          <bpmnos:attribute id="Machine" name="machine" type="string" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:receiveTask id="ReceiveElsewhere">
+      <bpmn:extensionElements>
+        <bpmnos:messages>
+          <bpmnos:message name="Request">
+            <bpmnos:parameter name="machine" value="machine" />
+          </bpmnos:message>
+        </bpmnos:messages>
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+  </bpmn:process>
+</bpmn:definitions>

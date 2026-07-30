@@ -150,6 +150,15 @@ Issues tab and the essential model-checking rules come from
 [bpmn-js-side-panel](https://github.com/bpmn-os/bpmn-js-side-panel). The BPMNOS rule set reuses the
 essential rules and adds engine and execution rules, applied more strictly for execution.
 
+Two of them concern messages, and both state what the execution engine requires of a model it reads. The
+parameters of a message header must state the name of a declared attribute or a quoted string, so that the
+type of every header entry is known before a run begins; a parameter without a value is permitted and means
+that the entry holds no value, which every value held under that name matches. And a message event must be
+paired with an event that may exchange its message, which requires the same message name, the same header
+keys holding values of the same type, and message flows permitting the two. Whether the values of a header
+agree is decided while a model runs and is checked nowhere here, so a pair the rules accept may still
+exchange nothing; what the rules report is an event that no run whatever could pair with.
+
 Simulation is out of scope here. It is reserved for a future bpmnos-workbench.
 
 ## Loading the package outside a bundle
