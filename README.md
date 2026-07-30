@@ -222,6 +222,27 @@ bpmnos2svg <file.bpmn> [-o <outputDir>]
 bpmnos2svg -s <serverURL> <file.bpmn> [-o <outputDir>]
 ```
 
+## Documenting a model (`bpmnosdoc`)
+
+`bpmnosdoc` is the second command-line tool this package ships, and it writes the documentation of a model:
+one markdown file per model, holding the diagrams and, for every node, what the model says about it and what
+that node declares and inherits. The diagrams are rendered by `bpmnos2svg`'s renderer, so a collapsed
+sub-process gets a diagram of its own, and the execution data comes from the `executionData` registry, which
+is the same implementation the modeller answers from. A model's own documentation elements are carried
+through, so what the modeller writes about a process is what the reader of the documentation gets.
+
+It is installed and prepared exactly as `bpmnos2svg` is, sharing its `npm link` and its headless Chrome.
+
+```sh
+bpmnosdoc <model.bpmn> [...] [-o <outDir>]
+```
+
+Each model named yields `<model>.md` beside one `.svg` per plane, in the output directory, which defaults to
+the working directory. Several models may be given at once, and one browser serves them all.
+
+Running it over the corpus of `BPMNOSInstances.jl` is how this package's registry is checked against real
+models, and it is what has caught every registry fault so far.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
