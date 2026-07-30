@@ -84,7 +84,7 @@ export default class BPMNOSAnnotationContextPad {
       const entry = !box
         ? {
           className: 'bpmnos-icon-annotation-show',
-          title: translate('Create execution data'),
+          title: translate('Show execution data'),
           action: function(event, element) {
             annotation.create(element);
           }
