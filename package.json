@@ -8,6 +8,7 @@
     ".": "./src/modules/bpmnos/index.js",
     "./moddle": "./src/modules/bpmnos/bpmnos.json",
     "./decision-task": "./src/modules/bpmnos/decision-task.js",
+    "./decision-task-symbol": "./src/modules/bpmnos/decisionTaskSymbol.js",
     "./properties": "./src/modules/bpmnos/properties.js",
     "./annotation": "./src/modules/bpmnos/annotation.js",
     "./bpmnos.css": "./src/modules/bpmnos/css/bpmnos.css",

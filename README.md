@@ -18,6 +18,15 @@ point, `bpmnos-js`, brings the decision task and the properties panel together.
   so a sub-process never becomes a typed task directly. Flipping an activity's `triggeredByEvent`
   (flow activity to event sub-process and back) is locked by default and unlocked via
   `activityPopupMenu: { unlockedTriggeredByEvent: true }`.
+- **`bpmnos-js/decision-task-symbol`**: the decision task drawn away from the canvas.
+  `createDecisionTaskSymbol({ width, height, color })` returns one SVG element holding BPMN's task outline,
+  the branching arrow in the upper left where BPMN places a typed task's marker, and, where a colour is
+  given, a token on the middle of the upper boundary. The outline and the marker take `currentColor`, and
+  the drawing is a single element, so it is sized and coloured by its container and needs nothing of a
+  stylesheet. It is drawn on the square `bpmn-font` draws BPMN's own symbols on, so a decision task sits
+  beside a participant or a manual task at one size and one line weight. The marker is exported on its own
+  as `BRANCHING_ARROW` with `MARKER_STROKE_WIDTH`, and the renderer of `bpmnos-js/decision-task` draws the
+  shape from those same constants, so the glyph on a diagram and the glyph in a list cannot drift apart.
 - **`bpmnos-js/properties`**: a properties-panel provider for the BPMNOS attributes, shown as a tab in
   the side panel.
 - **`bpmnos-js/execution-data`**: the execution data registry, a diagram-js module providing the
