@@ -12,9 +12,10 @@ import { isAnnotation } from './utils/AnnotationUtil.js';
 import { layout, DOUBLE_GAP, PADDING_X } from './utils/AnnotationLayout.js';
 
 /**
- * The disclosure caret of `bpmn-js-side-panel`, so a fold on the canvas is the same sign as a fold in the
- * panel. The path is that component's own, a rounded corner turned by 45 degrees, and it points right while
- * the group is folded and down while it is open, as the panel turns it by 90 degrees when it opens.
+ * The disclosure caret `bpmn-js-side-panel` draws, so a fold on the canvas is the same sign as a fold in
+ * the panel. The path is `@bpmn-io/properties-panel`'s, which that panel takes for the same reason: a
+ * rounded corner turned by 45 degrees, pointing right while the group is folded and down while it is open,
+ * as the panel turns it by 90 degrees when it opens.
  */
 const CARET = 'M10,12 L3,12 C2.44771525,12 2,11.5522847 2,11 C2,10.4477153 2.44771525,10 3,10 ' +
   'L8,10 L8,5 C8,4.44771525 8.44771525,4 9,4 C9.55228475,4 10,4.44771525 10,5 L10,12 Z';
