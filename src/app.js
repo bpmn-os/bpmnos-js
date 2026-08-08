@@ -4,6 +4,7 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 import '@bpmn-io/properties-panel/dist/assets/properties-panel.css';
 import 'bpmn-js-bpmnlint/dist/assets/css/bpmn-js-bpmnlint.css';
 import 'bpmn-js-side-panel/assets/side-panel.css';
+import 'bpmn-js-toolbar/assets/toolbar.css';
 import './modules/bpmnos/css/bpmnos.css';
 import './app.less';
 
@@ -21,7 +22,7 @@ import EventSubProcessPaletteModule from 'bpmn-js-collapse-event-subprocess/pale
 import LintModule from 'bpmn-js-bpmnlint';
 import getRules from './modules/rules/index.js'; // reused essential + BPMNOS engine/execution lint rules (bundle carries descriptions)
 import IssuesPanelModule from 'bpmn-workbench/issues'; // self-registering "Issues" side-panel tab (owned by bpmn-workbench)
-import createToolbar from 'bpmn-workbench/toolbar'; // on-canvas file/view toolbar (open/save/export/zoom)
+import createToolbar from 'bpmn-js-toolbar';         // on-canvas file/view toolbar (load/save/export/zoom)
 
 import BPMNOSModdleDescriptor from './modules/bpmnos/bpmnos.json';
 import BPMNOSModule from './modules/bpmnos/index.js'; // moddle-backed properties panel, decision-task decorator + popup menu
@@ -87,7 +88,7 @@ window.modeler = modeler;
 
 modeler.importXML(newDiagram);
 
-// On-canvas file/view toolbar (open, save, export SVG, centre, zoom) — packaged by bpmn-workbench.
+// On-canvas file/view toolbar (load, save, export SVG, centre, zoom) — the bpmn-js-toolbar package.
 createToolbar(modeler);
 
 // Optional deep-linking: ?src=<url> loads a diagram on startup.
