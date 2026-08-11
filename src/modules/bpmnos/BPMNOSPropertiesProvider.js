@@ -28,6 +28,7 @@ const LOW_PRIORITY = 500;
 
 const EXECUTION_GROUPS = [
 { label: 'Loop parameters', id: 'loop', component: ListGroup, handler: loopParameterHandler},
+// the attribute handler names its own group, Status, Data or Globals, for what the element declares
 { label: 'Attributes', id: 'attributes', component: ListGroup, handler: attributeHandler},
 { label: 'Decisions', id: 'decisions', component: ListGroup, handler: decisionHandler},
 { label: 'Restrictions', id: 'restrictions', component: ListGroup, handler: restrictionHandler},
@@ -38,7 +39,7 @@ const EXECUTION_GROUPS = [
 { label: 'Signal', id: 'signal', handler: signalHandler},
 { label: 'Timer', id: 'attribute', component: Group, handler: timerHandler},
 { label: 'Guidance', id: 'guidance', component: ListGroup, handler: guidanceHandler},
-{ label: 'Lookup table', id: 'table', component: ListGroup, handler: tableHandler}
+{ label: 'Lookup tables', id: 'table', component: ListGroup, handler: tableHandler}
 ];
 
 export default class BPMNOSPropertiesProvider {

@@ -11,11 +11,11 @@ import { CheckboxEntry, isCheckboxEntryEdited } from '@bpmn-io/properties-panel'
 import { useService } from 'bpmn-js-properties-panel';
 
 import {
-  createElement
+  createElement,
+  getRoot
 } from '../utils/ElementUtil.js';
 
 import {
-  getCustomItem,
   ensureCustomItem
 } from '../utils/CustomItemUtil.js';
 
@@ -112,33 +112,109 @@ function hasProcessRef(element) {
   return is(element, 'bpmn:Participant') && element.businessObject.get('processRef');
 }
 
+// whether the process already declares the instance, on whichever of its data objects it declares it
 function hasInstanceAttribute(businessObject) {
-  if ( !businessObject.flowElements ) {
-    businessObject.flowElements = [];
+  return (businessObject.get('flowElements') || [])
+    .filter(flowElement => is(flowElement, 'bpmn:DataObject'))
+    .some(dataObject => attributesOf(dataObject).some(attribute => attribute.get('id') == "Instance"));
+}
+
+/**
+ * The attributes an executable model always declares, whichever of them it is still missing.
+ *
+ * A process declares `Timestamp` in its status and `Instance` on a data object of its own, and the model
+ * declares `Objective` among its globals. The first two are declared once per process, since each process
+ * is instantiated on its own and carries a time and an identity of its own. The third is declared once for
+ * the whole model, an objective being what a run accumulates rather than what a process holds, which is
+ * why making a second process executable adds nothing to it.
+ */
+/**
+ * The `bpmnos:Attribute`s an element declares directly, whichever of its extension values holds them.
+ *
+ * The extension values are searched rather than the first of them taken, since an element may carry an
+ * extension of another kind before the attributes, and a model is not to be read as declaring nothing
+ * because of the order its extensions happen to stand in.
+ */
+function attributesOf(moddleElement) {
+  const extensionElements = moddleElement.get('extensionElements'),
+        values = extensionElements ? extensionElements.get('values') || [] : [];
+
+  return values
+    .filter(value => is(value, 'bpmnos:Attributes'))
+    .flatMap(attributes => attributes.get('attribute') || []);
+}
+
+// whether the model already declares the objective, wherever among its data stores it was declared
+function hasObjectiveAttribute(definitions) {
+  return (definitions.get('rootElements') || [])
+    .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
+    .some(dataStore => attributesOf(dataStore).some(attribute => attribute.get('id') === 'Objective'));
+}
+
+/**
+ * Declare the objective among the globals of the model, unless the model declares it already.
+ *
+ * A global is declared by a `bpmn:DataStore`, so the objective is declared by one of its own that no
+ * reference points at, exactly as `Instance` sits on a data object no reference points at. It needs none:
+ * a reference is how a reader is shown that a process uses a store and how the editor is offered for it,
+ * and the objective is neither the reader's to place nor theirs to edit.
+ *
+ * It carries neither an objective nor a weight, which is what keeps it from counting towards itself, and
+ * it is initialised to zero.
+ *
+ * The store is built whole and attached in one command, nothing observing it until it is attached, so the
+ * whole declaration is one step of the command stack.
+ */
+function ensureObjectiveAttribute(element, definitions, bpmnFactory, commandStack) {
+  if ( hasObjectiveAttribute(definitions) ) {
+    return;
   }
-  
-  let dataObjects = businessObject.flowElements.filter((element) => {
-    return element.$type === 'bpmn:DataObject' && element.extensionElements && element.extensionElements.values.length;
-  });
-  for ( let dataObject of dataObjects ) {
-    for ( let attribute of dataObject.extensionElements.values[0].get('attribute') ) {
-      if ( attribute.id == "Instance" ) {
-        return true;
-      }
+
+  const dataStore = createElement('bpmn:DataStore', {}, definitions, bpmnFactory);
+  const extensionElements = createElement('bpmn:ExtensionElements', { values: [] }, dataStore, bpmnFactory);
+  const attributes = createElement('bpmnos:Attributes', {}, extensionElements, bpmnFactory);
+  const attribute = createElement('bpmnos:Attribute',
+    { id: 'Objective', name: 'objective := 0', type: 'decimal' }, attributes, bpmnFactory);
+
+  attributes.get('attribute').push(attribute);
+  extensionElements.get('values').push(attributes);
+  dataStore.extensionElements = extensionElements;
+
+  commandStack.execute('element.updateModdleProperties', {
+    element,
+    moddleElement: definitions,
+    properties: {
+      rootElements: [ ...definitions.get('rootElements'), dataStore ]
     }
-  }
-  return false;
+  });
 }
 
 function ensureDefaultAttributes(element,bpmnFactory,commandStack) {
   const businessObject = getRelevantBusinessObject(element);
 
+  ensureObjectiveAttribute(element, getRoot(businessObject), bpmnFactory, commandStack);
+
   if ( !hasInstanceAttribute(businessObject) ) {
-    var dataObject = bpmnFactory.create('bpmn:DataObject');
-    const attributes = ensureCustomItem(bpmnFactory, commandStack, dataObject, 'bpmnos:Attributes');
-    const attribute = createElement('bpmnos:Attribute', { id: 'Instance' , name: 'instance', type: 'string' }, attributes, bpmnFactory);
+
+    // the data object is built whole and contained in one command, as the objective's store is, so that
+    // undoing the tick that created it takes it away again
+    const dataObject = createElement('bpmn:DataObject', {}, businessObject, bpmnFactory);
+    const extensionElements = createElement('bpmn:ExtensionElements', { values: [] }, dataObject, bpmnFactory);
+    const attributes = createElement('bpmnos:Attributes', {}, extensionElements, bpmnFactory);
+    const attribute = createElement('bpmnos:Attribute',
+      { id: 'Instance' , name: 'instance', type: 'string' }, attributes, bpmnFactory);
+
     attributes.get('attribute').push(attribute);
-    businessObject.flowElements.push(dataObject);
+    extensionElements.get('values').push(attributes);
+    dataObject.extensionElements = extensionElements;
+
+    commandStack.execute('element.updateModdleProperties', {
+      element,
+      moddleElement: businessObject,
+      properties: {
+        flowElements: [ ...businessObject.get('flowElements'), dataObject ]
+      }
+    });
   }
 
   const status = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Status'); 
@@ -155,8 +231,11 @@ function ensureDefaultAttributes(element,bpmnFactory,commandStack) {
     });
   }
 
+  // matched by id, as the engine matches it and as `Instance` is matched above: the name of an attribute
+  // carries its initial value too, so a process declaring `timestamp := 0` holds no attribute named
+  // `timestamp` and would be given a second one
   let attributeList = attributes.get('attribute') || [];
-  if ( !attributeList.find(attribute => attribute.name == "timestamp") ) {
+  if ( !attributeList.find(attribute => attribute.id == "Timestamp") ) {
     const attribute = createElement('bpmnos:Attribute', { id: 'Timestamp' , name: 'timestamp', type: 'decimal' }, attributes, bpmnFactory);
     commandStack.execute('element.updateModdleProperties', {
       element,

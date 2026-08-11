@@ -6,14 +6,13 @@
     <bpmn:participant id="Bystander" processRef="BystandingProcess" />
     <bpmn:messageFlow id="RequestFlow" sourceRef="SendRequest" targetRef="ReceiveRequest" />
   </bpmn:collaboration>
-
   <bpmn:process id="SendingProcess" isExecutable="true">
     <bpmn:extensionElements>
       <bpmnos:status>
         <bpmnos:attributes>
-          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
-          <bpmnos:attribute id="Machine" name="machine" type="string" />
-          <bpmnos:attribute id="Count" name="count" type="integer" />
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Machine" type="string" name="machine" />
+          <bpmnos:attribute id="Count" type="integer" name="count" />
         </bpmnos:attributes>
       </bpmnos:status>
     </bpmn:extensionElements>
@@ -62,14 +61,13 @@
       </bpmn:extensionElements>
     </bpmn:sendTask>
   </bpmn:process>
-
   <bpmn:process id="ReceivingProcess" isExecutable="true">
     <bpmn:extensionElements>
       <bpmnos:status>
         <bpmnos:attributes>
-          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
-          <bpmnos:attribute id="Machine" name="machine" type="string" />
-          <bpmnos:attribute id="Label" name="label" type="string" />
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Machine" type="string" name="machine" />
+          <bpmnos:attribute id="Label" type="string" name="label" />
         </bpmnos:attributes>
       </bpmnos:status>
     </bpmn:extensionElements>
@@ -113,13 +111,12 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition" />
     </bpmn:intermediateCatchEvent>
   </bpmn:process>
-
   <bpmn:process id="BystandingProcess" isExecutable="true">
     <bpmn:extensionElements>
       <bpmnos:status>
         <bpmnos:attributes>
-          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
-          <bpmnos:attribute id="Machine" name="machine" type="string" />
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Machine" type="string" name="machine" />
         </bpmnos:attributes>
       </bpmnos:status>
     </bpmn:extensionElements>
@@ -133,4 +130,11 @@
       </bpmn:extensionElements>
     </bpmn:receiveTask>
   </bpmn:process>
+  <bpmn:dataStore id="DataStore_1">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
 </bpmn:definitions>

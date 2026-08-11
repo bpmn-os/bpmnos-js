@@ -17,9 +17,10 @@ import Ids from 'ids';
  * one namespace, because the identifier is the key every lookup is built on. Two processes are independent
  * of each other.
  *
- * Content declared on the collaboration, the globals and any table it holds, is visible from every process
- * and therefore belongs to the namespace of each, and must clash with nothing in any of them. It is recorded
- * in every process space rather than in one of its own, which is what makes a single lookup answer for it.
+ * Content declared by a data store, the globals and the lookup tables it holds, is visible from every
+ * process and therefore belongs to the namespace of each, and must clash with nothing in any of them. It is
+ * recorded in every process space rather than in one of its own, which is what makes a single lookup answer
+ * for it.
  *
  * Every piece of extension content carrying an identifier is collected, found by walking the `bpmnos:`
  * subtree of each element rather than by enumerating the types that carry one, so a type added to the moddle
@@ -67,10 +68,14 @@ export function collectIdentifiers(definitions) {
           registry.processOf.set(participant.id, processRef.id);
         }
       });
-
-      // what the collaboration itself declares is seen from every process, so it is taken in every space
-      registry.processes.forEach(processId => record(registry, collaboration, processId));
     });
+
+  // a data store belongs to no one process: the globals and the lookup tables it declares are seen from
+  // every process, so they are taken in every space rather than in one of their own
+  rootElements
+    .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
+    .forEach(dataStore =>
+      registry.processes.forEach(processId => record(registry, dataStore, processId)));
 
   return registry;
 }

@@ -32,7 +32,12 @@ export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
       react: '@bpmn-io/properties-panel/preact/compat'
-    }
+    },
+    // A package linked from the working tree resolves its own imports against its own node_modules, so a
+    // module developed beside this one would bring a second bpmn-js and a second diagram-js into the page.
+    // Two copies of either are two sets of classes, and an element built by one is not recognised by the
+    // other. One copy is taken for the whole app, whether a dependency is linked or installed.
+    dedupe: [ 'bpmn-js', 'diagram-js' ]
   },
   // the dev dependency scanner and pre-bundler run esbuild directly (not the plugin above), so they need
   // the same jsx loader to parse the preact JSX in src/*.js

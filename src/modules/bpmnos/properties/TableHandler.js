@@ -16,8 +16,22 @@ import {
 
 import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
+import {
+  getDataElement,
+  ensureDataStore
+} from '../utils/DataReferenceUtil.js';
 
-// Creates tables entry and returns { items, add }
+
+/**
+ * Creates tables entry and returns { items, add }
+ *
+ * A lookup table is held by the data store, beside the globals and for the same reason: the name of a
+ * table is callable from every expression of the model, as a global is visible from every node, so both
+ * are properties of the store rather than of one occurrence of referring to it. The store is not on the
+ * canvas, so the editor is offered on the reference to it and reads and writes through that reference.
+ *
+ * A reference that refers to nothing holds no table, and the store is created when the first one is added.
+ */
 export function tableHandler({ element, injector }) {
   let businessObject = getRelevantBusinessObject(element);
 
@@ -34,9 +48,12 @@ export function tableHandler({ element, injector }) {
         commandStack = injector.get('commandStack'),
         identifiers = injector.get('identifiers');
 
+  const dataElement = element;
+  element = getDataElement(element);
+
   let tables  = undefined;
-  tables = getCustomItem( element, 'bpmnos:Tables' ) || {};
-  
+  tables = ( element ? getCustomItem( element, 'bpmnos:Tables' ) : undefined ) || {};
+
   const items = ( tables.table || []).map((table, index) => {
     const id = element.id + '-table-' + index;
 
@@ -49,21 +66,24 @@ export function tableHandler({ element, injector }) {
         table
       }),
       autoFocusEntry: id + '-name',
-      remove: removeFactory({ commandStack, element, table })
+      remove: removeFactory({ commandStack, element, table, dataElement })
     };
   });
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, identifiers, element })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, dataElement })
   };
 }
 
 // ADD FACTORY //
-function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, dataElement }) {
   return function(event) {
     event.stopPropagation();
 
-    let tables  = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Tables'); 
+    // the data store behind the reference, created now where the model holds none
+    const element = ensureDataStore(bpmnFactory, commandStack, dataElement);
+
+    let tables  = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Tables');
 
     // create 'bpmnos:Table'
     const table = createElement('bpmnos:Table', { id: identifiers.nextId(element, 'Table_') }, tables, bpmnFactory);
@@ -75,16 +95,29 @@ function addFactory({ bpmnFactory, commandStack, identifiers, element }) {
         table: [ ...tables.get('table'), table ]
       }
     });
+
+    redraw(commandStack, dataElement);
   };
 }
 
 // REMOVE FACTORY //
-function removeFactory({ commandStack, element, table }) {
+function removeFactory({ commandStack, element, table, dataElement }) {
   return function(event) {
     event.stopPropagation();
+
+    redraw(commandStack, dataElement);
 
     commandStack.execute('properties-panel.multi-command-executor',
       removeCustomItemCommands(element, table));
   };
+}
+
+// the store is not on the canvas, so the reference to it is changed for appearance's sake, which is what
+// makes the panel show what the store now holds
+function redraw(commandStack, dataElement) {
+  commandStack.execute('element.updateModdleProperties', {
+    element: dataElement,
+    moddleElement: dataElement.businessObject.id
+  });
 }
 

@@ -16,8 +16,26 @@ import {
 
 import { removeCustomItemCommands } from '../utils/RemovalUtil.js';
 
+import {
+  isDataReference,
+  getDataElement,
+  ensureDataObject,
+  ensureDataStore
+} from '../utils/DataReferenceUtil.js';
 
-// Creates attributes entry and returns { items, add }
+
+/**
+ * Creates attributes entry and returns { items, add }
+ *
+ * A process and an activity declare status attributes, held in the `bpmnos:Status` they carry. A data
+ * object declares the data of the scope containing it and a data store declares the globals of the model,
+ * and each holds its `bpmnos:Attributes` directly. Neither of the latter two is on the canvas, so the
+ * editor is offered on the reference to it and reads and writes through that reference.
+ *
+ * A reference that refers to nothing declares nothing, and is therefore shown as declaring nothing rather
+ * than refused. What it refers to is created when the first attribute is added, since only then is there
+ * something that needs somewhere to live.
+ */
 export function attributeHandler({ element, injector }) {
   let businessObject = getRelevantBusinessObject(element);
 
@@ -26,15 +44,20 @@ export function attributeHandler({ element, injector }) {
     return;
   }
 
-  if ( !is(businessObject, 'bpmn:Process') && !is(businessObject, 'bpmn:Activity') && !is(businessObject, 'bpmn:DataObjectReference') && !is(businessObject, 'bpmn:Collaboration') ) {
+  if ( !is(businessObject, 'bpmn:Process') && !is(businessObject, 'bpmn:Activity')
+       && !isDataReference(businessObject) ) {
     return;
   }
 
+  // the group is named for what the element declares rather than for the container the attributes sit in,
+  // which is one word in the model and three different things to a reader
+  let label = 'Status';
+
   let dataElement = undefined;
-  let collaboration = is(businessObject, 'bpmn:Collaboration');
-  if ( is(businessObject, 'bpmn:DataObjectReference') ) {
+  if ( isDataReference(businessObject) ) {
+    label = is(businessObject, 'bpmn:DataStoreReference') ? 'Globals' : 'Data';
     dataElement = element;
-    element = element.businessObject.dataObjectRef;
+    element = getDataElement(element);
   }
 
   const bpmnFactory = injector.get('bpmnFactory'),
@@ -42,8 +65,8 @@ export function attributeHandler({ element, injector }) {
         identifiers = injector.get('identifiers');
 
   let attributes  = undefined;
-  if ( dataElement || collaboration ) {
-    attributes = getCustomItem( element, 'bpmnos:Attributes' ) || {};
+  if ( dataElement ) {
+    attributes = ( element ? getCustomItem( element, 'bpmnos:Attributes' ) : undefined ) || {};
   }
   else {
     const parent = getCustomItem( element, 'bpmnos:Status' ) || {};
@@ -66,19 +89,26 @@ export function attributeHandler({ element, injector }) {
     };
   });
   return {
+    label,
     items,
-    add: addFactory({ bpmnFactory, commandStack, identifiers, element, dataElement, collaboration })
+    add: addFactory({ bpmnFactory, commandStack, identifiers, element, dataElement })
   };
 }
 
 // ADD FACTORY //
-function addFactory({ bpmnFactory, commandStack, identifiers, element, dataElement, collaboration }) {
+function addFactory({ bpmnFactory, commandStack, identifiers, element, dataElement }) {
   return function(event) {
     event.stopPropagation();
 
     let attributes  = undefined;
-    if ( dataElement || collaboration ) {
-      attributes = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Attributes'); 
+    if ( dataElement ) {
+
+      // the data object or data store behind the reference, created now where the model holds none
+      element = is(dataElement, 'bpmn:DataStoreReference')
+        ? ensureDataStore(bpmnFactory, commandStack, dataElement)
+        : ensureDataObject(bpmnFactory, commandStack, dataElement);
+
+      attributes = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Attributes');
     }
     else {
       const parent = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Status'); 

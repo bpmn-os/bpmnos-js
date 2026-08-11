@@ -45,6 +45,7 @@
     "bpmn-js": "^18.19.0",
     "bpmn-js-bpmnlint": "^0.24.0",
     "bpmn-js-collapse-event-subprocess": "^0.3.0",
+    "bpmn-js-datastore": "github:bpmn-os/bpmn-js-datastore#3430aea",
     "bpmn-js-properties-panel": "^5.60.0",
     "bpmn-js-side-panel": "github:bpmn-os/bpmn-js-side-panel#ed75716",
     "bpmn-js-toolbar": "github:bpmn-os/bpmn-js-toolbar#fc89aef",

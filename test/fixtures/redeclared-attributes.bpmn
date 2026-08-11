@@ -1,69 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                  xmlns:bpmnos="https://bpmnos.telematique.eu"
-                  id="Definitions_Redeclared"
-                  targetNamespace="http://bpmn.io/schema/bpmn">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="Definitions_Redeclared" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn:process id="Process_Redeclared" isExecutable="true">
     <bpmn:extensionElements>
       <bpmnos:status>
         <bpmnos:attributes>
-          <bpmnos:attribute id="Timestamp" name="timestamp" type="decimal" />
-          <bpmnos:attribute id="Shared" name="shared" type="decimal" />
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Shared" type="decimal" name="shared" />
         </bpmnos:attributes>
       </bpmnos:status>
     </bpmn:extensionElements>
-
     <bpmn:task id="DuplicateIdHere">
       <bpmn:extensionElements>
         <bpmnos:status>
           <bpmnos:attributes>
-            <bpmnos:attribute id="Twice" name="first" type="decimal" />
-            <bpmnos:attribute id="Twice" name="second" type="decimal" />
+            <bpmnos:attribute id="Twice" type="decimal" name="first" />
+            <bpmnos:attribute id="Twice" type="decimal" name="second" />
           </bpmnos:attributes>
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:task>
-
     <bpmn:task id="DuplicateNameHere">
       <bpmn:extensionElements>
         <bpmnos:status>
           <bpmnos:attributes>
-            <bpmnos:attribute id="FirstOfTwo" name="same" type="decimal" />
-            <bpmnos:attribute id="SecondOfTwo" name="same := 1" type="decimal" />
+            <bpmnos:attribute id="FirstOfTwo" type="decimal" name="same" />
+            <bpmnos:attribute id="SecondOfTwo" type="decimal" name="same := 1" />
           </bpmnos:attributes>
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:task>
-
     <bpmn:task id="RedeclaresInheritedId">
       <bpmn:extensionElements>
         <bpmnos:status>
           <bpmnos:attributes>
-            <bpmnos:attribute id="Shared" name="other" type="decimal" />
+            <bpmnos:attribute id="Shared" type="decimal" name="other" />
           </bpmnos:attributes>
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:task>
-
     <bpmn:task id="ShadowsInheritedName">
       <bpmn:extensionElements>
         <bpmnos:status>
           <bpmnos:attributes>
-            <bpmnos:attribute id="Other" name="shared" type="decimal" />
+            <bpmnos:attribute id="Other" type="decimal" name="shared" />
           </bpmnos:attributes>
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:task>
-
     <bpmn:task id="Clean">
       <bpmn:extensionElements>
         <bpmnos:status>
           <bpmnos:attributes>
-            <bpmnos:attribute id="One" name="one" type="decimal" />
-            <bpmnos:attribute id="Two" name="two := one + 1" type="decimal" />
+            <bpmnos:attribute id="One" type="decimal" name="one" />
+            <bpmnos:attribute id="Two" type="decimal" name="two := one + 1" />
           </bpmnos:attributes>
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:task>
   </bpmn:process>
+  <bpmn:dataStore id="DataStore_1">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
 </bpmn:definitions>

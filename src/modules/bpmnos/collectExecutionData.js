@@ -13,7 +13,7 @@ import { is } from 'bpmnlint-utils';
  *
  * - **status** — `bpmnos:Status` on a process or any activity;
  * - **data** — declared by scopes only, through the data objects they contain;
- * - **global** — on the collaboration, and therefore seen by every node.
+ * - **global** — on the data stores a model holds, and therefore seen by every node.
  *
  * All of them are inherited by every descendant, in declaration order, outermost first and a node's own
  * declarations last — the order a token carries them in (see the engine logs of BPMNOSInstances.jl). An
@@ -55,12 +55,8 @@ export function collectExecutionData(definitions) {
 
   registry.tables = tablesOf(rootElements);
 
-  // globals are declared on the collaboration and seen everywhere
-  const globals = rootElements
-    .filter(rootElement => is(rootElement, 'bpmn:Collaboration'))
-    .reduce((all, collaboration) => all.concat(
-      attributesOf(collaboration, 'global', collaboration)
-    ), []);
+  // globals are declared by the data stores a model holds and are seen everywhere
+  const globals = globalsOf(rootElements);
 
   rootElements.forEach(rootElement => {
     if (is(rootElement, 'bpmn:Process')) {
@@ -93,6 +89,30 @@ export function collectExecutionData(definitions) {
     });
 
   return registry;
+}
+
+/**
+ * The global attributes a model declares, through the data stores it holds, the objective first.
+ *
+ * Read from the `bpmn:DataStore` root elements and never from the references to them, exactly as the data
+ * of a scope is read from the data objects it contains: a reference refers to a store and does not declare
+ * one. A store therefore declares its globals whether or not any process refers to it, which is what lets
+ * the objective be declared by a store no diagram shows, as `Instance` is declared by a data object no
+ * reference points at.
+ *
+ * The objective is hoisted to the front because the engine holds it at the first position of the globals,
+ * as it holds the instance at the first position of the data.
+ */
+function globalsOf(rootElements) {
+  const globals = rootElements
+    .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
+    .reduce((all, dataStore) => all.concat(attributesOf(dataStore, 'global', dataStore)), []);
+
+  const objective = globals.findIndex(attribute => attribute.id === 'Objective');
+
+  return objective > 0
+    ? [ globals[objective], ...globals.filter((attribute, index) => index !== objective) ]
+    : globals;
 }
 
 /**
@@ -347,40 +367,29 @@ function operatorEntries(holder, declaringElementId) {
 }
 
 /**
- * The lookup tables a model declares: `bpmnos:tables/table` on the data store references it holds, each a
- * name, the file it is read from and its column header.
+ * The lookup tables a model declares: `bpmnos:tables/table` on the data stores it holds, each a name, the
+ * file it is read from and its column header.
  *
  * Model-level rather than per element: a table's name becomes a callable in expressions, so
  * `durations(current_location,next_location)` in an operator is a lookup wherever it is written, whichever
- * data store reference declares it. Kept in document order, naming the reference that declares it.
+ * data store declares it. That is also why a table belongs to the store rather than to one occurrence of
+ * referring to it, which is where the globals belong and for the same reason. Kept in document order,
+ * naming the store that declares it.
  */
 function tablesOf(rootElements) {
-  const references = rootElements
-    .filter(rootElement => is(rootElement, 'bpmn:Process'))
-    .flatMap(process => dataStoreReferences(process));
-
-  return references.flatMap(reference =>
-    getExtensionElementsList(reference, 'bpmnos:Tables')
-      .flatMap(tables => tables.get('table') || [])
-      .map(table => ({
-        id: table.get('id'),
-        name: table.get('name'),
-        source: table.get('source'),
-        header: table.get('header'),
-        declaringElement: reference.id,
-        moddleElement: table
-      })));
-}
-
-// data store references sit among the flow elements of a scope, at any depth
-function dataStoreReferences(scope) {
-  return (scope.get('flowElements') || []).flatMap(flowElement => {
-    if (is(flowElement, 'bpmn:DataStoreReference')) {
-      return [ flowElement ];
-    }
-
-    return isScope(flowElement) ? dataStoreReferences(flowElement) : [];
-  });
+  return rootElements
+    .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
+    .flatMap(dataStore =>
+      getExtensionElementsList(dataStore, 'bpmnos:Tables')
+        .flatMap(tables => tables.get('table') || [])
+        .map(table => ({
+          id: table.get('id'),
+          name: table.get('name'),
+          source: table.get('source'),
+          header: table.get('header'),
+          declaringElement: dataStore.id,
+          moddleElement: table
+        })));
 }
 
 /**

@@ -49,8 +49,8 @@ Every piece of extension content that carries an identifier, an attribute, a res
 choice, a message, a signal and a lookup table alike, shares one namespace with all the others, and that
 namespace is bounded by the process rather than by the model. Within one process no two pieces of content
 may hold the same identifier, since the identifier is the key every lookup is built on; two processes are
-independent of each other. Content declared on the collaboration, the globals and the tables it holds, is
-seen from every process and therefore belongs to the namespace of each, and must be free in all of them.
+independent of each other. Content declared by a data store, the globals and the tables it holds, is seen
+from every process and therefore belongs to the namespace of each, and must be free in all of them.
 
 The boundary is the process because BPMN-OS itself requires it. The engine identifies two attributes by
 their identifier rather than by their name, `Instance` and `Timestamp`, and every process declares its own
@@ -63,7 +63,7 @@ identifier)`, where the element is the one the content belongs to and decides wh
 and `nextId(element, prefix)`, which generates an identifier at random and returns the first one the
 process has not taken, so that uniqueness rests on the registry rather than on the improbability of a
 collision and no order is implied that a counter would invite a reader to look for. A pool is answered for
-as the process it stands for, and an element belonging to no process, the collaboration among them, is
+as the process it stands for, and an element belonging to no process, a data store among them, is
 answered for in every namespace at once. The same questions are put to a model outside a modeller through
 `collectIdentifiers(definitions)` and the pure functions `isTaken`, `nextIdentifier`, `getHolders` and
 `spacesOf` over the registry it returns.

@@ -153,14 +153,16 @@ entry naming its `declaringElement` (so "own" is `declaringElement === element.i
 `id → attribute` and `id → element ids` — the latter is what a `DataUpdate` resolves against at playback.
 `byId`/`elementsById` are keyed by process first because an identifier is unique within a process only (each
 participant declares `Instance`/`Timestamp`); model-wide maps returned whichever process was walked last and
-merged both processes' elements. `processOf` places an element; the collaboration's globals are recorded in
+merged both processes' elements. `processOf` places an element; what a data store declares is recorded in
 every process's namespace. The service and the collector share one shape: `getAttribute(element, id)`,
 `getElements(element, id)`, `getProcesses(element)` on `executionData`, and the pure `getAttribute`,
 `getElements`, `spacesOf` over a registry from `collectExecutionData` — the same idiom the identifier
 registry uses, so a headless consumer and the modeller ask the same way. Status comes from
 `bpmnos:Status` on a process or activity, data from the `bpmn:DataObject`s a **scope** contains (never
 from a `bpmn:DataObjectReference`, which per BPMN refers to data rather than owning it, and a model may
-hold an object no reference points at), globals from the collaboration. All are inherited by every
+hold an object no reference points at), globals from the `bpmn:DataStore`s a model holds (never from a
+`bpmn:DataStoreReference`, for the same reason, which is also where the lookup tables live), the objective
+first among them. All are inherited by every
 descendant, outermost first and a node's own last — the order a token carries them in, verified against
 engine logs in `~/Code/bpmnos/BPMNOSInstances.jl`. It rebuilds on `import.done` and `elements.changed` and
 fires `executionData.changed`. **A participant id is never shown anywhere; a pool stands for its

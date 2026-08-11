@@ -16,6 +16,9 @@ import { BpmnPropertiesPanelModule } from 'bpmn-js-properties-panel';
 
 import SidePanelModule from 'bpmn-js-side-panel';
 
+// a bpmn:DataStore behind every bpmn:DataStoreReference, which bpmn-js leaves pointing at nothing
+import DataStoreModule from 'bpmn-js-datastore';
+
 import CollapseEventSubProcessModule from 'bpmn-js-collapse-event-subprocess'; // collapse/expand popup menu
 import EventSubProcessPaletteModule from 'bpmn-js-collapse-event-subprocess/palette'; // palette entry to create event sub-processes
 
@@ -77,6 +80,7 @@ var modeler = new BpmnModeler({
     IssuesPanelModule,
     CollapseEventSubProcessModule,
     EventSubProcessPaletteModule,
+    DataStoreModule,
     ContextPadCompatModule
   ],
   moddleExtensions
