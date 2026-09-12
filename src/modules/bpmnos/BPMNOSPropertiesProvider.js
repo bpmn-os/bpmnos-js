@@ -17,7 +17,6 @@ import { decisionHandler } from './properties/DecisionHandler.js';
 import { restrictionHandler } from './properties/RestrictionHandler.js';
 import { conditionHandler } from './properties/ConditionHandler.js';
 import { operatorHandler } from './properties/OperatorHandler.js';
-import { multiMessageHandler } from './properties/MultiMessageHandler.js';
 import { messageHandler } from './properties/MessageHandler.js';
 import { signalHandler } from './properties/SignalHandler.js';
 import { timerHandler } from './properties/TimerHandler.js';
@@ -34,7 +33,6 @@ const EXECUTION_GROUPS = [
 { label: 'Restrictions', id: 'restrictions', component: ListGroup, handler: restrictionHandler},
 { label: 'Conditions', id: 'conditions', component: ListGroup, handler: conditionHandler},
 { label: 'Operators', id: 'operators', component: ListGroup, handler: operatorHandler},
-{ label: 'Messages', id: 'message', component: ListGroup, handler: multiMessageHandler},
 { label: 'Message', id: 'message', handler: messageHandler},
 { label: 'Signal', id: 'signal', handler: signalHandler},
 { label: 'Timer', id: 'attribute', component: Group, handler: timerHandler},

@@ -508,21 +508,16 @@ function loopKindOf(businessObject) {
 /**
  * The messages an element defines, each with a name, its header parameters and its contents.
  *
- * Two spellings, both in use: a message **event** carries `bpmnos:message` directly under
- * `extensionElements`, while a send or receive **task** wraps it in `bpmnos:messages`, which is what allows
- * several. Both are read here.
+ * An element exchanging a message carries at most one `bpmnos:message` directly under
+ * `extensionElements`, whether it is a message event or a send or receive task. The result is a list of
+ * zero or one so that callers need not distinguish the two cases.
  *
  * A `content` maps a status or data attribute to a key in the message, in one direction or the other
  * depending on whether the node sends or receives; a `parameter` is the message header the engine matches
  * senders and recipients on.
  */
 function messagesOf(businessObject) {
-  const wrapped = getExtensionElementsList(businessObject, 'bpmnos:Messages')
-    .flatMap(messages => messages.get('message') || []);
-
-  const direct = getExtensionElementsList(businessObject, 'bpmnos:Message');
-
-  return [ ...direct, ...wrapped ].map(message => ({
+  return getExtensionElementsList(businessObject, 'bpmnos:Message').map(message => ({
     name: message.get('name'),
     parameters: parametersOf(message),
     contents: contentsOf(message),

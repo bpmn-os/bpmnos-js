@@ -1,6 +1,6 @@
 import { is } from 'bpmnlint-utils';
 
-import { KNOWN, READ_BY, loopKindOf, loopParametersOf, loopValue, messageCount } from './loop.js';
+import { KNOWN, READ_BY, loopKindOf, loopParametersOf, loopValue } from './loop.js';
 
 /**
  * A rule that checks the loop parameters of an activity: `bpmnos:loopCharacteristics/parameter`.
@@ -66,10 +66,10 @@ export default function() {
       }
     });
 
-    // a multi-instance activity is sized by its cardinality, or by the number of messages it defines when
-    // it has none; with neither, no instance is created and the engine fails (`StateMachine.cpp:433-444`)
-    if (kind === 'multiInstance' && !loopValue(parameters, 'cardinality') && !messageCount(node)) {
-      reporter.report(node.id, 'Multi-instance activity without a cardinality or a message',
+    // a multi-instance activity is sized by its cardinality alone; without one, no instance is created
+    // and the engine fails when the activity is reached (`StateMachine.cpp`)
+    if (kind === 'multiInstance' && !loopValue(parameters, 'cardinality')) {
+      reporter.report(node.id, 'Multi-instance activity without a cardinality',
         { subtype: 'noCardinality' });
     }
 

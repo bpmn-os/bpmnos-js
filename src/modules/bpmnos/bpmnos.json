@@ -102,11 +102,6 @@
           "name": "decisions",
           "type": "Decisions",
           "isMany": true
-        },
-        {
-          "name": "messages",
-          "type": "Messages",
-          "isMany": true
         }
       ]
     },
@@ -278,19 +273,6 @@
         {
           "name": "parameter",
           "type": "Parameter",
-          "isMany": true
-        }
-      ]
-    },
-    {
-      "name": "Messages",
-      "superClass": [
-        "Element"
-      ],
-      "properties": [
-        {
-          "name": "message",
-          "type": "Message",
           "isMany": true
         }
       ]

@@ -274,7 +274,7 @@
         "description": "A loop parameter must carry the expression the engine evaluates. Without a value it is skipped."
       },
       "noCardinality": {
-        "description": "A multi-instance activity is sized by its cardinality, or by the number of messages it defines when it has none. With neither, the engine creates no instances and fails when the activity is reached."
+        "description": "A multi-instance activity is sized by its cardinality. Without one, the engine creates no instances and fails when the activity is reached."
       },
       "maximumWithoutIndex": {
         "description": "A loop maximum bounds the loop index, so the activity must name an index attribute to count in. Without it the engine fails when the activity is entered."

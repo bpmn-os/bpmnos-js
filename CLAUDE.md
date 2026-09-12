@@ -145,7 +145,7 @@ tested under `node --test` in `test/removal.test.mjs`.
 loses *all* extension content (`removeExtensionElements`) — deliberate: a changed element needs a different
 set and there is no reliable way to tell what is still meant. An **activity** keeps `bpmnos:Status`
 (attributes/restrictions/operators are valid on any activity) and loses only type-specific content, its
-choices and `bpmnos:Messages`.
+choices and `bpmnos:Message`.
 
 **Execution data registry** (`src/modules/bpmnos/ExecutionData.js`). Built from the moddle tree, so
 declaration order *is* document order. Per element it holds ordered `status`, `data` and `globals`, each
@@ -238,15 +238,16 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   a multi-instance one), a duplicate (last one wins), a parameter with no expression, and parameters on an
   activity carrying no BPMN loop characteristics at all, which are never read. All of these could throw
   where the file is read, as the constructor already does for an illegal restriction, operator or choice.
-  Two further cases throw only when the activity is reached — a multi-instance activity with neither a
-  cardinality nor a message (`StateMachine.cpp:433-444`) and a `maximum` without an `index`
-  (`Token.cpp:442-446`) — and are decidable at load. `bpmnos/loop-parameters.js` flags all seven here, so
+  Two further cases throw only when the activity is reached — a multi-instance activity without a
+  cardinality (`StateMachine.cpp`) and a `maximum` without an `index` (`Token.cpp`) — and are decidable at
+  load. `bpmnos/loop-parameters.js` flags all seven here, so
   the lint rule and such an engine check should be kept in step.
 - The registry reports operators, restrictions, choices, conditions, timers, loop parameters, messages,
   signals, guidance and lookup tables beside the attributes; what `bpmnosdoc` emits for each of them is
   where it still grows.
-- `~/Code/bpmndoc` (C++, Xerces + bpmn++) is superseded by `bpmnosdoc` and can go once the latter covers
-  what it emitted.
+- `~/Code/bpmnos/bpmndoc` (C++, Xerces + bpmn++) is archived, `bpmnosdoc` having taken its place for BPMN-OS
+  models. It was retired before `bpmnosdoc` covered everything it emitted, so what the entry above calls the
+  place where `bpmnosdoc` still grows is now the only account of those elements.
 - **`src/context-pad-compat.js` is a shim to delete on an upstream bump, not before.** It reimplements
   `ContextPad#getPad`, which diagram-js deprecated (`ContextPad.js` warns, cf. bpmn-io/diagram-js#888) but
   bpmn-js still calls — as of bpmn-js 18.21.0 / diagram-js 15.21.0 in

@@ -37,11 +37,10 @@ export default function() {
 
     (extensionElements.values || []).forEach(function(element) {
 
-      if (is(element, 'bpmnos:Messages')) {
-        (element.get('message') || []).forEach(message =>
-          (message.get('content') || []).forEach(content =>
-            report(content.get('attribute'),
-              `content '${content.get('key')}' of message '${message.get('name')}'`)));
+      if (is(element, 'bpmnos:Message')) {
+        (element.get('content') || []).forEach(content =>
+          report(content.get('attribute'),
+            `content '${content.get('key')}' of message '${element.get('name')}'`));
       }
 
       if (is(element, 'bpmnos:LoopCharacteristics')) {

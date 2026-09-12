@@ -107,7 +107,7 @@ When an element's type changes, content that no longer applies is discarded. An 
 message event or a timer event loses its extension content altogether, because what a changed element needs
 is a different set of content and there is no reliable way to tell which of the old is still meant. An
 activity keeps its `bpmnos:Status`, whose attributes, restrictions and operators are valid whatever the
-activity is, and loses only what belongs to the type it no longer has, its choices and its messages.
+activity is, and loses only what belongs to the type it no longer has, its choices and its message.
 
 ## Objectives and weights
 

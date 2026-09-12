@@ -27,8 +27,9 @@ const QUOTED = /^"[^"]*"$/;
 /**
  * The message definitions a node carries, in document order.
  *
- * A send or receive task holds them in a `bpmnos:messages` container, because a multi-instance task may
- * define one message per instance; every other event holds a `bpmnos:message` outright.
+ * A node exchanging a message holds at most one `bpmnos:message`, whether it is a message event or a
+ * send or receive task. The result is a list of zero or one so that callers need not distinguish an
+ * element that defines no message from one that defines one.
  */
 export function messagesOf(node) {
   const extensionElements = node.extensionElements;
@@ -37,17 +38,7 @@ export function messagesOf(node) {
     return [];
   }
 
-  return (extensionElements.values || []).flatMap(function(element) {
-    if (is(element, 'bpmnos:Messages')) {
-      return element.get('message') || [];
-    }
-
-    if (is(element, 'bpmnos:Message')) {
-      return [ element ];
-    }
-
-    return [];
-  });
+  return (extensionElements.values || []).filter(element => is(element, 'bpmnos:Message'));
 }
 
 export function isThrowing(node) {

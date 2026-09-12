@@ -23,7 +23,9 @@ import {
  */
 export function messageHandler({ element }) {
 
-  if (!isMessageSupported(element) ) {
+  // Send and receive tasks exchange a message like message throw and catch events do, but carry a
+  // message event definition nowhere, so they are admitted by their type.
+  if ( !isMessageSupported(element) && !isAny(element, [ 'bpmn:SendTask', 'bpmn:ReceiveTask' ]) ) {
     return [];
   }
 

@@ -45,16 +45,6 @@ export function loopKindOf(node) {
   return is(loopCharacteristics, 'bpmn:MultiInstanceLoopCharacteristics') ? 'multiInstance' : 'standard';
 }
 
-// the messages a node defines, in both spellings: `bpmnos:message` on an event, `bpmnos:messages` on a task
-export function messageCount(node) {
-  const extensionElements = extensionElementsOf(node);
-
-  return extensionElements
-    .filter(element => is(element, 'bpmnos:Messages'))
-    .reduce((count, messages) => count + (messages.get('message') || []).length, 0)
-    + extensionElements.filter(element => is(element, 'bpmnos:Message')).length;
-}
-
 function extensionElementsOf(node) {
   return (node.extensionElements && node.extensionElements.values) || [];
 }

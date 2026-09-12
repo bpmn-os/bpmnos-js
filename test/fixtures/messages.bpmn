@@ -18,46 +18,46 @@
     </bpmn:extensionElements>
     <bpmn:sendTask id="SendRequest">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Request">
             <bpmnos:parameter name="machine" value="machine" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:sendTask>
     <bpmn:sendTask id="SendIllegal">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Illegal">
             <bpmnos:parameter name="machine" value="count + 1" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:sendTask>
     <bpmn:sendTask id="SendToNumber">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Numbered">
             <bpmnos:parameter name="recipient" value="count" />
             <bpmnos:parameter name="machine" value="machine" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:sendTask>
     <bpmn:sendTask id="SendCounted">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Counted">
             <bpmnos:parameter name="key" value="count" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:sendTask>
     <bpmn:sendTask id="SendUnheard">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Unheard" />
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:sendTask>
   </bpmn:process>
@@ -73,38 +73,38 @@
     </bpmn:extensionElements>
     <bpmn:receiveTask id="ReceiveRequest">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Request">
             <bpmnos:parameter name="machine" value="machine" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:receiveTask>
     <bpmn:receiveTask id="ReceiveIllegal">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Illegal">
             <bpmnos:parameter name="machine" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:receiveTask>
     <bpmn:receiveTask id="ReceiveNumbered">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Numbered">
             <bpmnos:parameter name="machine" value="machine" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:receiveTask>
     <bpmn:receiveTask id="ReceiveLabelled">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Counted">
             <bpmnos:parameter name="key" value="label" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:receiveTask>
     <bpmn:intermediateCatchEvent id="CatchWithoutMessage">
@@ -122,11 +122,11 @@
     </bpmn:extensionElements>
     <bpmn:receiveTask id="ReceiveElsewhere">
       <bpmn:extensionElements>
-        <bpmnos:messages>
+        
           <bpmnos:message name="Request">
             <bpmnos:parameter name="machine" value="machine" />
           </bpmnos:message>
-        </bpmnos:messages>
+        
       </bpmn:extensionElements>
     </bpmn:receiveTask>
   </bpmn:process>

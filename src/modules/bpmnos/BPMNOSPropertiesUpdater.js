@@ -47,9 +47,9 @@ export default function BPMNOSPropertiesUpdater(eventBus,commandStack) {
         }
       }
 
-      // a bpmnos:Messages extension belongs to a send or receive task
+      // a bpmnos:Message extension belongs to a send or receive task
       if ( !isAny(element,[ 'bpmn:SendTask', 'bpmn:ReceiveTask' ]) ) {
-        removeCustomItem(element,'bpmnos:Messages',commandStack);
+        removeCustomItem(element,'bpmnos:Message',commandStack);
       }
     }
   });
