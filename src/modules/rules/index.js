@@ -15,6 +15,10 @@ import rules from "./rules.json" with { type: 'json' };
 import * as nonExecutableProcess from "./engine/non-executable-process.js";
 import * as typedTask from "./engine/typed-task.js";
 import * as eventType from "./engine/event-type.js";
+import * as processStartEvent from "./engine/process-start-event.js";
+import * as cancelEvent from "./engine/cancel-event.js";
+import * as terminateEvent from "./engine/terminate-event.js";
+import * as linkEvent from "./engine/link-event.js";
 import * as multipleEventDefinitions from "./engine/multiple-event-definitions.js";
 import * as callActivity from "./engine/call-activity.js";
 import * as transaction from "./engine/transaction.js";
@@ -25,6 +29,8 @@ import * as attributeUndeclared from "./bpmnos/attribute-undeclared.js";
 import * as attributeObjective from "./bpmnos/attribute-objective.js";
 import * as gatekeeper from "./bpmnos/gatekeeper.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
+import * as signalSelfTrigger from "./bpmnos/signal-self-trigger.js";
+import * as adhocOperators from "./bpmnos/adhoc-operators.js";
 import * as loopParameters from "./bpmnos/loop-parameters.js";
 import * as messageHeader from "./bpmnos/message-header.js";
 import * as messageCandidate from "./bpmnos/message-candidate.js";
@@ -36,6 +42,10 @@ const sources = {
     "./engine/non-executable-process.js": nonExecutableProcess,
     "./engine/typed-task.js": typedTask,
     "./engine/event-type.js": eventType,
+    "./engine/process-start-event.js": processStartEvent,
+    "./engine/cancel-event.js": cancelEvent,
+    "./engine/terminate-event.js": terminateEvent,
+    "./engine/link-event.js": linkEvent,
     "./engine/multiple-event-definitions.js": multipleEventDefinitions,
     "./engine/call-activity.js": callActivity,
     "./engine/transaction.js": transaction,
@@ -46,6 +56,8 @@ const sources = {
     "./bpmnos/attribute-objective.js": attributeObjective,
     "./bpmnos/gatekeeper.js": gatekeeper,
     "./bpmnos/event-trigger.js": eventTrigger,
+    "./bpmnos/signal-self-trigger.js": signalSelfTrigger,
+    "./bpmnos/adhoc-operators.js": adhocOperators,
     "./bpmnos/loop-parameters.js": loopParameters,
     "./bpmnos/message-header.js": messageHeader,
     "./bpmnos/message-candidate.js": messageCandidate

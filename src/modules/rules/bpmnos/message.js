@@ -227,3 +227,35 @@ function reaches(endpoint, event) {
 
   return false;
 }
+
+/**
+ * The message start events of processes, by the name of the message instantiating them.
+ *
+ * A process whose start event is a message start event is instantiated whenever a message of that name is
+ * thrown. Such a message names no recipient, the instance not existing before it arrives, so it is matched
+ * by its name alone — which is why the engine requires the name to be caught by that start event and by
+ * nothing else, and why neither it nor anything throwing it may state a header the match would ignore.
+ */
+export function triggeringMessages(definitions) {
+  const triggering = new Map();
+
+  (definitions.get('rootElements') || [])
+    .filter(rootElement => is(rootElement, 'bpmn:Process'))
+    .forEach(function(process) {
+      (process.get('flowElements') || []).forEach(function(element) {
+        if (!is(element, 'bpmn:StartEvent') || !isCatching(element)) {
+          return;
+        }
+
+        messagesOf(element).forEach(function(message) {
+          const name = message.get('name');
+
+          if (name !== undefined && !triggering.has(name)) {
+            triggering.set(name, element);
+          }
+        });
+      });
+    });
+
+  return triggering;
+}

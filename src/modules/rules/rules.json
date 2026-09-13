@@ -187,29 +187,68 @@
     "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=319"
   },
   "engine/non-executable-process.js": {
-    "severity": "warn"
+    "severity": "error",
+    "description": "The engine refuses a model holding a process that is not marked executable, throwing as it reads it, so one unmarked process stops the whole model from loading. The flag is absent by default."
   },
   "engine/typed-task.js": {
-    "severity": "warn"
+    "severity": "warn",
+    "description": "A user, manual, script, business rule or service task runs as an ordinary task: the operators are applied and the timestamp advances by what they compute. Nothing fails, but no script is run, no user is asked and no rule is evaluated, so the model reads as though something happens that does not."
   },
   "engine/event-type.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "A process is started by a blank start event, instantiated as the instance data declares, or by a message or signal start event, instantiated whenever the message or signal triggering it is thrown. A timer or conditional start event of a process the engine refuses when it reads the model; an error or escalation start event it abandons the run at."
+  },
+  "engine/process-start-event.js": {
+    "severity": "error",
+    "description": "A process has exactly one start event, and which one it is decides how the process is instantiated. The engine throws \"process ... has multiple start nodes\" where there is more than one, the token at the process creating the state machine for its contents from the one start node it finds."
+  },
+  "engine/cancel-event.js": {
+    "severity": "error",
+    "description": "Cancel events are parsed and then not executed: a cancel boundary event never fires and a cancel end event departs as an untyped one would, leaving the transaction it was meant to undo untouched."
+  },
+  "engine/terminate-event.js": {
+    "severity": "error",
+    "description": "Terminate events are parsed and then not executed: a token reaching one departs as it would from an untyped end event, so the other tokens of the process keep running and nothing is terminated."
+  },
+  "engine/link-event.js": {
+    "severity": "error",
+    "description": "Link events are parsed and then not executed: the token departs the source along its outgoing flows and never arrives at the target, so a model relying on a link to continue elsewhere loses the token instead."
   },
   "engine/multiple-event-definitions.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "An event is what its one event definition says it is. The engine refuses a model in which an event carries several, throwing as it reads it, for a boundary, a catching and a throwing event alike. A model needing an event triggered by whichever of several occurs first states one event per definition and joins them at an event-based gateway."
   },
   "engine/call-activity.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "Calling a process is not embedding one: a call activity derives from Activity rather than SubProcess and the engine names it nowhere, so a token reaching one has neither contents to run nor a completion to wait for. A model needing the called process executed embeds it as a sub-process."
   },
   "engine/transaction.js": {
-    "severity": "error"
+    "severity": "error",
+    "description": "A transaction runs as an ordinary sub-process: its contents execute and it completes. What does not happen is what makes it a transaction, the engine naming no cancel event, so it cannot be cancelled and its completed activities are never compensated on cancellation. Work to be undone is declared as compensation instead."
   },
   "engine/inclusive-gateway.js": {
     "severity": "error",
     "description": "The execution engine does not run inclusive gateways: it merges only a parallel join and splits only parallel and event-based gateways, and fails when it reaches an inclusive one."
   },
   "bpmnos/default-attributes.js": {
-    "severity": "error"
+    "severity": "error",
+    "subtypes": {
+      "timestampMissing": {
+        "description": "The engine reads the first status attribute of a process as the timestamp the token stands at, moving the one with the id Timestamp there as it reads the model. A process declaring none does not fail: whatever it declared first is read as the timestamp instead."
+      },
+      "instanceMissing": {
+        "description": "The engine reads the first data attribute of a process as the instance identifier, moving the one with the id Instance there as it reads the model. A process declaring none does not fail: whatever it declared first is read as the identifier instead."
+      },
+      "instanceAssigned": {
+        "description": "An operator may never assign the instance identifier. The engine refuses such a model as it reads it."
+      },
+      "timestampAdvanced": {
+        "description": "An operator may advance the timestamp only where the element takes time. The operators of a process or a sub-process are applied at its start event, which is instantaneous, and a send, receive or decision task completes upon an event of its own, so none of them may. The engine refuses such a model as it reads it."
+      },
+      "timestampReceived": {
+        "description": "A message or signal content written into the timestamp moves the token in time as the content is applied. The engine permits it, refusing only a content written into a data or global attribute, so nothing else reports it."
+      }
+    }
   },
   "bpmnos/attribute-redeclared.js": {
     "severity": "error",
@@ -252,8 +291,21 @@
       },
       "condition": {
         "description": "A conditional event must state what it waits for: at least one bpmnos:restriction. Without it the engine never triggers the event."
+      },
+      "signal": {
+        "description": "A signal event must state which signal it is: a bpmnos:signal giving the name. A signal is matched by its name alone, so the engine refuses a model that omits it."
       }
     }
+  },
+  "bpmnos/signal-self-trigger.js": {
+    "severity": "warn",
+    "description": "A process throwing the signal its own start event declares instantiates itself. The engine permits this, a signal being broadcast without a sender, so a re-throw guarded by a base case is legitimate and an unguarded one does not terminate."
+  },
+  "bpmnos/adhoc-operators.js": {
+    "severity": "error",
+    "description": "The operators of a scope are applied to the token at its start event. An ad-hoc sub-process has none, so operators declared for it are never applied.",
+    "reference": "BPMN 2.0.2, Ad-Hoc Sub-Process, p. 181",
+    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=211"
   },
   "bpmnos/loop-parameters.js": {
     "severity": "error",
@@ -289,6 +341,12 @@
       },
       "identifierNotString": {
         "description": "The header entries name, sender and recipient hold a message name and the instance identifiers of the sending and the receiving token, so a parameter stating one of them states a string."
+      },
+      "triggerHeader": {
+        "description": "A message instantiating a process is matched by its name alone, the instance not existing before it arrives, so a header entry is never read. The start event states no parameter at all; an element throwing such a message states no key beyond name, sender and recipient, a key the start event cannot match preventing the two from ever being paired."
+      },
+      "triggerRecipient": {
+        "description": "A message instantiating a process states no recipient: the instance it is delivered to does not exist until the message creates it."
       }
     }
   },
@@ -303,6 +361,9 @@
       },
       "noSender": {
         "description": "A message is received only from an event the engine pairs with the recipient, which requires the same message name, the same header keys holding values of the same type, and message flows permitting the pair. A message no throwing event is paired with is never received, whatever a run computes. Whether the values of a header agree is decided by a run and is not checked here."
+      },
+      "triggerCaughtElsewhere": {
+        "description": "A message instantiating a process is matched by its name alone, so no element other than that start event may catch a message of that name: a second one would be a choice the engine has no decision in which to make. Several elements may throw it, each instantiating a process of its own."
       }
     }
   }

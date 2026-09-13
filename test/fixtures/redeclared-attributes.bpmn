@@ -57,6 +57,13 @@
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:task>
+    <bpmn:dataObject id="DataObject_Redeclared">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
   </bpmn:process>
   <bpmn:dataStore id="DataStore_1">
     <bpmn:extensionElements>

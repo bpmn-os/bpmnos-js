@@ -1,7 +1,7 @@
 import { is } from 'bpmnlint-utils';
 
 import { getDefinitions } from './executionData.js';
-import { agrees, headerOf, isCatching, isThrowing, messageFlowsOf, messagesOf, permits } from './message.js';
+import { agrees, headerOf, isCatching, isThrowing, messageFlowsOf, messagesOf, permits, triggeringMessages } from './message.js';
 
 /**
  * A rule that checks that a message event may exchange its message with someone.
@@ -45,6 +45,18 @@ export default function() {
 
     messages.forEach(function(message) {
       const header = headerOf(node, message);
+
+      if (catching) {
+        // a message instantiating a process is matched by its name alone, so a second element catching that
+        // name would be a choice the engine has no decision in which to make
+        const startEvent = triggeringMessages(definitions).get(message.get('name'));
+
+        if (startEvent && startEvent !== node) {
+          reporter.report(node.id,
+            `Message '${message.get('name')}' instantiates process '${startEvent.$parent.id}' and must be caught by its start event alone`,
+            { subtype: 'triggerCaughtElsewhere' });
+        }
+      }
 
       const paired = counterparts.some(counterpart =>
         messagesOf(counterpart).some(other =>

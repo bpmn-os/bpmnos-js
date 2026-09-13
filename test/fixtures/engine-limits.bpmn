@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="engine-limits" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="SupportedProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Total" type="integer" name="total" />
+        </bpmnos:attributes>
+        <bpmnos:operators>
+          <bpmnos:operator id="CountUp" expression="total := total + 1" />
+        </bpmnos:operators>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="SupportedStart" />
+    <bpmn:task id="PlainTask">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:operators>
+            <bpmnos:operator id="TakeTime" expression="timestamp += 5" />
+          </bpmnos:operators>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:endEvent id="SupportedEnd" />
+    <bpmn:dataObject id="SupportedData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="UnsupportedProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+        <bpmnos:operators>
+          <bpmnos:operator id="ScopeAdvance" expression="timestamp += 1" />
+          <bpmnos:operator id="Rename" expression="instance := &#34;other&#34;" />
+        </bpmnos:operators>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="FirstStart" />
+    <bpmn:startEvent id="SecondStart" />
+    <bpmn:startEvent id="TimerStart">
+      <bpmn:timerEventDefinition id="TimerStartDefinition" />
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallSomething" />
+    <bpmn:transaction id="ATransaction" />
+    <bpmn:userTask id="AskSomeone" />
+    <bpmn:endEvent id="TerminateHere">
+      <bpmn:terminateEventDefinition id="TerminateHereDefinition" />
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="CancelIt" attachedToRef="ATransaction">
+      <bpmn:cancelEventDefinition id="CancelItDefinition" />
+    </bpmn:boundaryEvent>
+    <bpmn:intermediateThrowEvent id="JumpFrom">
+      <bpmn:linkEventDefinition id="JumpFromDefinition" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="TwoDefinitions">
+      <bpmn:escalationEventDefinition id="TwoDefinitionsEscalation" />
+      <bpmn:errorEventDefinition id="TwoDefinitionsError" />
+    </bpmn:endEvent>
+    <bpmn:adHocSubProcess id="AdHocWithOperators">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:operators>
+            <bpmnos:operator id="NeverApplied" expression="timestamp := timestamp" />
+          </bpmnos:operators>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+      <bpmn:task id="AdHocTask" />
+    </bpmn:adHocSubProcess>
+    <bpmn:dataObject id="UnsupportedData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="UndeclaredProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Count" type="integer" name="count" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="UndeclaredStart" />
+  </bpmn:process>
+  <bpmn:process id="NotExecutable">
+    <bpmn:startEvent id="NotExecutableStart" />
+  </bpmn:process>
+  <bpmn:dataStore id="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
+</bpmn:definitions>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="triggering-messages" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration">
+    <bpmn:participant id="Triggered" processRef="TriggeredProcess" />
+    <bpmn:participant id="Placer" processRef="PlacingProcess" />
+    <bpmn:participant id="Faulty" processRef="FaultyPlacingProcess" />
+    <bpmn:participant id="Catcher" processRef="CatchingProcess" />
+    <bpmn:participant id="Headered" processRef="HeaderedProcess" />
+  </bpmn:collaboration>
+  <bpmn:process id="TriggeredProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="OrderStart">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Order" />
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="OrderStartDefinition" />
+    </bpmn:startEvent>
+    <bpmn:dataObject id="TriggeredData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="PlacingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="PlacerStart" />
+    <bpmn:endEvent id="PlaceOrder">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Order" />
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="PlaceOrderDefinition" />
+    </bpmn:endEvent>
+    <bpmn:dataObject id="PlacerData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="FaultyPlacingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Machine" type="string" name="machine" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="FaultyStart" />
+    <bpmn:endEvent id="PlaceOrderWithKey">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Order">
+          <bpmnos:parameter name="machine" value="machine" />
+        </bpmnos:message>
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="PlaceOrderWithKeyDefinition" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="PlaceOrderWithRecipient">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Order">
+          <bpmnos:parameter name="recipient" value="&#34;Instance_1&#34;" />
+        </bpmnos:message>
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="PlaceOrderWithRecipientDefinition" />
+    </bpmn:endEvent>
+    <bpmn:dataObject id="FaultyData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="CatchingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="CatcherStart" />
+    <bpmn:intermediateCatchEvent id="CatchOrder">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Order" />
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="CatchOrderDefinition" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:dataObject id="CatcherData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="HeaderedProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Machine" type="string" name="machine" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="DeliveryStart">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Delivery">
+          <bpmnos:parameter name="machine" value="machine" />
+        </bpmnos:message>
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="DeliveryStartDefinition" />
+    </bpmn:startEvent>
+    <bpmn:dataObject id="HeaderedData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:dataStore id="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
+</bpmn:definitions>

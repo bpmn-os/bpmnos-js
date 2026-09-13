@@ -56,4 +56,33 @@ function unsupportedNode(description, types, property, value) {
   };
 }
 
-export { getProcess, requiresCheck, unsupportedNode };
+/**
+ * Create a checker that identifies an event carrying an event definition the engine does not execute.
+ *
+ * The engine parses such an event and then has no handling for it, so a token reaching one departs as it
+ * would from an untyped node. That is quieter than a refusal and is why it is reported here.
+ *
+ * @param {String} description
+ * @param {String} definitionType
+ *
+ * @return {Function} ruleImpl
+ */
+function unsupportedEventDefinition(description, definitionType) {
+
+  return function() {
+    function check(node, reporter) {
+      if ( requiresCheck(node) && is(node, 'bpmn:Event') ) {
+        if ( (node.eventDefinitions || []).some(definition => is(definition, definitionType)) ) {
+          reporter.report(node.id, description);
+        }
+      }
+    }
+
+    return {
+      check
+    };
+
+  };
+}
+
+export { getProcess, requiresCheck, unsupportedNode, unsupportedEventDefinition };

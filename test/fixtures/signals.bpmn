@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="signals" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration">
+    <bpmn:participant id="Emitter" processRef="EmittingProcess" />
+    <bpmn:participant id="Triggered" processRef="TriggeredProcess" />
+    <bpmn:participant id="SelfTriggering" processRef="SelfTriggeringProcess" />
+    <bpmn:participant id="Undefined" processRef="UndefinedSignalProcess" />
+  </bpmn:collaboration>
+  <bpmn:process id="EmittingProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="EmitterStart" />
+    <bpmn:endEvent id="ThrowTrigger">
+      <bpmn:extensionElements>
+        <bpmnos:signal name="Trigger" />
+      </bpmn:extensionElements>
+      <bpmn:signalEventDefinition id="ThrowTriggerDefinition" />
+    </bpmn:endEvent>
+    <bpmn:dataObject id="EmitterData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="TriggeredProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="TriggerStart">
+      <bpmn:extensionElements>
+        <bpmnos:signal name="Trigger" />
+      </bpmn:extensionElements>
+      <bpmn:signalEventDefinition id="TriggerStartDefinition" />
+    </bpmn:startEvent>
+    <bpmn:dataObject id="TriggeredData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="SelfTriggeringProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="LoopStart">
+      <bpmn:extensionElements>
+        <bpmnos:signal name="Loop" />
+      </bpmn:extensionElements>
+      <bpmn:signalEventDefinition id="LoopStartDefinition" />
+    </bpmn:startEvent>
+    <bpmn:endEvent id="ThrowLoop">
+      <bpmn:extensionElements>
+        <bpmnos:signal name="Loop" />
+      </bpmn:extensionElements>
+      <bpmn:signalEventDefinition id="ThrowLoopDefinition" />
+    </bpmn:endEvent>
+    <bpmn:dataObject id="SelfTriggeringData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:process id="UndefinedSignalProcess" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="UndefinedStart" />
+    <bpmn:intermediateCatchEvent id="CatchUndefined">
+      <bpmn:signalEventDefinition id="CatchUndefinedDefinition" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="ThrowUndefined">
+      <bpmn:signalEventDefinition id="ThrowUndefinedDefinition" />
+    </bpmn:endEvent>
+    <bpmn:dataObject id="UndefinedData">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+  </bpmn:process>
+  <bpmn:dataStore id="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
+</bpmn:definitions>

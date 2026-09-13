@@ -1,4 +1,5 @@
-import { FIXED_KEYS, isCatching, isThrowing, messagesOf, shapeOf, typesByName } from './message.js';
+import { FIXED_KEYS, isCatching, isThrowing, messagesOf, shapeOf, triggeringMessages, typesByName } from './message.js';
+import { getDefinitions } from './executionData.js';
 
 /**
  * A rule that checks what the parameters of a message header state.
@@ -43,6 +44,8 @@ export default function() {
             { subtype: 'identifierNotString' });
         }
       });
+
+      reportTriggeringHeader(node, message, reporter);
     });
   }
 
@@ -51,3 +54,55 @@ export default function() {
   };
 
 };
+
+/**
+ * A message instantiating a process is matched by its name alone, the instance not existing before it
+ * arrives, so a header entry is never read and states something the execution does not honour.
+ *
+ * The two sides are refused for the same reason but not in the same terms. The start event may state no
+ * parameter at all, none of them being read. An element throwing such a message may not state a key beyond
+ * the three every header carries — a key the start event cannot match, since it states none, would prevent
+ * the two from ever being paired while the name alone still instantiated the process — and may not name a
+ * recipient, there being no instance to name until the message creates one.
+ */
+function reportTriggeringHeader(node, message, reporter) {
+  const definitions = getDefinitions(node);
+
+  if (!definitions) {
+    return;
+  }
+
+  const name = message.get('name'),
+        startEvent = triggeringMessages(definitions).get(name),
+        parameters = message.get('parameter') || [];
+
+  if (!startEvent) {
+    return;
+  }
+
+  if (startEvent === node) {
+    if (parameters.length) {
+      reporter.report(node.id,
+        `Message start event of process '${node.$parent.id}' must state no header parameter, message '${name}' being matched by its name alone`,
+        { subtype: 'triggerHeader' });
+    }
+
+    return;
+  }
+
+  if (!isThrowing(node)) {
+    return;
+  }
+
+  if (parameters.some(parameter => !FIXED_KEYS.includes(parameter.get('name')))) {
+    reporter.report(node.id,
+      `Message '${name}' instantiates process '${startEvent.$parent.id}' and must state no header parameter beyond ${FIXED_KEYS.join(', ')}`,
+      { subtype: 'triggerHeader' });
+  }
+
+  if (parameters.some(parameter => parameter.get('name') === 'recipient')) {
+    reporter.report(node.id,
+      `Message '${name}' instantiates process '${startEvent.$parent.id}' and must state no recipient, the instance not existing until it arrives`,
+      { subtype: 'triggerRecipient' });
+  }
+}
