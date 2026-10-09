@@ -113,7 +113,7 @@ describe('ExecutionData', function() {
 
     assert.ok(entry.status.length);
     assert.ok(entry.data.length);
-    assert.deepEqual(entry.globals.map(attribute => attribute.id), [ 'Objective', 'Makespan' ]);
+    assert.deepEqual(entry.globals.map(attribute => attribute.id), [ 'Makespan' ]);
   });
 
   it('resolves an identifier within the process of the element asked about', function() {

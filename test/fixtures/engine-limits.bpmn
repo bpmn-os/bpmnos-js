@@ -95,11 +95,4 @@
   <bpmn:process id="NotExecutable">
     <bpmn:startEvent id="NotExecutableStart" />
   </bpmn:process>
-  <bpmn:dataStore id="Globals">
-    <bpmn:extensionElements>
-      <bpmnos:attributes>
-        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
-      </bpmnos:attributes>
-    </bpmn:extensionElements>
-  </bpmn:dataStore>
 </bpmn:definitions>

@@ -65,11 +65,4 @@
       </bpmn:extensionElements>
     </bpmn:dataObject>
   </bpmn:process>
-  <bpmn:dataStore id="DataStore_1">
-    <bpmn:extensionElements>
-      <bpmnos:attributes>
-        <bpmnos:attribute id="Objective" type="decimal" name="objective := 0" />
-      </bpmnos:attributes>
-    </bpmn:extensionElements>
-  </bpmn:dataStore>
 </bpmn:definitions>

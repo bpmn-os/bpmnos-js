@@ -92,27 +92,17 @@ export function collectExecutionData(definitions) {
 }
 
 /**
- * The global attributes a model declares, through the data stores it holds, the objective first.
+ * The global attributes a model declares, through the data stores it holds, in the order of declaration.
  *
  * Read from the `bpmn:DataStore` root elements and never from the references to them, exactly as the data
  * of a scope is read from the data objects it contains: a reference refers to a store and does not declare
- * one. A store therefore declares its globals whether or not any process refers to it, which is what lets
- * the objective be declared by a store no diagram shows, as `Instance` is declared by a data object no
- * reference points at.
- *
- * The objective is hoisted to the front because the engine holds it at the first position of the globals,
- * as it holds the instance at the first position of the data.
+ * one. A store therefore declares its globals whether or not any process refers to it. The engine holds
+ * them, in this order, as the first data of every scope.
  */
 function globalsOf(rootElements) {
-  const globals = rootElements
+  return rootElements
     .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
     .reduce((all, dataStore) => all.concat(attributesOf(dataStore, 'global', dataStore)), []);
-
-  const objective = globals.findIndex(attribute => attribute.id === 'Objective');
-
-  return objective > 0
-    ? [ globals[objective], ...globals.filter((attribute, index) => index !== objective) ]
-    : globals;
 }
 
 /**

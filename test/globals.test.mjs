@@ -12,7 +12,7 @@ import { parse } from './helper.mjs';
  * A global and a lookup table are read from the stores a model holds and never from the references to them,
  * exactly as the data of a scope is read from the data objects it contains: a reference refers to a store
  * and does not declare one. A store therefore contributes what it declares whether or not any process
- * refers to it, which is what lets the objective be declared by a store no diagram shows.
+ * refers to it.
  */
 describe('globals, declared by the data stores a model holds', function() {
   let registry;
@@ -25,7 +25,7 @@ describe('globals, declared by the data stores a model holds', function() {
     const inJob = registry.byElement.get('JobProcess').globals.map(attribute => attribute.id),
           inMachine = registry.byElement.get('MachineProcess').globals.map(attribute => attribute.id);
 
-    assert.deepEqual(inJob, [ 'Objective', 'Makespan' ]);
+    assert.deepEqual(inJob, [ 'Makespan' ]);
     assert.deepEqual(inMachine, inJob);
   });
 
@@ -35,23 +35,6 @@ describe('globals, declared by the data stores a model holds', function() {
 
     assert.equal(makespan.scope, 'global');
     assert.ok(makespan.declaringElement.startsWith('DataStore'));
-  });
-
-  it('puts the objective first, wherever it is declared', function() {
-    const globals = registry.byElement.get('JobProcess').globals;
-
-    assert.equal(globals[0].id, 'Objective');
-
-    // and the store declaring it is not the first store of the model, so the order is not the document's
-    assert.notEqual(globals[0].declaringElement, globals[1].declaringElement);
-  });
-
-  it('carries neither an objective nor a weight, so it does not count towards itself', function() {
-    const objective = registry.byElement.get('JobProcess').globals[0];
-
-    assert.equal(objective.objective, undefined);
-    assert.equal(objective.weight, undefined);
-    assert.equal(objective.name, 'objective := 0');
   });
 
   it('resolves by identifier within every process', function() {
@@ -87,12 +70,6 @@ describe('lookup tables, declared by the data stores a model holds', function() 
     assert.equal(durations.source, 'durations.csv');
     assert.equal(durations.header, 'From;To;Duration');
   });
-
-  it('declares the objective even where the model has no collaboration', function() {
-    assert.deepEqual(
-      registry.byElement.get('EarliestArrival_Process').globals.map(attribute => attribute.id),
-      [ 'Objective' ]);
-  });
 });
 
 /**
@@ -109,7 +86,6 @@ describe('identifiers, of what a data store declares', function() {
   it('takes a global in every process', function() {
     assert.equal(isTaken(registry, 'JobProcess', 'Makespan'), true);
     assert.equal(isTaken(registry, 'MachineProcess', 'Makespan'), true);
-    assert.equal(isTaken(registry, 'MachineProcess', 'Objective'), true);
   });
 
   it('leaves what one process declares taken in that process alone', function() {

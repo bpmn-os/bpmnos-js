@@ -11,8 +11,7 @@ import { CheckboxEntry, isCheckboxEntryEdited } from '@bpmn-io/properties-panel'
 import { useService } from 'bpmn-js-properties-panel';
 
 import {
-  createElement,
-  getRoot
+  createElement
 } from '../utils/ElementUtil.js';
 
 import {
@@ -120,13 +119,11 @@ function hasInstanceAttribute(businessObject) {
 }
 
 /**
- * The attributes an executable model always declares, whichever of them it is still missing.
+ * The attributes an executable process always declares, whichever of them it is still missing.
  *
- * A process declares `Timestamp` in its status and `Instance` on a data object of its own, and the model
- * declares `Objective` among its globals. The first two are declared once per process, since each process
- * is instantiated on its own and carries a time and an identity of its own. The third is declared once for
- * the whole model, an objective being what a run accumulates rather than what a process holds, which is
- * why making a second process executable adds nothing to it.
+ * A process declares `Timestamp` in its status and `Instance` on a data object of its own, once per
+ * process, since each process is instantiated on its own and carries a time and an identity of its own. The
+ * objective a run accumulates is held by the engine and declared by no attribute.
  */
 /**
  * The `bpmnos:Attribute`s an element declares directly, whichever of its extension values holds them.
@@ -144,60 +141,13 @@ function attributesOf(moddleElement) {
     .flatMap(attributes => attributes.get('attribute') || []);
 }
 
-// whether the model already declares the objective, wherever among its data stores it was declared
-function hasObjectiveAttribute(definitions) {
-  return (definitions.get('rootElements') || [])
-    .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
-    .some(dataStore => attributesOf(dataStore).some(attribute => attribute.get('id') === 'Objective'));
-}
-
-/**
- * Declare the objective among the globals of the model, unless the model declares it already.
- *
- * A global is declared by a `bpmn:DataStore`, so the objective is declared by one of its own that no
- * reference points at, exactly as `Instance` sits on a data object no reference points at. It needs none:
- * a reference is how a reader is shown that a process uses a store and how the editor is offered for it,
- * and the objective is neither the reader's to place nor theirs to edit.
- *
- * It carries neither an objective nor a weight, which is what keeps it from counting towards itself, and
- * it is initialised to zero.
- *
- * The store is built whole and attached in one command, nothing observing it until it is attached, so the
- * whole declaration is one step of the command stack.
- */
-function ensureObjectiveAttribute(element, definitions, bpmnFactory, commandStack) {
-  if ( hasObjectiveAttribute(definitions) ) {
-    return;
-  }
-
-  const dataStore = createElement('bpmn:DataStore', {}, definitions, bpmnFactory);
-  const extensionElements = createElement('bpmn:ExtensionElements', { values: [] }, dataStore, bpmnFactory);
-  const attributes = createElement('bpmnos:Attributes', {}, extensionElements, bpmnFactory);
-  const attribute = createElement('bpmnos:Attribute',
-    { id: 'Objective', name: 'objective := 0', type: 'decimal' }, attributes, bpmnFactory);
-
-  attributes.get('attribute').push(attribute);
-  extensionElements.get('values').push(attributes);
-  dataStore.extensionElements = extensionElements;
-
-  commandStack.execute('element.updateModdleProperties', {
-    element,
-    moddleElement: definitions,
-    properties: {
-      rootElements: [ ...definitions.get('rootElements'), dataStore ]
-    }
-  });
-}
-
 function ensureDefaultAttributes(element,bpmnFactory,commandStack) {
   const businessObject = getRelevantBusinessObject(element);
 
-  ensureObjectiveAttribute(element, getRoot(businessObject), bpmnFactory, commandStack);
-
   if ( !hasInstanceAttribute(businessObject) ) {
 
-    // the data object is built whole and contained in one command, as the objective's store is, so that
-    // undoing the tick that created it takes it away again
+    // the data object is built whole and contained in one command, so that undoing the tick that created it
+    // takes it away again
     const dataObject = createElement('bpmn:DataObject', {}, businessObject, bpmnFactory);
     const extensionElements = createElement('bpmn:ExtensionElements', { values: [] }, dataObject, bpmnFactory);
     const attributes = createElement('bpmnos:Attributes', {}, extensionElements, bpmnFactory);
