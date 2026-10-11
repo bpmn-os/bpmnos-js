@@ -178,7 +178,7 @@
     <bpmn2:intermediateCatchEvent id="ConditionalEvent" name="All requests obtained">
       <bpmn2:extensionElements>
         <bpmnos:restrictions>
-          <bpmnos:restriction id="Condition_05rdls5" expression="task_requests == tasks" parameter="[object Object]" />
+          <bpmnos:restriction id="Condition_05rdls5" expression="task_requests == tasks" />
         </bpmnos:restrictions>
       </bpmn2:extensionElements>
       <bpmn2:incoming>Flow_1rghjse</bpmn2:incoming>
