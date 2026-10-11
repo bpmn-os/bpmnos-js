@@ -1,5 +1,7 @@
 import { is } from 'bpmnlint-utils';
 
+import { normalizeType } from '../../bpmnos/utils/TypeUtil.js';
+
 import { attributeName, getDefinitions, visibleAttributes } from './executionData.js';
 
 /**
@@ -128,7 +130,8 @@ export function agrees(message, header, otherMessage, otherHeader) {
   return header.every(function(entry, index) {
     const other = otherHeader[index];
 
-    return entry.key === other.key && (!entry.type || !other.type || entry.type === other.type);
+    // types are compared as the engine reads them, which ignores whitespace
+    return entry.key === other.key && (!entry.type || !other.type || normalizeType(entry.type) === normalizeType(other.type));
   });
 }
 

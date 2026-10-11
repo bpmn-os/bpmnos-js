@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="Definitions_ObjectiveTypes" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_ObjectiveTypes" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Total" type="decimal" name="total" objective="maximize" weight="1" />
+          <bpmnos:attribute id="Served" type="boolean" name="served" objective="maximize" weight="1" />
+          <bpmnos:attribute id="Label" type="string" name="label" objective="minimize" weight="1" />
+          <bpmnos:attribute id="Route" type="integer[]" name="route" objective="minimize" weight="1" />
+          <bpmnos:attribute id="Depot" type="{ x: decimal }" name="depot" weight="2" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+  </bpmn:process>
+</bpmn:definitions>

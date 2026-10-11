@@ -269,6 +269,9 @@
       },
       "unknownObjective": {
         "description": "An objective must be minimize, maximize or none. The engine rejects anything else."
+      },
+      "objectiveOfType": {
+        "description": "Only an attribute of type integer, decimal or boolean contributes to the objective. The engine rejects an objective or a weight on a string or on an array or a value with fields, which contributes through an aggregation in an attribute of such a type instead."
       }
     }
   },

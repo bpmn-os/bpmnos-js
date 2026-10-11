@@ -44,7 +44,7 @@ export function collectExecutionData(definitions) {
     processOf: new Map(),
     byId: new Map(),
     elementsById: new Map(),
-    tables: []
+    inputs: []
   };
 
   if (!definitions) {
@@ -53,7 +53,7 @@ export function collectExecutionData(definitions) {
 
   const rootElements = definitions.get('rootElements') || [];
 
-  registry.tables = tablesOf(rootElements);
+  registry.inputs = inputsOf(rootElements);
 
   // globals are declared by the data stores a model holds and are seen everywhere
   const globals = globalsOf(rootElements);
@@ -357,28 +357,30 @@ function operatorEntries(holder, declaringElementId) {
 }
 
 /**
- * The lookup tables a model declares: `bpmnos:tables/table` on the data stores it holds, each a name, the
- * file it is read from and its column header.
+ * The inputs a model declares: `bpmnos:inputs/input` on the data stores it holds, each a name, a type
+ * (`lookup`, `matrix` or `object`), the file it is read from and its schema, which for a lookup is its typed
+ * header.
  *
- * Model-level rather than per element: a table's name becomes a callable in expressions, so
- * `durations(current_location,next_location)` in an operator is a lookup wherever it is written, whichever
- * data store declares it. That is also why a table belongs to the store rather than to one occurrence of
- * referring to it, which is where the globals belong and for the same reason. Kept in document order,
- * naming the store that declares it.
+ * Model-level rather than per element: an input's name is read in expressions wherever they are written,
+ * a lookup's as a callable, so `durations(current_location,next_location)` in an operator is a lookup
+ * whichever data store declares it, and a matrix's or an object's by its name. That is also why an input
+ * belongs to the store rather than to one occurrence of referring to it, which is where the globals belong
+ * and for the same reason. Kept in document order, naming the store that declares it.
  */
-function tablesOf(rootElements) {
+function inputsOf(rootElements) {
   return rootElements
     .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
     .flatMap(dataStore =>
-      getExtensionElementsList(dataStore, 'bpmnos:Tables')
-        .flatMap(tables => tables.get('table') || [])
-        .map(table => ({
-          id: table.get('id'),
-          name: table.get('name'),
-          source: table.get('source'),
-          header: table.get('header'),
+      getExtensionElementsList(dataStore, 'bpmnos:Inputs')
+        .flatMap(inputs => inputs.get('input') || [])
+        .map(input => ({
+          id: input.get('id'),
+          name: input.get('name'),
+          type: input.get('type'),
+          source: input.get('source'),
+          schema: input.get('schema'),
           declaringElement: dataStore.id,
-          moddleElement: table
+          moddleElement: input
         })));
 }
 

@@ -64,7 +64,7 @@ for optimization and simulation), for any bpmn-js host. Exposed via the package 
   properties panel, and the naming of pasted extension content (`PasteIdentifiers`, service
   `pasteIdentifiers`; was `ReplaceIds`/`replaceIds`).
 - **`./moddle`** (`bpmnos.json`) — the `bpmnos:` moddle extension (decisions, attributes, restrictions,
-  operators, messages, guidance, lookup tables, etc.).
+  operators, messages, guidance, inputs, etc.).
 - **`./decision-task`** — the decision-task renderer + `ActivityPopupMenu` (the type-change funnel and the
   decision task).
 - **`./properties`** — a `@bpmn-io/properties-panel` provider (`BPMNOSPropertiesProvider` + updater),
@@ -138,7 +138,7 @@ derived from `$descriptor.properties` and the values set, not from a list of typ
 is why the test is *holds* a value rather than *can hold* one. Commands are returned, not executed, so a
 caller appends them to its own and the whole removal is **one undo step**. Every remove factory in
 `properties/` calls it; the old hand-written variants each got the pruning subtly differently and one
-(`TableHandler`) wiped the element's entire `extensionElements`. Model-level (no bpmn-js import), hence
+(then `TableHandler`, now `InputHandler`) wiped the element's entire `extensionElements`. Model-level (no bpmn-js import), hence
 tested under `node --test` in `test/removal.test.mjs`.
 
 **Type change** (`BPMNOSPropertiesUpdater.js`). An **event** that loses its message/timer event definition
@@ -161,7 +161,7 @@ registry uses, so a headless consumer and the modeller ask the same way. Status 
 `bpmnos:Status` on a process or activity, data from the `bpmn:DataObject`s a **scope** contains (never
 from a `bpmn:DataObjectReference`, which per BPMN refers to data rather than owning it, and a model may
 hold an object no reference points at), globals from the `bpmn:DataStore`s a model holds (never from a
-`bpmn:DataStoreReference`, for the same reason, which is also where the lookup tables live), the objective
+`bpmn:DataStoreReference`, for the same reason, which is also where the inputs live), the objective
 first among them. All are inherited by every
 descendant, outermost first and a node's own last — the order a token carries them in, verified against
 engine logs in `~/Code/bpmnos/BPMNOSInstances.jl`. It rebuilds on `import.done` and `elements.changed` and
@@ -243,7 +243,7 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   load. `bpmnos/loop-parameters.js` flags all seven here, so
   the lint rule and such an engine check should be kept in step.
 - The registry reports operators, restrictions, choices, conditions, timers, loop parameters, messages,
-  signals, guidance and lookup tables beside the attributes; what `bpmnosdoc` emits for each of them is
+  signals, guidance and inputs beside the attributes; what `bpmnosdoc` emits for each of them is
   where it still grows.
 - `~/Code/bpmnos/bpmndoc` (C++, Xerces + bpmn++) is archived, `bpmnosdoc` having taken its place for BPMN-OS
   models. It was retired before `bpmnosdoc` covered everything it emitted, so what the entry above calls the

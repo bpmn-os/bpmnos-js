@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it, before } from 'node:test';
 
 import attributeRedeclared from '../src/modules/rules/bpmnos/attribute-redeclared.js';
+import attributeObjective from '../src/modules/rules/bpmnos/attribute-objective.js';
 
 import { findById, parse } from './helper.mjs';
 
@@ -82,5 +83,29 @@ describe('bpmnos/attribute-redeclared', function() {
     for (const id of elements) {
       assert.deepEqual(reportsFor(findById(jobShop, id)), [], `${id} is reported`);
     }
+  });
+});
+
+/**
+ * Only an attribute of type integer, decimal or boolean contributes to the objective, so an objective or a
+ * weight on a string, an array or a value with fields is reported, and nothing else of the fixture is.
+ */
+describe('bpmnos/attribute-objective, types', function() {
+  let reports;
+
+  before(async function() {
+    const definitions = await parse('objective-types');
+
+    reports = [];
+    attributeObjective().check(findById(definitions, 'Process_ObjectiveTypes'),
+      { report: (id, message, options) => reports.push({ id, message, subtype: options && options.subtype }) });
+  });
+
+  it('reports an objective or a weight on a string, an array and a value with fields', function() {
+    assert.deepEqual(reports.map(report => report.subtype),
+      [ 'objectiveOfType', 'objectiveOfType', 'objectiveOfType' ]);
+    assert.match(reports[0].message, /'label' of type 'string'/);
+    assert.match(reports[1].message, /'route' of type 'integer\[\]'/);
+    assert.match(reports[2].message, /'depot' of type '\{ x: decimal \}'/);
   });
 });

@@ -61,11 +61,11 @@ export default class ExecutionData {
   }
 
   /**
-   * The lookup tables the model declares, in document order. Model-level: a table's name is a callable in
-   * expressions, not something a node declares or inherits.
+   * The inputs the model declares, lookup tables, matrices and objects, in document order. Model-level: an
+   * input's name is read in expressions, not something a node declares or inherits.
    */
-  getTables() {
-    return this._registry.tables || [];
+  getInputs() {
+    return this._registry.inputs || [];
   }
 
   /**

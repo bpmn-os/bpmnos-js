@@ -347,20 +347,20 @@
       ]
     },
     {
-      "name": "Tables",
+      "name": "Inputs",
       "superClass": [
         "Element"
       ],
       "properties": [
         {
-          "name": "table",
-          "type": "Table",
+          "name": "input",
+          "type": "Input",
           "isMany": true
         }
       ]
     },
     {
-      "name": "Table",
+      "name": "Input",
       "superClass": [
         "Element"
       ],
@@ -371,17 +371,22 @@
           "isAttr": true
         },
         {
-          "name": "source",
-          "type": "String",
-          "isAttr": true
-        },
-        {
           "name": "name",
           "type": "String",
           "isAttr": true
         },
         {
-          "name": "header",
+          "name": "type",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "source",
+          "type": "String",
+          "isAttr": true
+        },
+        {
+          "name": "schema",
           "type": "String",
           "isAttr": true
         }

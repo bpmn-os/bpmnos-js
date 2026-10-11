@@ -16,6 +16,8 @@ import {
 
 import { without } from 'min-dash';
 
+import { isScalarType, isObjectiveType } from '../utils/TypeUtil.js';
+
 export default function AttributeEntries(props) {
 
   const {
@@ -32,6 +34,11 @@ export default function AttributeEntries(props) {
   },{
     id: idPrefix + '-type',
     component: AttributeType,
+    idPrefix,
+    attribute
+  },{
+    id: idPrefix + '-schema',
+    component: AttributeSchema,
     idPrefix,
     attribute
   },{
@@ -96,6 +103,30 @@ function AttributeName(props) {
   });
 }
 
+/**
+ * The attributes for which Custom is chosen while their type is still a scalar one.
+ *
+ * Choosing Custom for a scalar attribute leaves its type as it is, so that the schema entry starts from the
+ * scalar type last selected, e.g. `decimal`, to be extended to `decimal[]`. A type that is a scalar one is
+ * otherwise shown as that scalar type, so the choice is remembered here until the schema is changed or a
+ * scalar type is chosen again. It is a state of the editor, not of the model, and is not saved.
+ */
+const customChosen = new WeakSet();
+
+/**
+ * Returns true if the attribute is shown with a custom type.
+ */
+function isCustom(attribute) {
+  return customChosen.has(attribute) || !isScalarType(attribute.get('type'));
+}
+
+/**
+ * The type of an attribute: one of the scalar types, or custom, the schema of an array or of a value with
+ * fields, which the schema entry holds.
+ *
+ * A type that is not a scalar one cannot contribute to the objective, so choosing it clears the objective and
+ * the weight, as choosing a string does.
+ */
 function AttributeType(props) {
   const {
     idPrefix,
@@ -104,21 +135,37 @@ function AttributeType(props) {
   } = props;
 
   const commandStack = useService('commandStack');
+  const eventBus = useService('eventBus');
   const translate = useService('translate');
-//  const debounce = useService('debounceInput');
 
   const setValue = (value) => {
+    if ( value == 'custom' ) {
+      if ( !isCustom(attribute) ) {
+        // the type is kept, for the schema entry to start from it, and the entries are shown anew
+        customChosen.add(attribute);
+        eventBus.fire('elements.changed', { elements: [ element ] });
+      }
+      return;
+    }
+
+    customChosen.delete(attribute);
+
+    const properties = { type: value };
+
+    if ( !isObjectiveType(value) ) {
+      properties.objective = null;
+      properties.weight = null;
+    }
+
     commandStack.execute('element.updateModdleProperties', {
       element,
       moddleElement: attribute,
-      properties: {
-        type: value
-      }
+      properties
     });
   };
 
   const getValue = () => {
-    return attribute.type;
+    return isCustom(attribute) ? 'custom' : attribute.get('type');
   };
 
   const getOptions = (element) => {
@@ -127,7 +174,7 @@ function AttributeType(props) {
       { value: 'decimal', label: translate('Decimal') },
       { value: 'boolean', label: translate('Boolean') },
       { value: 'string', label: translate('String') },
-      { value: 'collection', label: translate('Collection') }
+      { value: 'custom', label: translate('Custom') }
     ];
   };
 
@@ -141,6 +188,71 @@ function AttributeType(props) {
   });
 }
 
+/**
+ * The schema of a custom type, e.g. `integer[5]` or `{ x: decimal, flags: boolean[3] }[]`, shown only for an
+ * attribute with a custom type.
+ *
+ * The schema is written in the engine's grammar and checked by the engine when it builds the model; here it is
+ * only required to be given. Changing it ends the choice of Custom remembered for a scalar type, the type now
+ * saying for itself whether it is custom, and clears an objective and a weight a custom type cannot carry.
+ */
+function AttributeSchema(props) {
+  const {
+    idPrefix,
+    element,
+    attribute
+  } = props;
+
+  if ( !attribute || !isCustom(attribute) ) {
+    return;
+  }
+
+  const commandStack = useService('commandStack');
+  const translate = useService('translate');
+  const debounce = useService('debounceInput');
+
+  const setValue = (value, error) => {
+    if (error) {
+      return;
+    }
+
+    const properties = { type: value };
+
+    if ( !isObjectiveType(value) ) {
+      properties.objective = null;
+      properties.weight = null;
+    }
+
+    customChosen.delete(attribute);
+
+    commandStack.execute('element.updateModdleProperties', {
+      element,
+      moddleElement: attribute,
+      properties
+    });
+  };
+
+  const getValue = () => {
+    return attribute.get('type');
+  };
+
+  const validate = useCallback((value) => {
+    if ( value === undefined || value === null || String(value).trim() == '' ) {
+      return translate('Schema must not be empty.');
+    }
+  }, [ translate ]);
+
+  return TextFieldEntry({
+    element: attribute,
+    id: idPrefix + '-schema',
+    label: translate('Schema'),
+    validate,
+    getValue,
+    setValue,
+    debounce
+  });
+}
+
 function AttributeObjective(props) {
   const {
     idPrefix,
@@ -148,7 +260,7 @@ function AttributeObjective(props) {
     attribute
   } = props;
 
-  if ( !attribute || attribute.get('type') == 'string' ) {
+  if ( !attribute || !isObjectiveType(attribute.get('type')) ) {
     return;
   }
 

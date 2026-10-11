@@ -19,6 +19,8 @@ import { Launcher } from 'chrome-launcher';
 
 import { renderBpmnToSvg, withDevServer } from 'bpmn-workbench/bpmn2svg';
 
+import { isScalarType } from './src/modules/bpmnos/utils/TypeUtil.js';
+
 const appDir = dirname(fileURLToPath(import.meta.url));
 
 const USAGE = 'usage: bpmnosdoc [-o <outDir>] <model.bpmn> [...]';
@@ -143,11 +145,12 @@ async function collectModel(page, diagram) {
         };
       });
 
-    const tables = executionData.getTables().map((t) => ({
-      id: t.id,
-      name: t.name,
-      source: t.source,
-      header: t.header
+    const inputs = executionData.getInputs().map((input) => ({
+      id: input.id,
+      name: input.name,
+      type: input.type,
+      source: input.source,
+      schema: input.schema
     }));
 
     const root = registry.getAll().find((element) => element.type === 'bpmn:Process')
@@ -168,7 +171,7 @@ async function collectModel(page, diagram) {
         documentation: documentationOf(root.businessObject)
       },
       nodes,
-      tables
+      inputs
     };
   });
 }
@@ -238,7 +241,7 @@ function attributeItem(attribute, ownIds, anchors) {
   const parts = [];
 
   if (attribute.type) {
-    parts.push(`*${attribute.type}:*`);
+    parts.push(typeText(attribute.type));
   }
 
   parts.push(`**${name}**`);
@@ -449,7 +452,7 @@ function guidanceSections(node, level, slug) {
     const groups = [
       ...group('Attributes', definition.attributes,
         (a) => [
-          `- ${a.type ? `*${a.type}:* ` : ''}**${(a.name || a.id || '').trim()}**`,
+          `- ${a.type ? typeText(a.type) + ' ' : ''}**${(a.name || a.id || '').trim()}**`,
           ...objectiveTerm(a, (a.name || a.id || '').trim())
         ]),
       ...group('Operators', definition.operators, (o) => '- `' + (o.expression || o.id) + '`'),
@@ -467,31 +470,47 @@ function guidanceSections(node, level, slug) {
 }
 
 /**
- * The lookup tables the model declares, at model level: a table's name is a callable in expressions, so
- * `durations(current_location,next_location)` in an operator reads the table named there — which is the one
- * thing the expression itself does not say. Written as the call it is, and followed by its columns.
+ * Returns the type of an attribute as written before its name: a scalar type in italics, and a custom type,
+ * the schema of an array or of a value with fields such as `integer[]` or `{ x: decimal }`, as a code span,
+ * which GitHub and doxygen alike show as it is written, where escaping its brackets for one would issue a
+ * command to the other.
  */
-function tableSection(tables, slug) {
-  if (!tables.length) {
+function typeText(type) {
+  return isScalarType(type) ? `*${type}:*` : '`' + type + '`:';
+}
+
+/**
+ * The inputs the model declares, at model level: a lookup's name is a callable in expressions, so
+ * `durations(current_location,next_location)` in an operator reads the table named there, and a matrix's or
+ * an object's name is read as an array or object, which is the one thing the expression itself does not say.
+ * A lookup is written as the call it is and followed by its columns, a matrix or an object by its schema.
+ */
+function inputSection(inputs, slug) {
+  if (!inputs.length) {
     return [];
   }
 
-  slug('Lookup tables');
+  slug('Inputs');
 
   return [
-    '## Lookup tables',
+    '## Inputs',
     '',
-    ...tables.map((table) => {
-      const columns = (table.header || '').split(';').map((column) => column.trim()).filter(Boolean);
+    ...inputs.map((input) => {
+      const lookup = input.type === 'lookup';
 
-      const parts = [ `- **${table.name || table.id}(…)**` ];
+      const parts = [ `- **${input.name || input.id}${lookup ? '(…)' : ''}**`, `(${input.type || 'lookup'}` ];
 
-      if (table.source) {
-        parts.push('(from `' + table.source + '`)');
+      parts[1] += input.source ? ' from `' + input.source + '`)' : ')';
+
+      if (lookup) {
+        const columns = (input.schema || '').split(';').map((column) => column.trim()).filter(Boolean);
+
+        if (columns.length) {
+          parts.push('with columns ' + columns.map((column) => '`' + column + '`').join(', '));
+        }
       }
-
-      if (columns.length) {
-        parts.push('with columns ' + columns.map((column) => '`' + column + '`').join(', '));
+      else if (input.schema) {
+        parts.push('of type `' + input.schema + '`');
       }
 
       return parts.join(' ');
@@ -530,7 +549,7 @@ function section(title, attributes, ownIds, level, anchors, slug) {
  * heading and the slugs come out the same both times.
  */
 function render({ baseName, diagrams, model, anchors, register }) {
-  const { root, nodes, tables } = model,
+  const { root, nodes, inputs } = model,
         slug = createSlugger();
 
   const titleText = root ? headingText(root) : baseName,
@@ -589,7 +608,7 @@ function render({ baseName, diagrams, model, anchors, register }) {
   }
 
   // model-level, after what the model itself declares and before the nodes
-  lines.push(...tableSection(tables || [], slug));
+  lines.push(...inputSection(inputs || [], slug));
 
   sectionNodes
     .forEach((node) => {

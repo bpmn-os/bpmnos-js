@@ -15,7 +15,7 @@ import { visibleNames } from './executionData.js';
  * LIMEX expressions instead, and are not checked here: the engine compiles those against its attribute
  * registry and rejects unknown names itself, so validating them belongs where the engine can be asked
  * (bpmnos-workbench, with the engine WASM). Approximating that grammar with pattern matching produced false
- * positives — an aggregator's bound variable in `min{ d in departures | d >= timestamp }` is not an
+ * positives — an aggregator's bound variable in `min{ d | d in departures, d >= timestamp }` is not an
  * attribute — which is why this rule was disabled before.
  */
 export default function() {

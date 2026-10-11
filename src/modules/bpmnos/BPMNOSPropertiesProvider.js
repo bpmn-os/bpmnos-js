@@ -21,7 +21,7 @@ import { messageHandler } from './properties/MessageHandler.js';
 import { signalHandler } from './properties/SignalHandler.js';
 import { timerHandler } from './properties/TimerHandler.js';
 import { guidanceHandler } from './properties/GuidanceHandler.js';
-import { tableHandler } from './properties/TableHandler.js';
+import { inputHandler } from './properties/InputHandler.js';
 
 const LOW_PRIORITY = 500;
 
@@ -37,7 +37,7 @@ const EXECUTION_GROUPS = [
 { label: 'Signal', id: 'signal', handler: signalHandler},
 { label: 'Timer', id: 'attribute', component: Group, handler: timerHandler},
 { label: 'Guidance', id: 'guidance', component: ListGroup, handler: guidanceHandler},
-{ label: 'Lookup tables', id: 'table', component: ListGroup, handler: tableHandler}
+{ label: 'Inputs', id: 'inputs', component: ListGroup, handler: inputHandler}
 ];
 
 export default class BPMNOSPropertiesProvider {

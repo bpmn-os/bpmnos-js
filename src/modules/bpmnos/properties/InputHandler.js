@@ -2,7 +2,7 @@ import {
   is
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import TableEntries from './TableEntries.js';
+import InputEntries from './InputEntries.js';
 
 import {
   createElement
@@ -23,16 +23,17 @@ import {
 
 
 /**
- * Creates tables entry and returns { items, add }
+ * Creates inputs entry and returns { items, add }
  *
- * A lookup table is held by the data store, beside the globals and for the same reason: the name of a
- * table is callable from every expression of the model, as a global is visible from every node, so both
- * are properties of the store rather than of one occurrence of referring to it. The store is not on the
- * canvas, so the editor is offered on the reference to it and reads and writes through that reference.
+ * An input, a lookup table, a matrix or an object read from a file, is held by the data store, beside the
+ * globals and for the same reason: the name of an input is read from every expression of the model, as a
+ * global is visible from every node, so both are properties of the store rather than of one occurrence of
+ * referring to it. The store is not on the canvas, so the editor is offered on the reference to it and reads
+ * and writes through that reference.
  *
- * A reference that refers to nothing holds no table, and the store is created when the first one is added.
+ * A reference that refers to nothing holds no input, and the store is created when the first one is added.
  */
-export function tableHandler({ element, injector }) {
+export function inputHandler({ element, injector }) {
   let businessObject = getRelevantBusinessObject(element);
 
   // do not offer for empty pools
@@ -51,22 +52,24 @@ export function tableHandler({ element, injector }) {
   const dataElement = element;
   element = getDataElement(element);
 
-  let tables  = undefined;
-  tables = ( element ? getCustomItem( element, 'bpmnos:Tables' ) : undefined ) || {};
+  const inputs = ( element ? getCustomItem( element, 'bpmnos:Inputs' ) : undefined ) || {};
 
-  const items = ( tables.table || []).map((table, index) => {
-    const id = element.id + '-table-' + index;
+  const items = ( inputs.input || []).map((input, index) => {
+    const id = element.id + '-input-' + index;
+
+    // a lookup is called as a function, a matrix or an object is read by its name
+    const name = input.get('name');
 
     return {
       id,
-      label: table.get('name') ? table.get('name') + "(...)" : table.get('id'),
-      entries: TableEntries({
+      label: name ? ( input.get('type') == 'lookup' ? name + "(...)" : name ) : input.get('id'),
+      entries: InputEntries({
         idPrefix: id,
         element,
-        table
+        input
       }),
       autoFocusEntry: id + '-name',
-      remove: removeFactory({ commandStack, element, table, dataElement })
+      remove: removeFactory({ commandStack, element, input, dataElement })
     };
   });
   return {
@@ -83,16 +86,16 @@ function addFactory({ bpmnFactory, commandStack, identifiers, dataElement }) {
     // the data store behind the reference, created now where the model holds none
     const element = ensureDataStore(bpmnFactory, commandStack, dataElement);
 
-    let tables  = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Tables');
+    const inputs = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Inputs');
 
-    // create 'bpmnos:Table'
-    const table = createElement('bpmnos:Table', { id: identifiers.nextId(element, 'Table_') }, tables, bpmnFactory);
+    // create 'bpmnos:Input', a lookup unless chosen otherwise
+    const input = createElement('bpmnos:Input', { id: identifiers.nextId(element, 'Input_'), type: 'lookup' }, inputs, bpmnFactory);
 
     commandStack.execute('element.updateModdleProperties', {
       element,
-      moddleElement: tables,
+      moddleElement: inputs,
       properties: {
-        table: [ ...tables.get('table'), table ]
+        input: [ ...inputs.get('input'), input ]
       }
     });
 
@@ -101,14 +104,14 @@ function addFactory({ bpmnFactory, commandStack, identifiers, dataElement }) {
 }
 
 // REMOVE FACTORY //
-function removeFactory({ commandStack, element, table, dataElement }) {
+function removeFactory({ commandStack, element, input, dataElement }) {
   return function(event) {
     event.stopPropagation();
 
     redraw(commandStack, dataElement);
 
     commandStack.execute('properties-panel.multi-command-executor',
-      removeCustomItemCommands(element, table));
+      removeCustomItemCommands(element, input));
   };
 }
 

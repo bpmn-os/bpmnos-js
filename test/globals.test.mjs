@@ -44,31 +44,32 @@ describe('globals, declared by the data stores a model holds', function() {
 });
 
 /**
- * The lookup tables, read from the stores for the same reason the globals are: a table's name becomes a
- * callable in every expression of the model, so it is a property of the store and not of one occurrence of
- * referring to it.
+ * The inputs, read from the stores for the same reason the globals are: an input's name is read in every
+ * expression of the model, a lookup's as a callable, so it is a property of the store and not of one
+ * occurrence of referring to it.
  */
-describe('lookup tables, declared by the data stores a model holds', function() {
+describe('inputs, declared by the data stores a model holds', function() {
   let registry;
 
   before(async function() {
     registry = collectExecutionData(await parse('earliest-arrival'));
   });
 
-  it('reports every table of the model, in document order', function() {
-    assert.deepEqual(registry.tables.map(table => table.name),
+  it('reports every input of the model, in document order', function() {
+    assert.deepEqual(registry.inputs.map(input => input.name),
       [ 'destinations', 'durations', 'departures', 'heuristic' ]);
   });
 
   it('names the store that declares it rather than the reference to it', function() {
-    registry.tables.forEach(table => assert.ok(table.declaringElement.startsWith('DataStore_')));
+    registry.inputs.forEach(input => assert.ok(input.declaringElement.startsWith('DataStore_')));
   });
 
-  it('keeps what each table is read from', function() {
-    const durations = registry.tables.find(table => table.name === 'durations');
+  it('keeps the type of each input, what it is read from, and its schema', function() {
+    const durations = registry.inputs.find(input => input.name === 'durations');
 
+    assert.equal(durations.type, 'lookup');
     assert.equal(durations.source, 'durations.csv');
-    assert.equal(durations.header, 'From;To;Duration');
+    assert.equal(durations.schema, 'From: string;To: string;Duration: decimal');
   });
 });
 
@@ -110,9 +111,9 @@ describe('identifiers, of what a data store declares', function() {
     assert.equal(holders[0].type, 'bpmnos:Attribute');
   });
 
-  it('takes a lookup table in every process too', async function() {
-    const tables = collectIdentifiers(await parse('earliest-arrival'));
+  it('takes an input in every process too', async function() {
+    const identifiers = collectIdentifiers(await parse('earliest-arrival'));
 
-    assert.equal(isTaken(tables, 'EarliestArrival_Process', 'Table_1askkpg'), true);
+    assert.equal(isTaken(identifiers, 'EarliestArrival_Process', 'Table_1askkpg'), true);
   });
 });

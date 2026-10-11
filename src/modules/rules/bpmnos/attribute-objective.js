@@ -1,5 +1,7 @@
 import { attributeName, declaredAttributes } from './executionData.js';
 
+import { isObjectiveType } from '../../bpmnos/utils/TypeUtil.js';
+
 // what the engine accepts; anything else is an illegal objective (`Attribute.cpp:48-63`). Note that the
 // XSD lists minimize and maximize only, while the parser also accepts none, which the corpus uses on
 // Timestamp to say outright that an attribute contributes nothing.
@@ -12,6 +14,10 @@ const OBJECTIVES = [ 'minimize', 'maximize', 'none' ];
  * objective its sign. It throws when either is given without the other — "required objective weight
  * missing" for an objective without a weight, "illegal objective" for a weight whose objective is missing or
  * unrecognised — so a model carrying one of these does not run at all.
+ *
+ * Only an attribute of type integer, decimal or boolean contributes to the objective: the engine refuses an
+ * objective or a weight on a string or on an array or a value with fields, which contributes through an
+ * aggregation in an attribute of such a type instead (`Attribute.cpp`).
  *
  * Every attribute a node declares is checked, including those of a guidance, which are scored the same way
  * (`Guidance::getObjective`).
@@ -29,6 +35,13 @@ export default function() {
       if (objective && !OBJECTIVES.includes(objective)) {
         reporter.report(node.id, `Attribute '${name}' has an unknown objective '${objective}'`,
           { subtype: 'unknownObjective' });
+
+        return;
+      }
+
+      if (((objective && objective !== 'none') || hasWeight) && !isObjectiveType(attribute.type)) {
+        reporter.report(node.id, `Attribute '${name}' of type '${attribute.type}' cannot contribute to the objective`,
+          { subtype: 'objectiveOfType' });
 
         return;
       }

@@ -10,12 +10,12 @@ import { collectExecutionData } from '../../bpmnos/collectExecutionData.js';
  *
  * Note what is deliberately absent: nothing here reads an expression. Restrictions, operators, conditions
  * and parameter values are LIMEX expressions, compiled by the engine against its attribute registry — a
- * grammar with calls, aggregators binding their own variables (`min{ d in departures | d >= timestamp }`),
- * collections and keywords, which a regular expression here could only approximate and would fall behind on
+ * grammar with calls, aggregators binding their own variables (`min{ d | d in departures, d >= timestamp }`),
+ * paths into arrays and objects, and keywords, which a regular expression here could only approximate and would fall behind on
  * the next LIMEX change. Checking those belongs where the engine itself can be asked, i.e. bpmnos-workbench
  * and its engine WASM build.
  *
- * The collection is rebuilt per call rather than cached: a lint run happens after the model changed, and
+ * What is visible is rebuilt per call rather than cached: a lint run happens after the model changed, and
  * caching on the definitions object — which stays the same across edits — would serve a stale answer.
  * Models are tens of elements, so the walk is cheap.
  */

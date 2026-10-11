@@ -11,7 +11,7 @@ The BPMNOS extension is a set of reusable modules, each importable on its own. T
 point, `bpmnos-js`, brings the decision task and the properties panel together.
 
 - **`bpmnos-js/moddle`**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
-  operators, messages, guidance, and lookup tables.
+  operators, messages, guidance, and inputs.
 - **`bpmnos-js/decision-task`**: displays the decision-task glyph and provides the activity replace menu
   (the context-pad wrench). The menu adds the decision task and keeps type changes consistent: a task,
   a typed task (user task, decision task, ...), and a sub-process convert only through an untyped task,
@@ -46,10 +46,10 @@ point, `bpmnos-js`, brings the decision task and the properties panel together.
 ## Identifiers
 
 Every piece of extension content that carries an identifier, an attribute, a restriction, an operator, a
-choice, a message, a signal and a lookup table alike, shares one namespace with all the others, and that
+choice, a message, a signal and an input alike, shares one namespace with all the others, and that
 namespace is bounded by the process rather than by the model. Within one process no two pieces of content
 may hold the same identifier, since the identifier is the key every lookup is built on; two processes are
-independent of each other. Content declared by a data store, the globals and the tables it holds, is seen
+independent of each other. Content declared by a data store, the globals and the inputs it holds, is seen
 from every process and therefore belongs to the namespace of each, and must be free in all of them.
 
 The boundary is the process because BPMN-OS itself requires it. The engine identifies two attributes by
@@ -109,6 +109,21 @@ is a different set of content and there is no reliable way to tell which of the 
 activity keeps its `bpmnos:Status`, whose attributes, restrictions and operators are valid whatever the
 activity is, and loses only what belongs to the type it no longer has, its choices and its message.
 
+## Types and inputs
+
+An attribute's type is one of the scalar types, integer, decimal, boolean and string, or a custom type, the
+schema of an array or of a value with fields, such as `integer[5]` or `{ x: decimal, flags: boolean[3] }[]`.
+The properties panel offers the scalar types and Custom; choosing Custom shows the schema in a field of its
+own, starting from the scalar type last selected, so that `decimal` is extended to `decimal[]`. A schema is written in the engine's grammar and read by the engine alone, which checks it when it builds
+the model, so the panel requires only that a schema be given.
+
+An input is read from a file and held by a data store, beside the globals: a lookup table, called as a
+function of its name, a matrix, or an object, both read by their names. Each states the file it is read from
+and its schema, which for a lookup table is its header, each column with its name and type, such as
+`From: string;To: string;Duration: decimal`, for a matrix the schema of a two-dimensional array, such as
+`decimal[][]`, and for an object its schema. The panel offers the inputs on the reference to a data store, as
+it does the globals.
+
 ## Objectives and weights
 
 An attribute may contribute to the objective a run optimises, by minimizing or by maximizing, and it does so
@@ -116,7 +131,11 @@ with a weight by which its value is multiplied. The two belong together. Giving 
 gives it a weight of one where it carries none; changing between minimizing and maximizing leaves the weight
 as it stands, since that choice says nothing about it; and taking the objective away takes the weight with
 it. For as long as there is an objective the weight is required and must be a number, and a weight that is
-neither is refused as it is typed and never reaches the model.
+neither is refused as it is typed and never reaches the model. Only an attribute of type integer, decimal or
+boolean contributes to the objective, so the objective is offered for no other, and choosing another type
+takes the objective and the weight away; an array or a value with fields contributes through an aggregation
+in an attribute of such a type instead. The rule `bpmnos/attribute-objective` reports an objective or a weight
+on any other type, which the engine refuses.
 
 ## The annotation box
 
