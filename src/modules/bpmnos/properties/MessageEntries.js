@@ -2,7 +2,7 @@ import { ListEntry, TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import { Content, ContentEntries } from './ContentEntries.js';
+import ContentTypeEntry from './ContentTypeEntry.js';
 import { Parameter, ParameterEntries } from './ParameterEntries.js';
 
 import {
@@ -31,14 +31,15 @@ export default function MessageEntries(props) {
     message
    },
    {
-    id: idPrefix + '-parameters',
-    component: MessageParameters,
+    id: idPrefix + '-type',
+    component: ContentTypeEntry,
     idPrefix,
-    message
+    item: message,
+    itemType: 'bpmnos:Message'
    },
    {
-    id: idPrefix + '-content',
-    component: MessageContent,
+    id: idPrefix + '-parameters',
+    component: MessageParameters,
     idPrefix,
     message
    }
@@ -165,66 +166,3 @@ function MessageParameters(props) {
     autoFocusEntry
   />;
 }
-
-function MessageContent(props) {
-  let {
-    id,
-    element,
-    message
-  } = props;
-
-  const bpmnFactory = useService('bpmnFactory');
-  const commandStack = useService('commandStack');
-  const translate = useService('translate');
-
-  let content = (message || {}).content;
-
-  function addContent() {
-    let commands = [];
-
-    if ( !message ) {
-      // ensure 'bpmnos:Message'
-      message = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Message'); 
-    }
-    // create 'bpmnos:Content'
-    const content = createElement('bpmnos:Content', {}, message, bpmnFactory);
-
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: message,
-      properties: {
-        content: [ ...message.get('content'), content ]
-      }
-    });
-  }
-
-  function removeContent(content) {
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: message,
-      properties: {
-        content: without(message.get('content'), content)
-      }
-    });
-  }
-
-  function compareKey(content, anotherContent) {
-    const [ key = '', anotherKey = '' ] = [ content.key, anotherContent.key ];
-
-    return key === anotherKey ? 0 : key > anotherKey ? 1 : -1;
-  }
-
-  return <ListEntry
-    id={ id }
-    element={ element }
-    label={ translate('Message content') }
-    items={ content }
-    component={ Content }
-    onAdd={ addContent }
-    onRemove={ removeContent }
-    compareFn={ compareKey }
-    autoFocusEntry
-  />;
-}
-
-

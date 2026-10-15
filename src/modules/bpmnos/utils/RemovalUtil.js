@@ -74,7 +74,7 @@ function propertyHolding(parent, child) {
  * Holding a value is what the judgement rests on rather than being able to hold one, because the archetypal
  * container is able to: `bpmn:ExtensionElements` declares `valueRef` and `extensionAttributeDefinition`
  * after the BPMN specification, which nothing here ever sets. A `bpmnos:Guidance` with its type and a
- * `bpmnos:Message` with its name and identifier do hold theirs, and are therefore kept.
+ * `bpmnos:Message` with its name do hold theirs, and are therefore kept.
  */
 function isEmptied(container, property) {
   const properties = descriptorProperties(container);

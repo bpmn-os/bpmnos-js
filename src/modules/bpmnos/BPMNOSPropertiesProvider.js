@@ -19,6 +19,8 @@ import { conditionHandler } from './properties/ConditionHandler.js';
 import { operatorHandler } from './properties/OperatorHandler.js';
 import { messageHandler } from './properties/MessageHandler.js';
 import { signalHandler } from './properties/SignalHandler.js';
+import { errorHandler } from './properties/ErrorHandler.js';
+import { escalationHandler } from './properties/EscalationHandler.js';
 import { timerHandler } from './properties/TimerHandler.js';
 import { guidanceHandler } from './properties/GuidanceHandler.js';
 import { inputHandler } from './properties/InputHandler.js';
@@ -35,6 +37,8 @@ const EXECUTION_GROUPS = [
 { label: 'Operators', id: 'operators', component: ListGroup, handler: operatorHandler},
 { label: 'Message', id: 'message', handler: messageHandler},
 { label: 'Signal', id: 'signal', handler: signalHandler},
+{ label: 'Error', id: 'error', handler: errorHandler},
+{ label: 'Escalation', id: 'escalation', handler: escalationHandler},
 { label: 'Timer', id: 'attribute', component: Group, handler: timerHandler},
 { label: 'Guidance', id: 'guidance', component: ListGroup, handler: guidanceHandler},
 { label: 'Inputs', id: 'inputs', component: ListGroup, handler: inputHandler}

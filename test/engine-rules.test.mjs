@@ -11,7 +11,7 @@ import transaction from '../src/modules/rules/engine/transaction.js';
 import typedTask from '../src/modules/rules/engine/typed-task.js';
 import multipleEventDefinitions from '../src/modules/rules/engine/multiple-event-definitions.js';
 import nonExecutableProcess from '../src/modules/rules/engine/non-executable-process.js';
-import adhocOperators from '../src/modules/rules/bpmnos/adhoc-operators.js';
+import scopeOperators from '../src/modules/rules/bpmnos/scope-operators.js';
 import defaultAttributes from '../src/modules/rules/bpmnos/default-attributes.js';
 
 import { findById, parse } from './helper.mjs';
@@ -96,20 +96,24 @@ describe('engine rules', function() {
   });
 });
 
-describe('bpmnos/adhoc-operators', function() {
+describe('bpmnos/scope-operators', function() {
   let definitions;
 
   before(async function() {
     definitions = await parse('engine-limits');
   });
 
-  it('reports operators declared for an ad-hoc sub-process', function() {
-    assert.deepEqual(reportsOver(adhocOperators, definitions), [ 'AdHocWithOperators:adHocSubProcess' ]);
+  it('reports operators declared for a scope or a gateway', function() {
+    assert.deepEqual(reportsOver(scopeOperators, definitions), [
+      'UnsupportedProcess:scope',
+      'AdHocWithOperators:scope',
+      'GatewayWithOperators:gateway'
+    ]);
   });
 
   it('says nothing about the corpus', async function() {
     for (const name of [ 'earliest-arrival', 'job-shop-scheduling-problem', 'messages' ]) {
-      assert.deepEqual(reportsOver(adhocOperators, await parse(name)), []);
+      assert.deepEqual(reportsOver(scopeOperators, await parse(name)), []);
     }
   });
 });

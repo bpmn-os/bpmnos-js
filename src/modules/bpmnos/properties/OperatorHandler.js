@@ -25,13 +25,9 @@ export function operatorHandler({ element, injector }) {
     return;
   }
 
-// TODO: operators are only allowed for tasks and event-subprocesses!
-/*
-  if ( !is(element, 'bpmn:Task') && !( is(element, 'bpmn:SubProcess') && !element.businessObject.triggeredByEvent ) ) {
-    return;
-  }
-*/
-  if ( !is(businessObject, 'bpmn:Process') && !is(businessObject, 'bpmn:Activity') ) {
+  // a task and every event have operators of their own, whereas a scope has none, what is to happen when a scope
+  // is entered being stated by the operators of its start event
+  if ( !is(businessObject, 'bpmn:Task') && !is(businessObject, 'bpmn:Event') ) {
     return;
   }
 

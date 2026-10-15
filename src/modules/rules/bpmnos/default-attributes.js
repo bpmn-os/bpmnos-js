@@ -13,13 +13,9 @@ import { attributeName, declaredAttributes, visibleAttributes } from './executio
  * name, as the engine matches them; the name is for display and for expressions to refer to.
  *
  * What may write them is narrower still. An operator may never assign the instance identifier, and may
- * advance the timestamp only where the element it belongs to takes time: not a process or a sub-process,
- * whose operators are applied at the instantaneous start event, and not a send, receive or decision task,
- * each of which completes upon an event of its own. The engine refuses all of those as it reads the model,
- * so those reports are early warnings of a refusal.
- *
- * It does not refuse a message or signal content written into the timestamp, which silently moves the token
- * in time. That one is reported here because nothing else reports it.
+ * advance the timestamp only where the element it belongs to takes time: not an event, which is
+ * instantaneous, and not a send, receive or decision task, each of which completes upon an event of its own.
+ * The engine refuses all of those as it reads the model, so those reports are early warnings of a refusal.
  */
 export default function() {
 
@@ -66,14 +62,6 @@ export default function() {
           { subtype: 'timestampAdvanced' });
       }
     });
-
-    contentsOf(node).forEach(function(content) {
-      if (reserved.get(content.get('attribute')) === TIMESTAMP) {
-        reporter.report(node.id,
-          `Content key '${content.get('key')}' is written into the timestamp, which moves the token in time`,
-          { subtype: 'timestampReceived' });
-      }
-    });
   }
 
   return {
@@ -82,7 +70,7 @@ export default function() {
 
   /**
    * The names, at this element, of the attributes reserved under those identifiers. An element names them
-   * as it likes, so what an operator or a content refers to is resolved through the attributes visible here.
+   * as it likes, so what an operator refers to is resolved through the attributes visible here.
    */
   function reservedNames(node) {
     return new Map(
@@ -100,7 +88,7 @@ export default function() {
 
   /**
    * Whether an operator of this element may advance the timestamp. A regular task takes time, which is how
-   * its duration is modelled. A scope does not, its operators being applied at its start event, and a send,
+   * its duration is modelled. An event does not, being instantaneous, a scope has no operators, and a send,
    * receive or decision task does not, each completing upon an event of its own.
    */
   function mayAdvanceTime(node) {
@@ -132,10 +120,4 @@ function operatorsOf(node) {
   }
 
   return (status.get('operators') || []).flatMap(operators => operators.get('operator') || []);
-}
-
-function contentsOf(node) {
-  return extensionElementsOf(node)
-    .filter(element => is(element, 'bpmnos:Message') || is(element, 'bpmnos:Signal'))
-    .flatMap(definition => definition.get('content') || []);
 }

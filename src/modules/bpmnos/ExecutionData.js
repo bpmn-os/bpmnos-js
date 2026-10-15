@@ -9,6 +9,7 @@ import {
 const EMPTY = {
   status: [], data: [], globals: [],
   conditions: [], timer: [], loop: [], loopKind: '', choices: [], operators: [], messages: [], signal: [],
+  error: [], escalation: [],
   entryRestrictions: [], completionRestrictions: [], exitRestrictions: [], ownRestrictions: [],
   guidance: []
 };

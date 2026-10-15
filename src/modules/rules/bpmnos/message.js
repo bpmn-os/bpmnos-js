@@ -12,8 +12,9 @@ import { attributeName, getDefinitions, visibleAttributes } from './executionDat
  * header, and the message flows drawn in the collaboration must permit the pair. This module answers those
  * questions of a moddle tree, so that the rules below state faults rather than repeat the reading.
  *
- * The header is a set of keys, each holding values of one type. Three keys are always present, holding the
- * message name and the instance identifiers of the sending and the receiving token, and are strings. Every
+ * The header is a set of keys, each holding values of one type. Two keys are always present, holding the
+ * instance identifiers of the sending and the receiving token, and are strings; the name of the message is no
+ * key of the header, a parameter named `name` stating a key as any other does. Every
  * further key is stated by a parameter, whose value names a declared attribute, in which case the key holds
  * values of the type that attribute is declared with, or is a quoted string, in which case it holds a
  * string. A parameter without a value states no type, its key holding no value, which every value held
@@ -21,7 +22,7 @@ import { attributeName, getDefinitions, visibleAttributes } from './executionDat
  */
 
 /// The keys every header carries.
-export const FIXED_KEYS = [ 'name', 'sender', 'recipient' ];
+export const FIXED_KEYS = [ 'sender', 'recipient' ];
 
 // a quoted string holds no quote of its own, quotes not being escaped
 const QUOTED = /^"[^"]*"$/;
@@ -86,7 +87,7 @@ export function shapeOf(parameter, types) {
 }
 
 /**
- * The header of a message: its keys in the order the engine builds them, the three fixed ones followed by
+ * The header of a message: its keys in the order the engine builds them, the two fixed ones followed by
  * the rest by name, each with the type of the values held under it where the model states one.
  */
 export function headerOf(node, message) {

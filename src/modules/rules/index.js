@@ -30,7 +30,7 @@ import * as attributeObjective from "./bpmnos/attribute-objective.js";
 import * as gatekeeper from "./bpmnos/gatekeeper.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
 import * as signalSelfTrigger from "./bpmnos/signal-self-trigger.js";
-import * as adhocOperators from "./bpmnos/adhoc-operators.js";
+import * as scopeOperators from "./bpmnos/scope-operators.js";
 import * as loopParameters from "./bpmnos/loop-parameters.js";
 import * as messageHeader from "./bpmnos/message-header.js";
 import * as messageCandidate from "./bpmnos/message-candidate.js";
@@ -57,7 +57,7 @@ const sources = {
     "./bpmnos/gatekeeper.js": gatekeeper,
     "./bpmnos/event-trigger.js": eventTrigger,
     "./bpmnos/signal-self-trigger.js": signalSelfTrigger,
-    "./bpmnos/adhoc-operators.js": adhocOperators,
+    "./bpmnos/scope-operators.js": scopeOperators,
     "./bpmnos/loop-parameters.js": loopParameters,
     "./bpmnos/message-header.js": messageHeader,
     "./bpmnos/message-candidate.js": messageCandidate

@@ -1,20 +1,12 @@
-import { ListEntry, TextFieldEntry } from '@bpmn-io/properties-panel';
+import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
 
-import { Content, ContentEntries } from './ContentEntries.js';
-import { Parameter, ParameterEntries } from './ParameterEntries.js';
+import ContentTypeEntry from './ContentTypeEntry.js';
 
 import {
-  createElement
-} from '../utils/ElementUtil.js';
-
-import {
-  getCustomItem,
   ensureCustomItem
 } from '../utils/CustomItemUtil.js';
-
-import { without } from 'min-dash';
 
 export default function SignalEntries(props) {
   const {
@@ -31,10 +23,11 @@ export default function SignalEntries(props) {
     signal
    },
    {
-    id: idPrefix + '-content',
-    component: SignalContent,
+    id: idPrefix + '-type',
+    component: ContentTypeEntry,
     idPrefix,
-    signal
+    item: signal,
+    itemType: 'bpmnos:Signal'
    }
   ];
 
@@ -91,66 +84,3 @@ function SignalName(props) {
     debounce
   });
 }
-
-function SignalContent(props) {
-  let {
-    id,
-    element,
-    signal
-  } = props;
-
-  const bpmnFactory = useService('bpmnFactory');
-  const commandStack = useService('commandStack');
-  const translate = useService('translate');
-
-  let content = (signal || {}).content;
-
-  function addContent() {
-    let commands = [];
-
-    if ( !signal ) {
-      // ensure 'bpmnos:Signal'
-      signal = ensureCustomItem(bpmnFactory, commandStack, element, 'bpmnos:Signal'); 
-    }
-    // create 'bpmnos:Content'
-    const content = createElement('bpmnos:Content', { }, signal, bpmnFactory);
-
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: signal,
-      properties: {
-        content: [ ...signal.get('content'), content ]
-      }
-    });
-  }
-
-  function removeContent(content) {
-    commandStack.execute('element.updateModdleProperties', {
-      element,
-      moddleElement: signal,
-      properties: {
-        content: without(signal.get('content'), content)
-      }
-    });
-  }
-
-  function compareKey(content, anotherContent) {
-    const [ key = '', anotherKey = '' ] = [ content.key, anotherContent.key ];
-
-    return key === anotherKey ? 0 : key > anotherKey ? 1 : -1;
-  }
-
-  return <ListEntry
-    id={ id }
-    element={ element }
-    label={ translate('Signal content') }
-    items={ content }
-    component={ Content }
-    onAdd={ addContent }
-    onRemove={ removeContent }
-    compareFn={ compareKey }
-    autoFocusEntry
-  />;
-}
-
-

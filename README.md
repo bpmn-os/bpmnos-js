@@ -11,7 +11,10 @@ The BPMNOS extension is a set of reusable modules, each importable on its own. T
 point, `bpmnos-js`, brings the decision task and the properties panel together.
 
 - **`bpmnos-js/moddle`**: the `bpmnos:` moddle extension describing decisions, attributes, restrictions,
-  operators, messages, guidance, and inputs.
+  operators, messages, signals, errors, escalations, guidance, and inputs. A message, signal, error or
+  escalation states a name and the type of the content object it carries, which the operators of the throwing
+  element write and those of the catching element read; operators belong to tasks and events, a scope having
+  none.
 - **`bpmnos-js/decision-task`**: displays the decision-task glyph and provides the activity replace menu
   (the context-pad wrench). The menu adds the decision task and keeps type changes consistent: a task,
   a typed task (user task, decision task, ...), and a sub-process convert only through an untyped task,
@@ -46,7 +49,7 @@ point, `bpmnos-js`, brings the decision task and the properties panel together.
 ## Identifiers
 
 Every piece of extension content that carries an identifier, an attribute, a restriction, an operator, a
-choice, a message, a signal and an input alike, shares one namespace with all the others, and that
+choice and an input alike, shares one namespace with all the others, and that
 namespace is bounded by the process rather than by the model. Within one process no two pieces of content
 may hold the same identifier, since the identifier is the key every lookup is built on; two processes are
 independent of each other. Content declared by a data store, the globals and the inputs it holds, is seen
@@ -93,9 +96,10 @@ element exactly as it was before the first one was added, with no empty `bpmnos:
 `bpmn:extensionElements` left in the file.
 
 A container is removed only when it becomes meaningless, which is when every list of it is empty and it
-holds no value of its own. A `bpmnos:Guidance` with its type, a `bpmnos:Message` with its name and
-identifier, and a `bpmnos:Signal` are content in their own right and therefore stay when their lists run
-empty; whether they are wanted is the user's to say. The judgement is made from what the element holds
+holds no value of its own. A `bpmnos:Guidance` with its type and a `bpmnos:Message` with its name are
+content in their own right and therefore stay when their lists run empty; whether they are wanted is the
+user's to say. A `bpmnos:Error` or `bpmnos:Escalation` is removed when its name is cleared, an event stating
+none throwing an unnamed one or catching every one. The judgement is made from what the element holds
 rather than from a list of types, so a type added to the moddle extension is treated correctly without
 anything being changed.
 
@@ -104,10 +108,11 @@ undo history. A timer is removed when its trigger is cleared, since a timer that
 nothing, and an empty trigger no longer creates one.
 
 When an element's type changes, content that no longer applies is discarded. An event that ceases to be a
-message event or a timer event loses its extension content altogether, because what a changed element needs
+message, timer, signal, error or escalation event while stating the corresponding `bpmnos:` element loses its
+extension content altogether, because what a changed element needs
 is a different set of content and there is no reliable way to tell which of the old is still meant. An
-activity keeps its `bpmnos:Status`, whose attributes, restrictions and operators are valid whatever the
-activity is, and loses only what belongs to the type it no longer has, its choices and its message.
+activity keeps its `bpmnos:Status` and loses only what belongs to the type it no longer has, its choices,
+its message and, once it is no task, its operators, a scope having none.
 
 ## Types and inputs
 

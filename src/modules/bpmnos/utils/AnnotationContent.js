@@ -18,8 +18,8 @@ import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
  */
 export function getAnnotationContent(host, executionData, collapsedGroup = () => false) {
   const {
-    status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal,
-    entryRestrictions, completionRestrictions, exitRestrictions, guidance
+    status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal, error,
+    escalation, entryRestrictions, completionRestrictions, exitRestrictions, guidance
   } = executionData.get(host);
 
   // what counts as declared here: the element, and for a pool the process it refers to
@@ -96,7 +96,7 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
       conditions.map(condition => expressionItem(condition, condition.expression))),
     own('Timer', timer.map(parameter => ({ type: parameter.name || '', text: parameter.value || '' }))),
     ...(isFlow ? [] : [ checkpoint('Entry restrictions', 'entryRestrictions', entryRestrictions) ]),
-    ...exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup),
+    ...exchangeAndOperators(host, choices, operators, messages, signal, error, escalation, collapsedGroup),
     ...(isFlow ? [] : [
       checkpoint('Completion restrictions', 'completionRestrictions', completionRestrictions),
       checkpoint('Exit restrictions', 'exitRestrictions', exitRestrictions)
@@ -120,7 +120,7 @@ export function getAnnotationContent(host, executionData, collapsedGroup = () =>
  * arrived (`Token::advanceToCompleted`). The box is read chronologically, so the two compartments swap
  * accordingly.
  */
-function exchangeAndOperators(host, choices, operators, messages, signal, collapsedGroup) {
+function exchangeAndOperators(host, choices, operators, messages, signal, error, escalation, collapsedGroup) {
   const own = (label, items) => ({ label, key: label.toLowerCase(), group: 'sequence', inherited: [], own: items });
 
   // a choice is made before the operators that use what was chosen
@@ -130,8 +130,10 @@ function exchangeAndOperators(host, choices, operators, messages, signal, collap
   ];
 
   const exchanges = [
-    own('Message', messages.flatMap(definition => exchange(definition, collapsedGroup))),
-    own('Signal', signal.flatMap(definition => exchange(definition, collapsedGroup)))
+    own('Message', messages.flatMap(definition => exchange(definition, collapsedGroup, true))),
+    own('Signal', signal.flatMap(definition => exchange(definition, collapsedGroup, false))),
+    own('Error', error.flatMap(definition => exchange(definition, collapsedGroup, false))),
+    own('Escalation', escalation.flatMap(definition => exchange(definition, collapsedGroup, false)))
   ];
 
   return appliedOnCompletion(host)
@@ -159,14 +161,14 @@ function appliedOnCompletion(host) {
 }
 
 /**
- * A message or signal: its name, then the **header** the engine matches senders and recipients on and the
- * **content** it carries, each mapping a key to a value or an attribute.
+ * A message, signal, error or escalation: its name and the type of the content object it carries, and for a
+ * message the **header** the engine matches senders and recipients on, each entry mapping a key to a value or
+ * an attribute.
  *
- * Both groups are always shown, with their count, so an empty header is visible as `header (0)` rather than
- * leaving the reader to wonder whether it exists. Both fold, and neither is indented — the entries beneath
- * them are.
+ * The header is always shown, with its count, so an empty header is visible as `header (0)` rather than
+ * leaving the reader to wonder whether it exists. It folds, and is not indented — the entries beneath it are.
  */
-function exchange(definition, collapsedGroup) {
+function exchange(definition, collapsedGroup, withHeader) {
   const name = definition.name || '';
 
   const group = (label, entries, keys) => {
@@ -194,8 +196,8 @@ function exchange(definition, collapsedGroup) {
 
   return [
     { type: 'Name', text: name },
-    ...group('header', definition.parameters || [], [ 'name', 'value' ]),
-    ...group('content', definition.contents || [], [ 'key', 'attribute' ])
+    ...(definition.type ? [ { type: 'Type', text: definition.type } ] : []),
+    ...(withHeader ? group('header', definition.parameters || [], [ 'name', 'value' ]) : [])
   ];
 }
 

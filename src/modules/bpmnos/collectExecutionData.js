@@ -202,7 +202,9 @@ function record(registry, businessObject, status, data, globals, inheritedRestri
     choices: choicesOf(businessObject),
     operators: operatorsOf(businessObject),
     messages: messagesOf(businessObject),
-    signal: signalOf(businessObject),
+    signal: namedContentOf(businessObject, 'bpmnos:Signal'),
+    error: namedContentOf(businessObject, 'bpmnos:Error'),
+    escalation: namedContentOf(businessObject, 'bpmnos:Escalation'),
     guidance: guidanceOf(businessObject)
   });
 
@@ -498,41 +500,42 @@ function loopKindOf(businessObject) {
 }
 
 /**
- * The messages an element defines, each with a name, its header parameters and its contents.
+ * The messages an element defines, each with a name, the type of its content and its header parameters.
  *
  * An element exchanging a message carries at most one `bpmnos:message` directly under
  * `extensionElements`, whether it is a message event or a send or receive task. The result is a list of
  * zero or one so that callers need not distinguish the two cases.
  *
- * A `content` maps a status or data attribute to a key in the message, in one direction or the other
- * depending on whether the node sends or receives; a `parameter` is the message header the engine matches
+ * The content of a message is one object of the type the message states, written by the operators of the
+ * sending node and read by those of the receiving one; a `parameter` is the message header the engine matches
  * senders and recipients on.
  */
 function messagesOf(businessObject) {
   return getExtensionElementsList(businessObject, 'bpmnos:Message').map(message => ({
     name: message.get('name'),
+    type: message.get('type'),
     parameters: parametersOf(message),
-    contents: contentsOf(message),
     declaringElement: businessObject.id,
     moddleElement: message
   }));
 }
 
 /**
- * The signal an element throws or catches: `bpmnos:signal`, a name and its contents.
+ * The signal, error or escalation an element throws or catches, a `bpmnos:signal`, `bpmnos:error` or
+ * `bpmnos:escalation` of the given type, with its name and the type of its content, as a list of zero or one.
  */
-function signalOf(businessObject) {
-  const signal = getExtensionElementsList(businessObject, 'bpmnos:Signal')[0];
+function namedContentOf(businessObject, moddleType) {
+  const definition = getExtensionElementsList(businessObject, moddleType)[0];
 
-  if (!signal) {
+  if (!definition) {
     return [];
   }
 
   return [ {
-    name: signal.get('name'),
-    contents: contentsOf(signal),
+    name: definition.get('name'),
+    type: definition.get('type'),
     declaringElement: businessObject.id,
-    moddleElement: signal
+    moddleElement: definition
   } ];
 }
 
@@ -541,14 +544,6 @@ function parametersOf(holder) {
     name: parameter.get('name'),
     value: parameter.get('value'),
     moddleElement: parameter
-  }));
-}
-
-function contentsOf(holder) {
-  return (holder.get('content') || []).map(content => ({
-    key: content.get('key'),
-    attribute: content.get('attribute'),
-    moddleElement: content
   }));
 }
 

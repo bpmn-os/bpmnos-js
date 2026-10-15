@@ -13,12 +13,18 @@ export default function BPMNOSPropertiesUpdater(eventBus,commandStack) {
     const element = event.element;
 
     if ( is(element,'bpmn:Event') ) {
-      const eventDefinitions = element.businessObject.eventDefinitions;
-      if ( !eventDefinitions || !eventDefinitions.find(definition => definition.$type == 'bpmn:MessageEventDefinition') ) {
-        removeExtensionElements(element,'bpmnos:Message',commandStack);
-      }
-      if ( !eventDefinitions || !eventDefinitions.find(definition => definition.$type == 'bpmn:TimerEventDefinition') ) {
-        removeExtensionElements(element,'bpmnos:Timer',commandStack);
+      const eventDefinitions = element.businessObject.eventDefinitions || [];
+      // an event that no longer has the event definition an extension belongs to loses its extension content
+      for ( const [ eventDefinitionType, type ] of [
+        [ 'bpmn:MessageEventDefinition', 'bpmnos:Message' ],
+        [ 'bpmn:TimerEventDefinition', 'bpmnos:Timer' ],
+        [ 'bpmn:SignalEventDefinition', 'bpmnos:Signal' ],
+        [ 'bpmn:ErrorEventDefinition', 'bpmnos:Error' ],
+        [ 'bpmn:EscalationEventDefinition', 'bpmnos:Escalation' ]
+      ] ) {
+        if ( !eventDefinitions.find(definition => definition.$type == eventDefinitionType) ) {
+          removeExtensionElements(element,type,commandStack);
+        }
       }
     }
 
@@ -50,6 +56,19 @@ export default function BPMNOSPropertiesUpdater(eventBus,commandStack) {
       // a bpmnos:Message extension belongs to a send or receive task
       if ( !isAny(element,[ 'bpmn:SendTask', 'bpmn:ReceiveTask' ]) ) {
         removeCustomItem(element,'bpmnos:Message',commandStack);
+      }
+
+      // operators belong to a task, a scope having none, what is to happen when it starts being stated by the
+      // operators of its start event
+      if ( !is(element,'bpmn:Task') ) {
+        const status = getCustomItem(element,'bpmnos:Status');
+        if ( status && ( status.get('operators') || [] ).length ) {
+          commandStack.execute('element.updateModdleProperties', {
+            element,
+            moddleElement: status,
+            properties: { operators: undefined }
+          });
+        }
       }
     }
   });

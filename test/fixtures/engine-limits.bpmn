@@ -7,12 +7,17 @@
           <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
           <bpmnos:attribute id="Total" type="integer" name="total" />
         </bpmnos:attributes>
-        <bpmnos:operators>
-          <bpmnos:operator id="CountUp" expression="total := total + 1" />
-        </bpmnos:operators>
       </bpmnos:status>
     </bpmn:extensionElements>
-    <bpmn:startEvent id="SupportedStart" />
+    <bpmn:startEvent id="SupportedStart">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:operators>
+            <bpmnos:operator id="CountUp" expression="total := total + 1" />
+          </bpmnos:operators>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:startEvent>
     <bpmn:task id="PlainTask">
       <bpmn:extensionElements>
         <bpmnos:status>
@@ -74,6 +79,15 @@
       </bpmn:extensionElements>
       <bpmn:task id="AdHocTask" />
     </bpmn:adHocSubProcess>
+    <bpmn:exclusiveGateway id="GatewayWithOperators">
+      <bpmn:extensionElements>
+        <bpmnos:status>
+          <bpmnos:operators>
+            <bpmnos:operator id="NeverAppliedAtGateway" expression="count := 1" />
+          </bpmnos:operators>
+        </bpmnos:status>
+      </bpmn:extensionElements>
+    </bpmn:exclusiveGateway>
     <bpmn:dataObject id="UnsupportedData">
       <bpmn:extensionElements>
         <bpmnos:attributes>

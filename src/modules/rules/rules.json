@@ -243,10 +243,7 @@
         "description": "An operator may never assign the instance identifier. The engine refuses such a model as it reads it."
       },
       "timestampAdvanced": {
-        "description": "An operator may advance the timestamp only where the element takes time. The operators of a process or a sub-process are applied at its start event, which is instantaneous, and a send, receive or decision task completes upon an event of its own, so none of them may. The engine refuses such a model as it reads it."
-      },
-      "timestampReceived": {
-        "description": "A message or signal content written into the timestamp moves the token in time as the content is applied. The engine permits it, refusing only a content written into a data or global attribute, so nothing else reports it."
+        "description": "An operator may advance the timestamp only where the element takes time. An event is instantaneous, and a send, receive or decision task completes upon an event of its own, so none of them may. The engine refuses such a model as it reads it."
       }
     }
   },
@@ -256,7 +253,7 @@
   },
   "bpmnos/attribute-undeclared.js": {
     "severity": "error",
-    "description": "An attribute named by a message or signal content must be declared at the node or inherited by it. Attributes used inside expressions (restrictions, operators, conditions, parameter values) are not checked here: the engine compiles those and rejects unknown names itself."
+    "description": "The attribute a loop names as its index must be declared at the node or inherited by it. Attributes used inside expressions (restrictions, operators, conditions, parameter values) are not checked here: the engine compiles those and rejects unknown names itself."
   },
   "bpmnos/attribute-objective.js": {
     "severity": "error",
@@ -304,11 +301,16 @@
     "severity": "warn",
     "description": "A process throwing the signal its own start event declares instantiates itself. The engine permits this, a signal being broadcast without a sender, so a re-throw guarded by a base case is legitimate and an unguarded one does not terminate."
   },
-  "bpmnos/adhoc-operators.js": {
+  "bpmnos/scope-operators.js": {
     "severity": "error",
-    "description": "The operators of a scope are applied to the token at its start event. An ad-hoc sub-process has none, so operators declared for it are never applied.",
-    "reference": "BPMN 2.0.2, Ad-Hoc Sub-Process, p. 181",
-    "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=211"
+    "subtypes": {
+      "scope": {
+        "description": "A scope, a process or a sub-process of any kind, has no operators; what is to happen when it starts is stated by the operators of its start event. The engine refuses a model declaring operators for a scope."
+      },
+      "gateway": {
+        "description": "A gateway has no operators. The engine does not refuse them, but never applies them."
+      }
+    }
   },
   "bpmnos/loop-parameters.js": {
     "severity": "error",

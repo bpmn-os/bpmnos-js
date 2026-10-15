@@ -61,13 +61,13 @@ describe('removeCustomItemCommands', function() {
   });
 
   it('keeps a container that carries something of its own', function() {
-    const [ message ] = findAll(definitions, 'bpmnos:Message').filter(m => (m.get('content') || []).length);
+    const [ message ] = findAll(definitions, 'bpmnos:Message').filter(m => (m.get('parameter') || []).length);
 
-    message.content = message.get('content').slice(0, 1);
+    message.parameter = message.get('parameter').slice(0, 1);
 
-    // a message has a name and an id, so an empty content list does not make it meaningless
-    assert.deepEqual(described(removeCustomItemCommands(ELEMENT, message.get('content')[0])), [
-      { cmd: 'element.updateModdleProperties', type: 'bpmnos:Message', properties: { content: 0 } }
+    // a message has a name, so an empty parameter list does not make it meaningless
+    assert.deepEqual(described(removeCustomItemCommands(ELEMENT, message.get('parameter')[0])), [
+      { cmd: 'element.updateModdleProperties', type: 'bpmnos:Message', properties: { parameter: 0 } }
     ]);
   });
 

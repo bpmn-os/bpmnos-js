@@ -141,11 +141,19 @@ caller appends them to its own and the whole removal is **one undo step**. Every
 (then `TableHandler`, now `InputHandler`) wiped the element's entire `extensionElements`. Model-level (no bpmn-js import), hence
 tested under `node --test` in `test/removal.test.mjs`.
 
-**Type change** (`BPMNOSPropertiesUpdater.js`). An **event** that loses its message/timer event definition
+**Type change** (`BPMNOSPropertiesUpdater.js`). An **event** that loses its message, timer, signal, error or
+escalation event definition while stating the corresponding `bpmnos:` element
 loses *all* extension content (`removeExtensionElements`) — deliberate: a changed element needs a different
-set and there is no reliable way to tell what is still meant. An **activity** keeps `bpmnos:Status`
-(attributes/restrictions/operators are valid on any activity) and loses only type-specific content, its
-choices and `bpmnos:Message`.
+set and there is no reliable way to tell what is still meant. An **activity** keeps `bpmnos:Status` and
+loses only type-specific content, its choices, `bpmnos:Message` and, once it is no task, its operators,
+which belong to tasks and events, a scope having none.
+
+**Content of messages, signals, errors and escalations.** Each states a name and an optional `type`, the
+content object it carries in the syntax of attribute types, which the operators of the throwing element
+write and those of the catching element read (`ContentTypeEntry.js`; errors and escalations through
+`NamedContentEntries.js`, clearing the name removing the element). The type is not parsed here: the engine
+reads it and refuses types that disagree. `bpmnos:Message`, `Signal`, `Error` and `Escalation` carry no
+`id`, as the engine's XSD declares none.
 
 **Execution data registry** (`src/modules/bpmnos/ExecutionData.js`). Built from the moddle tree, so
 declaration order *is* document order. Per element it holds ordered `status`, `data` and `globals`, each
@@ -243,7 +251,7 @@ BPMNOS severities must be **>= bpmn-workbench's** (never looser).
   load. `bpmnos/loop-parameters.js` flags all seven here, so
   the lint rule and such an engine check should be kept in step.
 - The registry reports operators, restrictions, choices, conditions, timers, loop parameters, messages,
-  signals, guidance and inputs beside the attributes; what `bpmnosdoc` emits for each of them is
+  signals, errors, escalations, guidance and inputs beside the attributes; what `bpmnosdoc` emits for each of them is
   where it still grows.
 - `~/Code/bpmnos/bpmndoc` (C++, Xerces + bpmn++) is archived, `bpmnosdoc` having taken its place for BPMN-OS
   models. It was retired before `bpmnosdoc` covered everything it emitted, so what the entry above calls the

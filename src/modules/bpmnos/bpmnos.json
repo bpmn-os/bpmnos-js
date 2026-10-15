@@ -284,23 +284,18 @@
       ],
       "properties": [
         {
-          "name": "id",
-          "type": "String",
-          "isAttr": true
-        },
-        {
           "name": "name",
           "type": "Name",
           "isAttr": true
         },
         {
-          "name": "parameter",
-          "type": "Parameter",
-          "isMany": true
+          "name": "type",
+          "type": "String",
+          "isAttr": true
         },
         {
-          "name": "content",
-          "type": "Content",
+          "name": "parameter",
+          "type": "Parameter",
           "isMany": true
         }
       ]
@@ -312,35 +307,48 @@
       ],
       "properties": [
         {
-          "name": "id",
-          "type": "String",
+          "name": "name",
+          "type": "Name",
           "isAttr": true
         },
+        {
+          "name": "type",
+          "type": "String",
+          "isAttr": true
+        }
+      ]
+    },
+    {
+      "name": "Error",
+      "superClass": [
+        "Element"
+      ],
+      "properties": [
         {
           "name": "name",
           "type": "Name",
           "isAttr": true
         },
         {
-          "name": "content",
-          "type": "Content",
-          "isMany": true
+          "name": "type",
+          "type": "String",
+          "isAttr": true
         }
       ]
     },
     {
-      "name": "Content",
+      "name": "Escalation",
       "superClass": [
         "Element"
       ],
       "properties": [
         {
-          "name": "key",
-          "type": "String",
+          "name": "name",
+          "type": "Name",
           "isAttr": true
         },
         {
-          "name": "attribute",
+          "name": "type",
           "type": "String",
           "isAttr": true
         }

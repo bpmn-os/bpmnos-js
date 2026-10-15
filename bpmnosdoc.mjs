@@ -82,11 +82,11 @@ async function collectModel(page, diagram) {
       declaringElement: r.declaringElement
     });
 
-    // a message or signal, flattened: name, header parameters, and the contents mapping attributes to keys
+    // a message, signal, error or escalation, flattened: name, the type of its content, and header parameters
     const exchange = (definition) => ({
       name: definition.name,
-      parameters: (definition.parameters || []).map((p) => ({ name: p.name, value: p.value })),
-      contents: (definition.contents || []).map((c) => ({ key: c.key, attribute: c.attribute }))
+      type: definition.type || '',
+      parameters: (definition.parameters || []).map((p) => ({ name: p.name, value: p.value }))
     });
 
     const processRefOf = (businessObject) => {
@@ -99,8 +99,8 @@ async function collectModel(page, diagram) {
       .filter((element) => element.type !== 'label')
       .map((element) => {
         const {
-          status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal,
-          entryRestrictions, completionRestrictions, exitRestrictions, guidance
+          status, data, globals, conditions, timer, loop, loopKind, choices, operators, messages, signal, error,
+          escalation, entryRestrictions, completionRestrictions, exitRestrictions, guidance
         } = executionData.get(element);
 
         // a pool stands for the process it refers to: that process documents it, owns its attributes, and
@@ -130,6 +130,8 @@ async function collectModel(page, diagram) {
           operators: operators.map((o) => ({ id: o.id, expression: o.expression })),
           messages: messages.map(exchange),
           signal: signal.map(exchange),
+          error: error.map(exchange),
+          escalation: escalation.map(exchange),
           guidance: guidance.map((g) => ({
             type: g.type,
             attributes: g.attributes.map(attribute),
@@ -221,7 +223,8 @@ function hasContent(node) {
     || node.conditions.length || node.timer.length || node.loop.length
     || node.choices.length || node.operators.length
     || node.entryRestrictions.length || node.completionRestrictions.length || node.exitRestrictions.length
-    || node.messages.length || node.signal.length || node.guidance.length);
+    || node.messages.length || node.signal.length || node.error.length || node.escalation.length
+    || node.guidance.length);
 }
 
 /**
@@ -362,10 +365,11 @@ function listSection(title, items, level, slug) {
 }
 
 /**
- * A message or signal as a subsection of its own: the name as the heading, its parameters and contents as
- * the list beneath. Markdown gives the nesting, so no indentation is needed.
+ * A message, signal, error or escalation as a subsection of its own: the name as the heading, the type of its
+ * content beneath, and for a message its header parameters as a list. Markdown gives the nesting, so no
+ * indentation is needed.
  */
-function exchangeSections(title, definitions, level, slug) {
+function exchangeSections(title, definitions, level, slug, withHeader = false) {
   if (!definitions.length) {
     return [];
   }
@@ -380,17 +384,19 @@ function exchangeSections(title, definitions, level, slug) {
     slug(heading);
     out.push('#'.repeat(level + 1) + ' *Name* ' + heading, '');
 
-    // the header the engine matches senders and recipients on, then the content carried; both always
-    // shown with their count, so an empty header reads as such
-    const group = (title, entries, render) => {
-      slug(`${title} (${entries.length})`);
-      out.push(`${'#'.repeat(level + 2)} ${title} (${entries.length})`, '');
-      entries.forEach((entry) => out.push(render(entry)));
-      out.push('');
-    };
+    if (definition.type) {
+      out.push(`*Type:* \`${definition.type}\``, '');
+    }
 
-    group('Header', definition.parameters, (p) => `- *${p.name}:* \`${p.value}\``);
-    group('Content', definition.contents, (c) => `- *${c.key}:* **${c.attribute}**`);
+    // the header the engine matches senders and recipients on, always shown with its count, so an empty
+    // header reads as such
+    if (withHeader) {
+      const entries = definition.parameters;
+      slug(`Header (${entries.length})`);
+      out.push(`${'#'.repeat(level + 2)} Header (${entries.length})`, '');
+      entries.forEach((p) => out.push(`- *${p.name}:* \`${p.value}\``));
+      out.push('');
+    }
   });
 
   return out;
@@ -595,8 +601,10 @@ function render({ baseName, diagrams, model, anchors, register }) {
         ...listSection('Choices', choiceLines(rootNode), 2, slug),
         ...listSection('Operators', operatorLines(rootNode), 2, slug)
       ]),
-      ...exchangeSections('Message', rootNode.messages, 2, slug),
+      ...exchangeSections('Message', rootNode.messages, 2, slug, true),
       ...exchangeSections('Signal', rootNode.signal, 2, slug),
+      ...exchangeSections('Error', rootNode.error, 2, slug),
+      ...exchangeSections('Escalation', rootNode.escalation, 2, slug),
       ...(rootNode.operatorsOnCompletion ? [
         ...listSection('Choices', choiceLines(rootNode), 2, slug),
         ...listSection('Operators', operatorLines(rootNode), 2, slug)
@@ -646,8 +654,10 @@ function render({ baseName, diagrams, model, anchors, register }) {
           ...listSection('Choices', choiceLines(node), 3, slug),
           ...listSection('Operators', operatorLines(node), 3, slug)
         ]),
-        ...exchangeSections('Message', node.messages, 3, slug),
+        ...exchangeSections('Message', node.messages, 3, slug, true),
         ...exchangeSections('Signal', node.signal, 3, slug),
+        ...exchangeSections('Error', node.error, 3, slug),
+        ...exchangeSections('Escalation', node.escalation, 3, slug),
         ...(node.operatorsOnCompletion ? [
           ...listSection('Choices', choiceLines(node), 3, slug),
           ...listSection('Operators', operatorLines(node), 3, slug)
