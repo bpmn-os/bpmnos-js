@@ -186,10 +186,6 @@
     "reference": "BPMN 2.0.2, Gateway, p. 289",
     "url": "https://www.omg.org/spec/BPMN/2.0.2/PDF#page=319"
   },
-  "engine/non-executable-process.js": {
-    "severity": "error",
-    "description": "The engine refuses a model holding a process that is not marked executable, throwing as it reads it, so one unmarked process stops the whole model from loading. The flag is absent by default."
-  },
   "engine/typed-task.js": {
     "severity": "warn",
     "description": "A user, manual, script, business rule or service task runs as an ordinary task: the operators are applied and the timestamp advances by what they compute. Nothing fails, but no script is run, no user is asked and no rule is evaluated, so the model reads as though something happens that does not."
@@ -226,9 +222,9 @@
     "severity": "error",
     "description": "A transaction runs as an ordinary sub-process: its contents execute and it completes. What does not happen is what makes it a transaction, the engine naming no cancel event, so it cannot be cancelled and its completed activities are never compensated on cancellation. Work to be undone is declared as compensation instead."
   },
-  "engine/inclusive-gateway.js": {
+  "bpmnos/non-executable-process.js": {
     "severity": "error",
-    "description": "The execution engine does not run inclusive gateways: it merges only a parallel join and splits only parallel and event-based gateways, and fails when it reaches an inclusive one."
+    "description": "The engine refuses a model holding a process that is not marked executable, throwing as it reads it, so one unmarked process stops the whole model from loading. The flag is absent by default."
   },
   "bpmnos/default-attributes.js": {
     "severity": "error",
@@ -280,6 +276,26 @@
       },
       "unused": {
         "description": "A gatekeeper is consulted only for the non-default outgoing flows of a diverging exclusive or inclusive gateway. Anywhere else the flow is taken without being asked: a single outgoing flow is always taken, the default flow is taken when no other applies, and a parallel or event-based gateway copies the token to all of its flows."
+      }
+    }
+  },
+  "bpmnos/compensation.js": {
+    "severity": "error",
+    "subtypes": {
+      "typedCompensationActivity": {
+        "description": "A compensation activity is performed without any decision, and a failing scope waits until its compensations are done, so that a delivery that never occurs would keep the failure from being concluded. The engine refuses a compensation activity that is a send, receive or decision task when it reads the model."
+      },
+      "adHocCompensationActivity": {
+        "description": "The entry restrictions of a compensation subprocess are checked at its start event, which an ad-hoc subprocess does not have. The engine refuses a compensation activity that is an ad-hoc subprocess when it reads the model."
+      },
+      "compensatedLoop": {
+        "description": "An activity with a loop or multi-instance marker is not compensated, the BPMN specification invoking its compensation activity both once and once for every instance. The engine refuses a compensate boundary event attached to such an activity when it reads the model."
+      },
+      "compensationEventSubProcessInLoop": {
+        "description": "The BPMN specification gives every instance of a loop or multi-instance subprocess a compensation event subprocess of its own, with the data of that instance at its completion, which the engine does not provide. The engine refuses a compensation event subprocess within such a subprocess when it reads the model."
+      },
+      "restrictedCompensationEventSubProcess": {
+        "description": "A compensation event subprocess compensates a completed subprocess whatever the status it completed with, so that its restrictions would never be checked. The engine refuses a compensation event subprocess with restrictions when it reads the model."
       }
     }
   },

@@ -215,7 +215,9 @@ shadowing is ever permitted. The second of a pair is reported, not both. Tested 
 **Linting** is bpmnlint via `bpmn-js-bpmnlint` (`linting: { bpmnlint: getRules() }`). `src/modules/rules`
 composes the set: `rules.json` is the source of truth, mapping each rule **locator** to severity +
 rationale — the reused bpmn-workbench essentials (`@bpmn-workbench/bpmn/*.js`, severities adapted) plus
-the BPMNOS `engine/*` and `bpmnos/*` rules. `createRules(rules, sources)` (from `bpmn-workbench/rules`)
+the BPMNOS `engine/*` and `bpmnos/*` rules. An `engine/*` rule reports what the token state machines of BPMN-OS
+allow but the engine does not support; a `bpmnos/*` rule reports what the token state machines do not allow.
+`createRules(rules, sources)` (from `bpmn-workbench/rules`)
 builds the bundle; `sources` maps `''` → the local rules (`createContext` over explicit imports) and
 `'@bpmn-workbench'` → the essentials' exported `ruleContext`. The bundle carries `descriptions` (the
 per-subtype `description`/`reference`/`url` in `rules.json`), which the Issues panel reads directly.

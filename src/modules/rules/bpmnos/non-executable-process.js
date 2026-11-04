@@ -3,6 +3,9 @@ import { is } from 'bpmnlint-utils';
 /**
  * A rule reporting a process that is not marked executable.
  *
+ * In BPMN a process that is not executable documents a process and is not executed, whereas BPMN-OS executes
+ * every process a model holds, so it requires each of them to be marked executable.
+ *
  * The engine refuses such a model outright: `Model::createProcess` throws "process '…' must be executable"
  * as it reads it, so a single process without the flag stops the whole model from being loaded, not merely
  * that process from being run.

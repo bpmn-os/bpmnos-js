@@ -14,9 +14,6 @@ import { is, isAny } from 'bpmnlint-utils';
  * non-default flow without a gatekeeper throws "no gatekeeper provided for sequence flow"
  * (`Token::advanceToDeparting`), so the model dies there; a gatekeeper anywhere else is never read, and the
  * flow is taken whatever it says.
- *
- * That the engine does not yet *run* a diverging inclusive gateway — `StateMachine::handleDivergingGateway`
- * throws "not yet supported" — is a separate matter, and the business of `engine/inclusive-gateway`.
  */
 export default function() {
 

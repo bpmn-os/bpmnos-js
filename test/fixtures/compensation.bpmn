@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="compensation" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Compensations" isExecutable="true">
+    <bpmn:task id="PlainTask" />
+    <bpmn:boundaryEvent id="PlainCompensation" attachedToRef="PlainTask">
+      <bpmn:compensateEventDefinition id="PlainCompensationDefinition" />
+    </bpmn:boundaryEvent>
+    <bpmn:task id="CompensationTask" isForCompensation="true" />
+    <bpmn:sendTask id="SendCompensation" isForCompensation="true" />
+    <bpmn:receiveTask id="ReceiveCompensation" isForCompensation="true" />
+    <bpmn:task id="DecisionCompensation" bpmnos:type="Decision" isForCompensation="true" />
+    <bpmn:adHocSubProcess id="AdHocCompensation" isForCompensation="true" />
+    <bpmn:task id="LoopTask">
+      <bpmn:standardLoopCharacteristics />
+    </bpmn:task>
+    <bpmn:boundaryEvent id="LoopCompensation" attachedToRef="LoopTask">
+      <bpmn:compensateEventDefinition id="LoopCompensationDefinition" />
+    </bpmn:boundaryEvent>
+    <bpmn:task id="MultiInstanceTask">
+      <bpmn:multiInstanceLoopCharacteristics />
+    </bpmn:task>
+    <bpmn:boundaryEvent id="MultiInstanceCompensation" attachedToRef="MultiInstanceTask">
+      <bpmn:compensateEventDefinition id="MultiInstanceCompensationDefinition" />
+    </bpmn:boundaryEvent>
+    <bpmn:subProcess id="LoopSubProcess">
+      <bpmn:standardLoopCharacteristics />
+      <bpmn:startEvent id="LoopSubProcessStart" />
+      <bpmn:subProcess id="EventSubProcessInLoop" triggeredByEvent="true">
+        <bpmn:startEvent id="EventSubProcessInLoopStart">
+          <bpmn:compensateEventDefinition id="EventSubProcessInLoopDefinition" />
+        </bpmn:startEvent>
+      </bpmn:subProcess>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="RestrictedSubProcess">
+      <bpmn:startEvent id="RestrictedSubProcessStart" />
+      <bpmn:subProcess id="RestrictedEventSubProcess" triggeredByEvent="true">
+        <bpmn:extensionElements>
+          <bpmnos:status>
+            <bpmnos:restrictions>
+              <bpmnos:restriction id="Restriction_1" expression="timestamp &#62;= 0" />
+            </bpmnos:restrictions>
+          </bpmnos:status>
+        </bpmn:extensionElements>
+        <bpmn:startEvent id="RestrictedEventSubProcessStart">
+          <bpmn:compensateEventDefinition id="RestrictedEventSubProcessDefinition" />
+        </bpmn:startEvent>
+      </bpmn:subProcess>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="PlainSubProcess">
+      <bpmn:startEvent id="PlainSubProcessStart" />
+      <bpmn:subProcess id="PlainEventSubProcess" triggeredByEvent="true">
+        <bpmn:startEvent id="PlainEventSubProcessStart">
+          <bpmn:compensateEventDefinition id="PlainEventSubProcessDefinition" />
+        </bpmn:startEvent>
+      </bpmn:subProcess>
+    </bpmn:subProcess>
+  </bpmn:process>
+  <bpmn:process id="NotExecuted" isExecutable="false">
+    <bpmn:adHocSubProcess id="IgnoredAdHocCompensation" isForCompensation="true" />
+  </bpmn:process>
+</bpmn:definitions>

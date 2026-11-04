@@ -1,6 +1,8 @@
 // The BPMNOS model-checking rule set. `rules.json` is the source of truth: it reuses bpmn-workbench's
 // essential rules (`@bpmn-workbench/bpmn/*.js`, with severities adapted for optimization/simulation) and
-// adds the BPMNOS-specific `engine/*` and `bpmnos/*` rules — no rule .js is copied from bpmn-workbench.
+// adds the BPMNOS-specific `engine/*` and `bpmnos/*` rules — no rule .js is copied from bpmn-workbench. An
+// `engine/*` rule reports what the token state machines of BPMN-OS allow but the engine does not support, a
+// `bpmnos/*` rule what the token state machines do not allow.
 // The bundle carries the rule descriptions, so the Issues panel needs no extra wiring.
 
 import { createRules, createContext, ruleContext } from "bpmn-workbench/rules";
@@ -12,7 +14,6 @@ import rules from "./rules.json" with { type: 'json' };
 // createContext. No require.context or import.meta.glob, so the module is bundler-agnostic (works under
 // webpack, Vite, Rollup, Node). Keys are locators relative to this directory, matching the paths
 // createRules derives from rules.json.
-import * as nonExecutableProcess from "./engine/non-executable-process.js";
 import * as typedTask from "./engine/typed-task.js";
 import * as eventType from "./engine/event-type.js";
 import * as processStartEvent from "./engine/process-start-event.js";
@@ -22,12 +23,13 @@ import * as linkEvent from "./engine/link-event.js";
 import * as multipleEventDefinitions from "./engine/multiple-event-definitions.js";
 import * as callActivity from "./engine/call-activity.js";
 import * as transaction from "./engine/transaction.js";
-import * as inclusiveGateway from "./engine/inclusive-gateway.js";
+import * as nonExecutableProcess from "./bpmnos/non-executable-process.js";
 import * as defaultAttributes from "./bpmnos/default-attributes.js";
 import * as attributeRedeclared from "./bpmnos/attribute-redeclared.js";
 import * as attributeUndeclared from "./bpmnos/attribute-undeclared.js";
 import * as attributeObjective from "./bpmnos/attribute-objective.js";
 import * as gatekeeper from "./bpmnos/gatekeeper.js";
+import * as compensation from "./bpmnos/compensation.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
 import * as signalSelfTrigger from "./bpmnos/signal-self-trigger.js";
 import * as scopeOperators from "./bpmnos/scope-operators.js";
@@ -39,7 +41,6 @@ import * as messageCandidate from "./bpmnos/message-candidate.js";
 // essential rules, via the context bpmn-workbench exports.
 const sources = {
   "": createContext({
-    "./engine/non-executable-process.js": nonExecutableProcess,
     "./engine/typed-task.js": typedTask,
     "./engine/event-type.js": eventType,
     "./engine/process-start-event.js": processStartEvent,
@@ -49,12 +50,13 @@ const sources = {
     "./engine/multiple-event-definitions.js": multipleEventDefinitions,
     "./engine/call-activity.js": callActivity,
     "./engine/transaction.js": transaction,
-    "./engine/inclusive-gateway.js": inclusiveGateway,
+    "./bpmnos/non-executable-process.js": nonExecutableProcess,
     "./bpmnos/default-attributes.js": defaultAttributes,
     "./bpmnos/attribute-redeclared.js": attributeRedeclared,
     "./bpmnos/attribute-undeclared.js": attributeUndeclared,
     "./bpmnos/attribute-objective.js": attributeObjective,
     "./bpmnos/gatekeeper.js": gatekeeper,
+    "./bpmnos/compensation.js": compensation,
     "./bpmnos/event-trigger.js": eventTrigger,
     "./bpmnos/signal-self-trigger.js": signalSelfTrigger,
     "./bpmnos/scope-operators.js": scopeOperators,

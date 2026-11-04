@@ -10,7 +10,8 @@ import callActivity from '../src/modules/rules/engine/call-activity.js';
 import transaction from '../src/modules/rules/engine/transaction.js';
 import typedTask from '../src/modules/rules/engine/typed-task.js';
 import multipleEventDefinitions from '../src/modules/rules/engine/multiple-event-definitions.js';
-import nonExecutableProcess from '../src/modules/rules/engine/non-executable-process.js';
+import nonExecutableProcess from '../src/modules/rules/bpmnos/non-executable-process.js';
+import compensation from '../src/modules/rules/bpmnos/compensation.js';
 import scopeOperators from '../src/modules/rules/bpmnos/scope-operators.js';
 import defaultAttributes from '../src/modules/rules/bpmnos/default-attributes.js';
 
@@ -90,6 +91,14 @@ describe('engine rules', function() {
   it('reports an event carrying two event definitions', function() {
     assert.deepEqual(reportsOver(multipleEventDefinitions, definitions), [ 'TwoDefinitions' ]);
   });
+});
+
+describe('bpmnos/non-executable-process', function() {
+  let definitions;
+
+  before(async function() {
+    definitions = await parse('engine-limits');
+  });
 
   it('reports a process that is not executable', function() {
     assert.deepEqual(reportsOver(nonExecutableProcess, definitions), [ 'NotExecutable' ]);
@@ -142,6 +151,33 @@ describe('bpmnos/default-attributes', function() {
   it('says nothing about the corpus', async function() {
     for (const name of [ 'earliest-arrival', 'job-shop-scheduling-problem', 'messages', 'redeclared-attributes' ]) {
       assert.deepEqual(reportsOver(defaultAttributes, await parse(name)), []);
+    }
+  });
+});
+
+describe('bpmnos/compensation', function() {
+  let definitions;
+
+  before(async function() {
+    definitions = await parse('compensation');
+  });
+
+  it('reports the compensation BPMN-OS does not allow and leaves the rest alone', function() {
+    assert.deepEqual(reportsOver(compensation, definitions), [
+      'SendCompensation:typedCompensationActivity',
+      'ReceiveCompensation:typedCompensationActivity',
+      'DecisionCompensation:typedCompensationActivity',
+      'AdHocCompensation:adHocCompensationActivity',
+      'LoopCompensation:compensatedLoop',
+      'MultiInstanceCompensation:compensatedLoop',
+      'EventSubProcessInLoop:compensationEventSubProcessInLoop',
+      'RestrictedEventSubProcess:restrictedCompensationEventSubProcess'
+    ]);
+  });
+
+  it('says nothing about the corpus', async function() {
+    for (const name of [ 'earliest-arrival', 'job-shop-scheduling-problem', 'messages' ]) {
+      assert.deepEqual(reportsOver(compensation, await parse(name)), []);
     }
   });
 });
