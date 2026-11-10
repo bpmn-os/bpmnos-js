@@ -387,8 +387,8 @@ function inputsOf(rootElements) {
 }
 
 /**
- * The guidance an element carries: `bpmnos:guidance` elements, each typed `entry`, `exit`, `choice` or
- * `message` (`Guidance.cpp:17-28`) and holding attributes, operators and restrictions of its own.
+ * The guidance an element carries: `bpmnos:guidance` elements, each typed `entry`, `choice` or `message`
+ * (`Guidance.cpp:16-27`) and holding attributes, operators and restrictions of its own.
  *
  * Guidance advises the decision maker rather than constraining execution: `Guidance::apply` adds its
  * attributes and applies its operators to a candidate, `restrictionsSatisfied` discards the candidates it
@@ -398,7 +398,7 @@ function inputsOf(rootElements) {
  * Reported in the order a token meets the decisions they advise, unknown types last, as declared.
  */
 function guidanceOf(businessObject) {
-  const order = [ 'entry', 'message', 'choice', 'exit' ];
+  const order = [ 'entry', 'message', 'choice' ];
 
   return getExtensionElementsList(businessObject, 'bpmnos:Guidance')
     .map(guidance => ({

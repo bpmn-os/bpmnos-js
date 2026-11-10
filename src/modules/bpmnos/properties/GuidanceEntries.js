@@ -19,6 +19,32 @@ import AttributesList from './GuidingAttributesList.js';
 import RestrictionsList from './GuidingRestrictionsList.js';
 import OperatorsList from './GuidingOperatorsList.js';
 
+/**
+ * The types of guidance an element may carry, one for each decision made at it: the entry of a child of an
+ * ad-hoc subprocess, which the engine performs sequentially, any other activity being entered without a
+ * decision; the choice at a decision task; and the delivery of a message to a receive task or a catching
+ * message event.
+ */
+export function getGuidanceTypes(element) {
+  const businessObject = getRelevantBusinessObject(element);
+
+  if ( is(element, 'bpmn:CatchEvent') ) {
+    return isMessageSupported(element) ? [ { label: 'Message delivery', value: 'message' } ] : [];
+  }
+
+  const guidanceTypes = [];
+  if ( is(businessObject.$parent, 'bpmn:AdHocSubProcess') ) {
+    guidanceTypes.push({ label: 'Entry decision', value: 'entry' });
+  }
+  if ( is(element, 'bpmn:Task') && businessObject.type == "Decision" ) {
+    guidanceTypes.push({ label: 'Choice', value: 'choice' });
+  }
+  else if ( is(element, 'bpmn:ReceiveTask') ) {
+    guidanceTypes.push({ label: 'Message delivery', value: 'message' });
+  }
+  return guidanceTypes;
+}
+
 export default function GuidanceEntries(props) {
   const {
     idPrefix,
@@ -63,18 +89,7 @@ function GuidanceType(props) {
     guidance
   } = props;
 
-  let businessObject = getRelevantBusinessObject(element);
-
-  let guidanceTypes = [ { label: 'Entry decision', value: 'entry' } , { label: 'Exit decision', value: 'exit' } ];
-  if ( is(element, 'bpmn:Task') && businessObject.type == "Decision" ) {
-    guidanceTypes.push({ label: 'Choice', value: 'choice' });
-  }
-  else if ( is(element, 'bpmn:ReceiveTask') ) {
-    guidanceTypes.push({ label: 'Message delivery', value: 'message' });
-  }
-  else if ( is(element, 'bpmn:CatchEvent') && isMessageSupported(element) ) {
-    guidanceTypes = [ { label: 'Message delivery', value: 'message' } ];
-  }
+  const guidanceTypes = getGuidanceTypes(element);
 
   const commandStack = useService('commandStack');
   const bpmnFactory = useService('bpmnFactory');
@@ -93,7 +108,7 @@ function GuidanceType(props) {
   const getValue = () => {
     if ( guidance ) {
       let value = guidance.get('type');
-      if ( !value ) {
+      if ( !value && guidanceTypes.length ) {
         value = guidanceTypes[0].value;
         commandStack.execute('element.updateModdleProperties', {
           element,

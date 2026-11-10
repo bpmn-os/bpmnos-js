@@ -2,7 +2,7 @@ import {
   is
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import GuidanceEntries from './GuidanceEntries.js';
+import GuidanceEntries, { getGuidanceTypes } from './GuidanceEntries.js';
 
 import {
   getRelevantBusinessObject,
@@ -44,6 +44,13 @@ export function guidanceHandler({ element, injector }) {
 
   const guidances = getCustomItems( element, 'bpmnos:Guidance' );
 
+  // guidance is offered only for a decision made at the element, while guidance already present is shown so
+  // that it can be removed
+  const offered = getGuidanceTypes(element).length > 0;
+  if ( !offered && !guidances.length ) {
+    return;
+  }
+
   const items = guidances.map((guidance, index) => {
     const id = element.id + '-guidance-' + index;
 
@@ -62,7 +69,7 @@ export function guidanceHandler({ element, injector }) {
 
   return {
     items,
-    add: addFactory({ bpmnFactory, commandStack, element })
+    add: offered ? addFactory({ bpmnFactory, commandStack, element }) : undefined
   };
 }
 

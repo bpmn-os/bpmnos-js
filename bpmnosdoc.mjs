@@ -432,8 +432,7 @@ function loopLines(node) {
 const GUIDANCE_LABELS = {
   entry: 'Entry guidance',
   message: 'Message guidance',
-  choice: 'Choice guidance',
-  exit: 'Exit guidance'
+  choice: 'Choice guidance'
 };
 
 /**

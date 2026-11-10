@@ -12,6 +12,7 @@ import typedTask from '../src/modules/rules/engine/typed-task.js';
 import multipleEventDefinitions from '../src/modules/rules/engine/multiple-event-definitions.js';
 import nonExecutableProcess from '../src/modules/rules/bpmnos/non-executable-process.js';
 import compensation from '../src/modules/rules/bpmnos/compensation.js';
+import entryGuidance from '../src/modules/rules/bpmnos/entry-guidance.js';
 import scopeOperators from '../src/modules/rules/bpmnos/scope-operators.js';
 import defaultAttributes from '../src/modules/rules/bpmnos/default-attributes.js';
 
@@ -151,6 +152,28 @@ describe('bpmnos/default-attributes', function() {
   it('says nothing about the corpus', async function() {
     for (const name of [ 'earliest-arrival', 'job-shop-scheduling-problem', 'messages', 'redeclared-attributes' ]) {
       assert.deepEqual(reportsOver(defaultAttributes, await parse(name)), []);
+    }
+  });
+});
+
+describe('bpmnos/entry-guidance', function() {
+  let definitions;
+
+  before(async function() {
+    definitions = await parse('entry-guidance');
+  });
+
+  it('reports entry guidance on an activity that is not a child of an ad-hoc subprocess and leaves the rest alone', function() {
+    assert.deepEqual(reportsOver(entryGuidance, definitions), [
+      'NestedTask:undecidedEntry',
+      'EventSubProcessTask:undecidedEntry',
+      'PlainTask:undecidedEntry'
+    ]);
+  });
+
+  it('says nothing about the corpus', async function() {
+    for (const name of [ 'earliest-arrival', 'job-shop-scheduling-problem', 'messages' ]) {
+      assert.deepEqual(reportsOver(entryGuidance, await parse(name)), []);
     }
   });
 });

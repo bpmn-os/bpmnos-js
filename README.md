@@ -142,6 +142,16 @@ takes the objective and the weight away; an array or a value with fields contrib
 in an attribute of such a type instead. The rule `bpmnos/attribute-objective` reports an objective or a weight
 on any other type, which the engine refuses.
 
+## Guidance
+
+Guidance advises a decision and is offered for the decisions made at an element only: the entry of a child of
+an ad-hoc subprocess, which the engine performs sequentially, the choice at a decision task, and the delivery
+of a message to a receive task or a catching message event. Any other activity is entered without a decision,
+as soon as its entry restrictions are satisfied, so that an entry guidance on it would have nothing to guide;
+the properties panel does not offer it, and the rule `bpmnos/entry-guidance` reports it, which the engine
+refuses. Guidance already present on an element is shown even where no type is offered, so that it can be
+removed.
+
 ## The annotation box
 
 The box attached to an element shows what that element declares and what it inherits, in the order a token

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="entry-guidance" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="EntryGuidance" isExecutable="true">
+    <bpmn:adHocSubProcess id="AdHocSubProcess" ordering="Sequential">
+      <bpmn:task id="SequentialTask">
+        <bpmn:extensionElements>
+          <bpmnos:guidance type="entry" />
+        </bpmn:extensionElements>
+      </bpmn:task>
+      <bpmn:subProcess id="SequentialSubProcess">
+        <bpmn:extensionElements>
+          <bpmnos:guidance type="entry" />
+        </bpmn:extensionElements>
+        <bpmn:startEvent id="SequentialSubProcessStart" />
+        <bpmn:task id="NestedTask">
+          <bpmn:extensionElements>
+            <bpmnos:guidance type="entry" />
+          </bpmn:extensionElements>
+        </bpmn:task>
+      </bpmn:subProcess>
+      <bpmn:subProcess id="EventSubProcess" triggeredByEvent="true">
+        <bpmn:startEvent id="EventSubProcessStart" />
+        <bpmn:task id="EventSubProcessTask">
+          <bpmn:extensionElements>
+            <bpmnos:guidance type="entry" />
+          </bpmn:extensionElements>
+        </bpmn:task>
+      </bpmn:subProcess>
+    </bpmn:adHocSubProcess>
+    <bpmn:task id="PlainTask">
+      <bpmn:extensionElements>
+        <bpmnos:guidance type="entry" />
+      </bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:task id="DecisionTask" bpmnos:type="Decision">
+      <bpmn:extensionElements>
+        <bpmnos:guidance type="choice" />
+      </bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:receiveTask id="ReceiveTask">
+      <bpmn:extensionElements>
+        <bpmnos:guidance type="message" />
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+  </bpmn:process>
+</bpmn:definitions>
