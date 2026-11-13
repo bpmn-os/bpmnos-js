@@ -31,6 +31,7 @@ import * as attributeObjective from "./bpmnos/attribute-objective.js";
 import * as gatekeeper from "./bpmnos/gatekeeper.js";
 import * as compensation from "./bpmnos/compensation.js";
 import * as entryGuidance from "./bpmnos/entry-guidance.js";
+import * as sequentialPerformer from "./bpmnos/sequential-performer.js";
 import * as eventTrigger from "./bpmnos/event-trigger.js";
 import * as signalSelfTrigger from "./bpmnos/signal-self-trigger.js";
 import * as scopeOperators from "./bpmnos/scope-operators.js";
@@ -59,6 +60,7 @@ const sources = {
     "./bpmnos/gatekeeper.js": gatekeeper,
     "./bpmnos/compensation.js": compensation,
     "./bpmnos/entry-guidance.js": entryGuidance,
+    "./bpmnos/sequential-performer.js": sequentialPerformer,
     "./bpmnos/event-trigger.js": eventTrigger,
     "./bpmnos/signal-self-trigger.js": signalSelfTrigger,
     "./bpmnos/scope-operators.js": scopeOperators,

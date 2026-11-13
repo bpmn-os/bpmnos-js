@@ -287,6 +287,14 @@
       }
     }
   },
+  "bpmnos/sequential-performer.js": {
+    "severity": "error",
+    "subtypes": {
+      "missingPerformer": {
+        "description": "The activities of an ad-hoc subprocess are performed one after another by its sequential performer, declared at the ad-hoc subprocess itself, at an enclosing activity or at the process. The nearest declaration counts, and the search ends before an enclosing ad-hoc subprocess, whose performer is held by the child containing this one. The engine refuses an ad-hoc subprocess without a sequential performer when it reads the model."
+      }
+    }
+  },
   "bpmnos/compensation.js": {
     "severity": "error",
     "subtypes": {

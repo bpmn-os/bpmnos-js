@@ -13,6 +13,7 @@ import multipleEventDefinitions from '../src/modules/rules/engine/multiple-event
 import nonExecutableProcess from '../src/modules/rules/bpmnos/non-executable-process.js';
 import compensation from '../src/modules/rules/bpmnos/compensation.js';
 import entryGuidance from '../src/modules/rules/bpmnos/entry-guidance.js';
+import sequentialPerformer from '../src/modules/rules/bpmnos/sequential-performer.js';
 import scopeOperators from '../src/modules/rules/bpmnos/scope-operators.js';
 import defaultAttributes from '../src/modules/rules/bpmnos/default-attributes.js';
 
@@ -175,6 +176,22 @@ describe('bpmnos/entry-guidance', function() {
     for (const name of [ 'earliest-arrival', 'job-shop-scheduling-problem', 'messages' ]) {
       assert.deepEqual(reportsOver(entryGuidance, await parse(name)), []);
     }
+  });
+});
+
+describe('bpmnos/sequential-performer', function() {
+  let definitions;
+
+  before(async function() {
+    definitions = await parse('sequential-performer');
+  });
+
+  it('reports an ad-hoc subprocess whose performer the engine does not find and leaves the rest alone', function() {
+    assert.deepEqual(reportsOver(sequentialPerformer, definitions), [
+      'Missing:missingPerformer',
+      'OtherPerformer:missingPerformer',
+      'Nested:missingPerformer'
+    ]);
   });
 });
 

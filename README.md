@@ -142,6 +142,18 @@ takes the objective and the weight away; an array or a value with fields contrib
 in an attribute of such a type instead. The rule `bpmnos/attribute-objective` reports an objective or a weight
 on any other type, which the engine refuses.
 
+## Sequential performer
+
+The activities of an ad-hoc subprocess are performed one after another by its sequential performer, a
+`bpmn:Performer` named "Sequential" declared at the ad-hoc subprocess itself, at an enclosing activity or at
+the process. The nearest declaration counts, so that ad-hoc subprocesses below one declaration share its
+performer, and the search ends before an enclosing ad-hoc subprocess, whose performer is held by the child
+containing the nested one. Every ad-hoc subprocess created in the modeller declares a performer of its own;
+the checkbox *Sequential performer* of the properties panel removes it where the ad-hoc subprocess is to
+share the performer of an enclosing node, and adds a performer to any activity or process. The rule
+`bpmnos/sequential-performer` reports an ad-hoc subprocess for which the search finds no performer, which the
+engine refuses.
+
 ## Guidance
 
 Guidance advises a decision and is offered for the decisions made at an element only: the entry of a child of

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="sequential-performer" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Performers" isExecutable="true">
+    <bpmn:adHocSubProcess id="OwnPerformer" ordering="Sequential">
+      <bpmn:performer name="Sequential" />
+      <bpmn:task id="OwnPerformerTask" />
+    </bpmn:adHocSubProcess>
+    <bpmn:adHocSubProcess id="Missing" ordering="Sequential">
+      <bpmn:task id="MissingTask" />
+    </bpmn:adHocSubProcess>
+    <bpmn:adHocSubProcess id="OtherPerformer" ordering="Sequential">
+      <bpmn:performer name="Other" />
+      <bpmn:task id="OtherPerformerTask" />
+    </bpmn:adHocSubProcess>
+    <bpmn:subProcess id="Enclosing">
+      <bpmn:performer name="Sequential" />
+      <bpmn:startEvent id="EnclosingStart" />
+      <bpmn:adHocSubProcess id="Shared" ordering="Sequential">
+        <bpmn:task id="SharedTask" />
+      </bpmn:adHocSubProcess>
+    </bpmn:subProcess>
+    <bpmn:adHocSubProcess id="Outer" ordering="Sequential">
+      <bpmn:performer name="Sequential" />
+      <bpmn:adHocSubProcess id="Nested" ordering="Sequential">
+        <bpmn:task id="NestedTask" />
+      </bpmn:adHocSubProcess>
+      <bpmn:subProcess id="Between">
+        <bpmn:performer name="Sequential" />
+        <bpmn:startEvent id="BetweenStart" />
+        <bpmn:adHocSubProcess id="NestedBelowPerformer" ordering="Sequential">
+          <bpmn:task id="NestedBelowPerformerTask" />
+        </bpmn:adHocSubProcess>
+      </bpmn:subProcess>
+    </bpmn:adHocSubProcess>
+  </bpmn:process>
+  <bpmn:process id="ProcessPerformer" isExecutable="true">
+    <bpmn:adHocSubProcess id="SharedWithProcess" ordering="Sequential">
+      <bpmn:task id="SharedWithProcessTask" />
+    </bpmn:adHocSubProcess>
+    <bpmn:performer name="Sequential" />
+  </bpmn:process>
+  <bpmn:process id="NotExecuted" isExecutable="false">
+    <bpmn:adHocSubProcess id="Ignored" ordering="Sequential">
+      <bpmn:task id="IgnoredTask" />
+    </bpmn:adHocSubProcess>
+  </bpmn:process>
+</bpmn:definitions>
