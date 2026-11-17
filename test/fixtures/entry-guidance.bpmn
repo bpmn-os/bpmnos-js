@@ -9,6 +9,7 @@
       </bpmn:task>
       <bpmn:subProcess id="SequentialSubProcess">
         <bpmn:extensionElements>
+      <bpmn:performer name="Sequential" />
           <bpmnos:guidance type="entry" />
         </bpmn:extensionElements>
         <bpmn:startEvent id="SequentialSubProcessStart" />

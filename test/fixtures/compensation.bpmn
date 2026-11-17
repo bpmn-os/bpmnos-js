@@ -9,7 +9,9 @@
     <bpmn:sendTask id="SendCompensation" isForCompensation="true" />
     <bpmn:receiveTask id="ReceiveCompensation" isForCompensation="true" />
     <bpmn:task id="DecisionCompensation" bpmnos:type="Decision" isForCompensation="true" />
-    <bpmn:adHocSubProcess id="AdHocCompensation" isForCompensation="true" />
+    <bpmn:adHocSubProcess id="AdHocCompensation" isForCompensation="true">
+      <bpmn:performer name="Sequential" />
+    </bpmn:adHocSubProcess>
     <bpmn:task id="LoopTask">
       <bpmn:standardLoopCharacteristics />
     </bpmn:task>
@@ -56,6 +58,8 @@
     </bpmn:subProcess>
   </bpmn:process>
   <bpmn:process id="NotExecuted" isExecutable="false">
-    <bpmn:adHocSubProcess id="IgnoredAdHocCompensation" isForCompensation="true" />
+    <bpmn:adHocSubProcess id="IgnoredAdHocCompensation" isForCompensation="true">
+      <bpmn:performer name="Sequential" />
+    </bpmn:adHocSubProcess>
   </bpmn:process>
 </bpmn:definitions>

@@ -85,6 +85,7 @@
           <bpmnos:operators>
             <bpmnos:operator id="NeverAppliedAtGateway" expression="count := 1" />
           </bpmnos:operators>
+      <bpmn:performer name="Sequential" />
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:exclusiveGateway>
