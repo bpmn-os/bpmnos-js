@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="triggering-messages" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:dataStore id="DataStore_Globals" name="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Time" type="decimal" name="time" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
   <bpmn:collaboration id="Collaboration">
     <bpmn:participant id="Triggered" processRef="TriggeredProcess" />
     <bpmn:participant id="Placer" processRef="PlacingProcess" />

@@ -229,6 +229,12 @@
   "bpmnos/default-attributes.js": {
     "severity": "error",
     "subtypes": {
+      "timeMissing": {
+        "description": "The engine sets the global attribute with the id Time to the current time at every clock tick and requires it to be the first global attribute of the model, declared by a data store. A model declaring none, or another global attribute first, is refused as the engine reads it."
+      },
+      "timeAssigned": {
+        "description": "An operator may never assign the time, which the engine alone sets. The engine refuses such a model as it reads it."
+      },
       "timestampMissing": {
         "description": "The engine reads the first status attribute of a process as the timestamp the token stands at, moving the one with the id Timestamp there as it reads the model. A process declaring none does not fail: whatever it declared first is read as the timestamp instead."
       },

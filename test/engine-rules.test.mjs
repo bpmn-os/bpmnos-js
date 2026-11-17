@@ -140,10 +140,25 @@ describe('bpmnos/default-attributes', function() {
     assert.deepEqual(reportsOver(defaultAttributes, definitions), [
       'UnsupportedProcess:timestampAdvanced',
       'UnsupportedProcess:instanceAssigned',
+      'UnsupportedProcess:timeAssigned',
       'AdHocWithOperators:timestampAdvanced',
       'UndeclaredProcess:timestampMissing',
       'UndeclaredProcess:instanceMissing'
     ]);
+  });
+
+  it('reports every executable process of a model whose first global attribute is not the time', async function() {
+    const withoutTime = await parse('engine-limits');
+
+    withoutTime.set('rootElements', withoutTime.get('rootElements')
+      .filter(rootElement => rootElement.id !== 'DataStore_Globals'));
+
+    const reports = reportsOver(defaultAttributes, withoutTime).filter(report => report.endsWith(':timeMissing'));
+
+    assert.deepEqual(reports, withoutTime.get('rootElements')
+      .filter(rootElement => rootElement.$type === 'bpmn:Process' && rootElement.isExecutable)
+      .map(process => `${process.id}:timeMissing`));
+    assert.ok(reports.length);
   });
 
   it('leaves a regular task free to advance the timestamp, which is how its duration is modelled', function() {

@@ -160,7 +160,8 @@ declaration order *is* document order. Per element it holds ordered `status`, `d
 entry naming its `declaringElement` (so "own" is `declaringElement === element.id`), plus, **per process**,
 `id → attribute` and `id → element ids` — the latter is what a `DataUpdate` resolves against at playback.
 `byId`/`elementsById` are keyed by process first because an identifier is unique within a process only (each
-participant declares `Instance`/`Timestamp`); model-wide maps returned whichever process was walked last and
+participant declares `Instance`/`Timestamp`, whereas `Time` is declared once, on a data store, and stands in
+every namespace); model-wide maps returned whichever process was walked last and
 merged both processes' elements. `processOf` places an element; what a data store declares is recorded in
 every process's namespace. The service and the collector share one shape: `getAttribute(element, id)`,
 `getElements(element, id)`, `getProcesses(element)` on `executionData`, and the pure `getAttribute`,

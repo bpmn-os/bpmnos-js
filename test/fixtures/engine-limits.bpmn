@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="engine-limits" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:dataStore id="DataStore_Globals" name="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Time" type="decimal" name="time" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
   <bpmn:process id="SupportedProcess" isExecutable="true">
     <bpmn:extensionElements>
       <bpmnos:status>
@@ -45,6 +52,7 @@
         <bpmnos:operators>
           <bpmnos:operator id="ScopeAdvance" expression="timestamp += 1" />
           <bpmnos:operator id="Rename" expression="instance := &#34;other&#34;" />
+          <bpmnos:operator id="Rewind" expression="time := 0" />
         </bpmnos:operators>
       </bpmnos:status>
     </bpmn:extensionElements>
@@ -77,6 +85,7 @@
           </bpmnos:operators>
         </bpmnos:status>
       </bpmn:extensionElements>
+      <bpmn:performer name="Sequential" />
       <bpmn:task id="AdHocTask" />
     </bpmn:adHocSubProcess>
     <bpmn:exclusiveGateway id="GatewayWithOperators">
@@ -85,7 +94,6 @@
           <bpmnos:operators>
             <bpmnos:operator id="NeverAppliedAtGateway" expression="count := 1" />
           </bpmnos:operators>
-      <bpmn:performer name="Sequential" />
         </bpmnos:status>
       </bpmn:extensionElements>
     </bpmn:exclusiveGateway>

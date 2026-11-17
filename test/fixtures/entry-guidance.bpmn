@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="entry-guidance" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:dataStore id="DataStore_Globals" name="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Time" type="decimal" name="time" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
   <bpmn:process id="EntryGuidance" isExecutable="true">
     <bpmn:adHocSubProcess id="AdHocSubProcess" ordering="Sequential">
+      <bpmn:performer name="Sequential" />
       <bpmn:task id="SequentialTask">
         <bpmn:extensionElements>
           <bpmnos:guidance type="entry" />
@@ -9,7 +17,6 @@
       </bpmn:task>
       <bpmn:subProcess id="SequentialSubProcess">
         <bpmn:extensionElements>
-      <bpmn:performer name="Sequential" />
           <bpmnos:guidance type="entry" />
         </bpmn:extensionElements>
         <bpmn:startEvent id="SequentialSubProcessStart" />

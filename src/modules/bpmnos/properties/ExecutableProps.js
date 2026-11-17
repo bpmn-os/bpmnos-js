@@ -118,12 +118,21 @@ function hasInstanceAttribute(businessObject) {
     .some(dataObject => attributesOf(dataObject).some(attribute => attribute.get('id') == "Instance"));
 }
 
+// whether the model declares the time, on whichever of its data stores it declares it
+function hasTimeAttribute(definitions) {
+  return (definitions.get('rootElements') || [])
+    .filter(rootElement => is(rootElement, 'bpmn:DataStore'))
+    .some(dataStore => attributesOf(dataStore).some(attribute => attribute.get('id') == "Time"));
+}
+
 /**
  * The attributes an executable process always declares, whichever of them it is still missing.
  *
- * A process declares `Timestamp` in its status and `Instance` on a data object of its own, once per
- * process, since each process is instantiated on its own and carries a time and an identity of its own. The
- * objective a run accumulates is held by the engine and declared by no attribute.
+ * The model declares `Time` on a data store as its first global attribute, once for the model, since the
+ * current time is shared by every process. A process declares `Timestamp` in its status and `Instance` on a
+ * data object of its own, once per process, since each process is instantiated on its own and carries a
+ * time and an identity of its own. The objective a run accumulates is held by the engine and declared by no
+ * attribute.
  */
 /**
  * The `bpmnos:Attribute`s an element declares directly, whichever of its extension values holds them.
@@ -142,7 +151,31 @@ function attributesOf(moddleElement) {
 }
 
 function ensureDefaultAttributes(element,bpmnFactory,commandStack) {
-  const businessObject = getRelevantBusinessObject(element);
+  const businessObject = getRelevantBusinessObject(element),
+        definitions = businessObject.$parent;
+
+  if ( !hasTimeAttribute(definitions) ) {
+
+    // the data store is placed before every other root element, so that the time is the first global
+    // attribute, and is built whole and contained in one command, as the data object below
+    const dataStore = createElement('bpmn:DataStore', { name: 'Globals' }, definitions, bpmnFactory);
+    const extensionElements = createElement('bpmn:ExtensionElements', { values: [] }, dataStore, bpmnFactory);
+    const attributes = createElement('bpmnos:Attributes', {}, extensionElements, bpmnFactory);
+    const attribute = createElement('bpmnos:Attribute',
+      { id: 'Time' , name: 'time', type: 'decimal' }, attributes, bpmnFactory);
+
+    attributes.get('attribute').push(attribute);
+    extensionElements.get('values').push(attributes);
+    dataStore.extensionElements = extensionElements;
+
+    commandStack.execute('element.updateModdleProperties', {
+      element,
+      moddleElement: definitions,
+      properties: {
+        rootElements: [ dataStore, ...definitions.get('rootElements') ]
+      }
+    });
+  }
 
   if ( !hasInstanceAttribute(businessObject) ) {
 

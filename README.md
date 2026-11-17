@@ -55,10 +55,13 @@ may hold the same identifier, since the identifier is the key every lookup is bu
 independent of each other. Content declared by a data store, the globals and the inputs it holds, is seen
 from every process and therefore belongs to the namespace of each, and must be free in all of them.
 
-The boundary is the process because BPMN-OS itself requires it. The engine identifies two attributes by
-their identifier rather than by their name, `Instance` and `Timestamp`, and every process declares its own
-pair, so a collaboration carries one of each per participant. A rule demanding uniqueness across the model
-would make such a model unmodellable.
+The boundary is the process because BPMN-OS itself requires it. The engine identifies three attributes by
+their identifier rather than by their name. The model declares `Time`, the current time of a run, once, on a
+data store as its first global attribute, whereas every process declares its own `Instance` and
+`Timestamp`, so a collaboration carries one of each per participant. A rule demanding uniqueness across the
+model would make such a model unmodellable. Making a process executable in the properties panel declares
+whichever of the three is still missing, and the rule `bpmnos/default-attributes` reports a model or a
+process declaring one of them in the wrong place and an operator assigning the time or the instance.
 
 The `identifiers` service holds that namespace for the model being edited, rebuilding as the model is
 imported and edited and announcing `identifiers.changed` when it has. It answers `isTaken(element,

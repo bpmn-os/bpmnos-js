@@ -25,7 +25,7 @@ describe('globals, declared by the data stores a model holds', function() {
     const inJob = registry.byElement.get('JobProcess').globals.map(attribute => attribute.id),
           inMachine = registry.byElement.get('MachineProcess').globals.map(attribute => attribute.id);
 
-    assert.deepEqual(inJob, [ 'Makespan' ]);
+    assert.deepEqual(inJob, [ 'Time', 'Makespan' ]);
     assert.deepEqual(inMachine, inJob);
   });
 

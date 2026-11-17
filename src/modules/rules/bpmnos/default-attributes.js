@@ -5,21 +5,24 @@ import { attributeName, declaredAttributes, visibleAttributes } from './executio
 /**
  * A rule that checks the attributes the engine reserves.
  *
- * Two identifiers mean something to the engine wherever they appear. A status attribute with the id
- * `Timestamp` holds the time a token stands at, and a data attribute with the id `Instance` holds the
- * instance identifier. The engine reads each by position, the first status attribute and the first data
+ * Three identifiers mean something to the engine wherever they appear. A global attribute with the id `Time`
+ * holds the current time of a run, a status attribute with the id `Timestamp` holds the time a token stands
+ * at, and a data attribute with the id `Instance` holds the instance identifier. The time must be the first
+ * global attribute of the model, which the engine requires as it reads the model. The engine reads each by position, the first status attribute and the first data
  * attribute, and moves them there as it reads the model — so a process declaring no `Timestamp` does not
  * fail but has whatever it declared first read as its timestamp. They are matched by identifier and not by
  * name, as the engine matches them; the name is for display and for expressions to refer to.
  *
- * What may write them is narrower still. An operator may never assign the instance identifier, and may
+ * What may write them is narrower still. An operator may never assign the time, which the engine alone sets,
+ * nor the instance identifier, and may
  * advance the timestamp only where the element it belongs to takes time: not an event, which is
  * instantaneous, and not a send, receive or decision task, each of which completes upon an event of its own.
  * The engine refuses all of those as it reads the model, so those reports are early warnings of a refusal.
  */
 export default function() {
 
-  const TIMESTAMP = 'Timestamp',
+  const TIME = 'Time',
+        TIMESTAMP = 'Timestamp',
         INSTANCE = 'Instance';
 
   // `name := expr` and the compound assignments; anything else states no target
@@ -27,7 +30,14 @@ export default function() {
 
   function check(node, reporter) {
     if (is(node, 'bpmn:Process') && node.isExecutable) {
-      const declared = declaredAttributes(node);
+      const declared = declaredAttributes(node),
+            globals = visibleAttributes(node).filter(attribute => attribute.scope === 'global');
+
+      if (!globals.length || globals[0].id !== TIME) {
+        reporter.report(node.id,
+          `Model declares no global attribute with the id '${TIME}' as its first, which the engine refuses`,
+          { subtype: 'timeMissing' });
+      }
 
       if (!declared.some(attribute => attribute.scope === 'status' && attribute.id === TIMESTAMP)) {
         reporter.report(node.id,
@@ -51,7 +61,12 @@ export default function() {
         return;
       }
 
-      if (reserved.get(target) === INSTANCE) {
+      if (reserved.get(target) === TIME) {
+        reporter.report(node.id,
+          `Operator '${operator.get('id')}' assigns the time, which the engine refuses`,
+          { subtype: 'timeAssigned' });
+      }
+      else if (reserved.get(target) === INSTANCE) {
         reporter.report(node.id,
           `Operator '${operator.get('id')}' assigns the instance identifier, which the engine refuses`,
           { subtype: 'instanceAssigned' });
@@ -75,7 +90,7 @@ export default function() {
   function reservedNames(node) {
     return new Map(
       visibleAttributes(node)
-        .filter(attribute => attribute.id === TIMESTAMP || attribute.id === INSTANCE)
+        .filter(attribute => attribute.id === TIME || attribute.id === TIMESTAMP || attribute.id === INSTANCE)
         .map(attribute => [ attributeName(attribute), attribute.id ])
     );
   }
