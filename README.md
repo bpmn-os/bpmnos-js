@@ -145,7 +145,23 @@ takes the objective and the weight away; an array or a value with fields contrib
 in an attribute of such a type instead. The rule `bpmnos/attribute-objective` reports an objective or a weight
 on any other type, which the engine refuses.
 
-## Sequential performer
+## Immutable attributes
+
+An attribute may be declared immutable, `immutable="true"`, which states that nothing changes it after the
+scope declaring it has been initialised. It receives its value from its initial value, from the instance data
+or, for an attribute of a process, a subprocess or an event subprocess, from the operators of the start event
+of that scope, so that a process or an event subprocess started by a message or a signal may take the value
+from the content it catches; no other operator, no choice and no update from the environment of a run
+changes it. An attribute not declared immutable may be changed by the model and by the environment. The
+properties panel shows the declaration as the checkbox *Immutable*, unticked by default; unticking it removes
+the declaration rather than writing `immutable="false"`, so that a model states only what differs from the
+default. The checkbox is not offered for the time and the timestamp, which the engine writes, for the
+instance, which is immutable whether or not it is declared so, nor for an attribute of a guidance, which takes
+the values the operators of the guidance give it at every evaluation. Whether an operator or a choice assigns
+an immutable attribute is decided by reading its expression, which the engine does when it reads the model,
+so that no lint rule reports it here.
+
+## Sequential performer and ordering
 
 The activities of an ad-hoc subprocess are performed one after another by its sequential performer, a
 `bpmn:Performer` named "Sequential" declared at the ad-hoc subprocess itself, at an enclosing activity or at
@@ -153,9 +169,17 @@ the process. The nearest declaration counts, so that ad-hoc subprocesses below o
 performer, and the search ends before an enclosing ad-hoc subprocess, whose performer is held by the child
 containing the nested one. Every ad-hoc subprocess created in the modeller declares a performer of its own;
 the checkbox *Sequential performer* of the properties panel removes it where the ad-hoc subprocess is to
-share the performer of an enclosing node, and adds a performer to any activity or process. The rule
-`bpmnos/sequential-performer` reports an ad-hoc subprocess for which the search finds no performer, which the
-engine refuses.
+share the performer of an enclosing node, and adds a performer to any activity or process.
+
+The engine also refuses an ad-hoc subprocess whose ordering is not `Sequential`, and an ad-hoc subprocess
+stating no ordering is ordered in parallel by the default of BPMN. Every ad-hoc subprocess created in the
+modeller without an ordering is therefore given the ordering `Sequential`, written into the model together with
+its performer, in the same undo step; an ordering a pasted copy carries is left as it is. A model read with
+the ordering `Parallel`, stated or unset, keeps it, and the panel still offers the choice, marking `Parallel`
+as refused by the engine and saying so below the entry while it is selected.
+
+The rule `bpmnos/sequential-performer` reports an ad-hoc subprocess that is not ordered sequentially and one
+for which the search finds no performer, both of which the engine refuses.
 
 ## Guidance
 

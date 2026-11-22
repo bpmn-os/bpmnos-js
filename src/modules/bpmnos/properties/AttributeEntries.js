@@ -2,7 +2,7 @@ import {
   is
 } from 'bpmn-js/lib/util/ModelUtil';
 
-import { TextFieldEntry, SelectEntry } from '@bpmn-io/properties-panel';
+import { TextFieldEntry, SelectEntry, CheckboxEntry, isCheckboxEntryEdited } from '@bpmn-io/properties-panel';
 
 import { useCallback } from '@bpmn-io/properties-panel/preact/hooks';
 
@@ -17,6 +17,8 @@ import {
 import { without } from 'min-dash';
 
 import { isScalarType, isObjectiveType } from '../utils/TypeUtil.js';
+
+import { isImmutable, mayBeImmutable } from '../utils/ImmutableUtil.js';
 
 export default function AttributeEntries(props) {
 
@@ -56,6 +58,12 @@ export default function AttributeEntries(props) {
     component: AttributeWeight,
     idPrefix,
     attribute
+  },{
+    id: idPrefix + '-immutable',
+    component: AttributeImmutable,
+    idPrefix,
+    attribute,
+    isEdited: isCheckboxEntryEdited
   } ];
 
   return entries;
@@ -394,3 +402,50 @@ function AttributeWeight(props) {
   });
 }
 
+/**
+ * Whether the attribute is immutable, that is whether nothing changes it after the scope declaring it has been
+ * initialised (`ImmutableUtil.js`).
+ *
+ * The checkbox is unticked by default, an attribute not declared immutable being changeable by the model and
+ * by the environment of a run. Unticking it removes the declaration rather than writing `immutable="false"`,
+ * which means the same, so that a model states only what differs from the default. The checkbox is not offered
+ * for an attribute that cannot be declared immutable: the time, the timestamp, the instance and the attributes
+ * of a guidance.
+ */
+function AttributeImmutable(props) {
+  const {
+    idPrefix,
+    element,
+    attribute
+  } = props;
+
+  if ( !attribute || !mayBeImmutable(attribute) ) {
+    return;
+  }
+
+  const commandStack = useService('commandStack');
+  const translate = useService('translate');
+
+  const setValue = (value) => {
+    commandStack.execute('element.updateModdleProperties', {
+      element,
+      moddleElement: attribute,
+      properties: {
+        immutable: value ? true : undefined
+      }
+    });
+  };
+
+  const getValue = () => {
+    return isImmutable(attribute);
+  };
+
+  return CheckboxEntry({
+    element: attribute,
+    id: idPrefix + '-immutable',
+    label: translate('Immutable'),
+    description: translate('Not changed after its scope is initialised'),
+    getValue,
+    setValue
+  });
+}

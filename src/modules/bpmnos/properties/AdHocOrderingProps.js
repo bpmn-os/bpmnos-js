@@ -54,16 +54,20 @@ function AdHocOrdering(props) {
     return getBusinessObject(element).ordering || 'Parallel';
   };
 
+  // a model read with the ordering `Parallel`, stated or unset, keeps it, so that the choice remains; the
+  // engine refuses it, which the option and the description say
   const getOptions = (element) => {
     return [
       { value: 'Sequential', label: translate('Sequential') },
-      { value: 'Parallel', label: translate('Parallel') }
+      { value: 'Parallel', label: translate('Parallel (refused by the engine)') }
     ];
   };
 
   return SelectEntry({
     id: 'ordering',
     label: translate('Ordering'),
+    description: getValue() === 'Sequential' ? undefined :
+      translate('The engine performs an ad-hoc subprocess only sequentially.'),
     getValue,
     setValue,
     getOptions

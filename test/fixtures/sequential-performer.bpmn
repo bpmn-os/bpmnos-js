@@ -19,6 +19,14 @@
         <bpmn:task id="SharedTask" />
       </bpmn:adHocSubProcess>
     </bpmn:subProcess>
+    <bpmn:adHocSubProcess id="Parallel" ordering="Parallel">
+      <bpmn:performer name="Sequential" />
+      <bpmn:task id="ParallelTask" />
+    </bpmn:adHocSubProcess>
+    <bpmn:adHocSubProcess id="Unordered">
+      <bpmn:performer name="Sequential" />
+      <bpmn:task id="UnorderedTask" />
+    </bpmn:adHocSubProcess>
     <bpmn:adHocSubProcess id="Outer" ordering="Sequential">
       <bpmn:performer name="Sequential" />
       <bpmn:adHocSubProcess id="Nested" ordering="Sequential">

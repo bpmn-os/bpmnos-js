@@ -201,10 +201,12 @@ describe('bpmnos/sequential-performer', function() {
     definitions = await parse('sequential-performer');
   });
 
-  it('reports an ad-hoc subprocess whose performer the engine does not find and leaves the rest alone', function() {
+  it('reports an ad-hoc subprocess that is not ordered sequentially or whose performer the engine does not find, and leaves the rest alone', function() {
     assert.deepEqual(reportsOver(sequentialPerformer, definitions), [
       'Missing:missingPerformer',
       'OtherPerformer:missingPerformer',
+      'Parallel:parallelOrdering',
+      'Unordered:parallelOrdering',
       'Nested:missingPerformer'
     ]);
   });

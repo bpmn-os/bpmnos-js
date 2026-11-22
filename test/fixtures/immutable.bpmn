@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="immutable" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:dataStore id="Globals">
+    <bpmn:extensionElements>
+      <bpmnos:attributes>
+        <bpmnos:attribute id="Time" type="decimal" name="time" />
+        <bpmnos:attribute id="Doors" type="integer" name="doors" immutable="true" />
+        <bpmnos:attribute id="Open" type="boolean[]" name="open" />
+      </bpmnos:attributes>
+    </bpmn:extensionElements>
+  </bpmn:dataStore>
+  <bpmn:process id="Process" isExecutable="true">
+    <bpmn:extensionElements>
+      <bpmnos:status>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Timestamp" type="decimal" name="timestamp" />
+          <bpmnos:attribute id="Pallet" type="string" name="pallet" immutable="true" />
+        </bpmnos:attributes>
+      </bpmnos:status>
+    </bpmn:extensionElements>
+    <bpmn:dataObject id="Data">
+      <bpmn:extensionElements>
+        <bpmnos:attributes>
+          <bpmnos:attribute id="Instance" type="string" name="instance" />
+          <bpmnos:attribute id="Home" type="string" name="home" immutable="true" />
+          <bpmnos:attribute id="Requests" type="integer" name="requests := 0" />
+        </bpmnos:attributes>
+      </bpmn:extensionElements>
+    </bpmn:dataObject>
+    <bpmn:intermediateCatchEvent id="Requested">
+      <bpmn:extensionElements>
+        <bpmnos:guidance type="message">
+          <bpmnos:attributes>
+            <bpmnos:attribute id="Approach" type="decimal" name="approach" objective="minimize" weight="1" />
+          </bpmnos:attributes>
+        </bpmnos:guidance>
+      </bpmn:extensionElements>
+      <bpmn:messageEventDefinition id="RequestedDefinition" />
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+</bpmn:definitions>

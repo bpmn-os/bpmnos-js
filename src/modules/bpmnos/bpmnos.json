@@ -181,6 +181,11 @@
           "name": "weight",
           "type": "String",
           "isAttr": true
+        },
+        {
+          "name": "immutable",
+          "type": "Boolean",
+          "isAttr": true
         }
       ]
     },

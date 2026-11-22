@@ -296,6 +296,9 @@
   "bpmnos/sequential-performer.js": {
     "severity": "error",
     "subtypes": {
+      "parallelOrdering": {
+        "description": "The engine performs the activities of an ad-hoc subprocess one after another and refuses an ad-hoc subprocess whose ordering is not 'Sequential' when it reads the model. An ad-hoc subprocess stating no ordering is ordered in parallel by the default of BPMN and is refused as well."
+      },
       "missingPerformer": {
         "description": "The activities of an ad-hoc subprocess are performed one after another by its sequential performer, declared at the ad-hoc subprocess itself, at an enclosing activity or at the process. The nearest declaration counts, and the search ends before an enclosing ad-hoc subprocess, whose performer is held by the child containing this one. The engine refuses an ad-hoc subprocess without a sequential performer when it reads the model."
       }
