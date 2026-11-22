@@ -153,11 +153,12 @@ or, for an attribute of a process, a subprocess or an event subprocess, from the
 of that scope, so that a process or an event subprocess started by a message or a signal may take the value
 from the content it catches; no other operator, no choice and no update from the environment of a run
 changes it. An attribute not declared immutable may be changed by the model and by the environment. The
-properties panel shows the declaration as the checkbox *Immutable*, unticked by default; unticking it removes
-the declaration rather than writing `immutable="false"`, so that a model states only what differs from the
-default. The checkbox is not offered for the time and the timestamp, which the engine writes, for the
-instance, which is immutable whether or not it is declared so, nor for an attribute of a guidance, which takes
-the values the operators of the guidance give it at every evaluation. Whether an operator or a choice assigns
+properties panel shows the declaration as the checkbox *Immutable* between the name and the objective,
+unticked by default; unticking it removes the declaration rather than writing `immutable="false"`, so that a
+model states only what differs from the default. Every attribute shows the checkbox, which is disabled where the
+declaration cannot be changed: for the time and the timestamp, which the engine writes and which are never
+immutable, for the instance, which is immutable whether or not it is declared so and is shown ticked, and for an
+attribute of a guidance, which takes the values the operators of the guidance give it at every evaluation. Whether an operator or a choice assigns
 an immutable attribute is decided by reading its expression, which the engine does when it reads the model,
 so that no lint rule reports it here.
 

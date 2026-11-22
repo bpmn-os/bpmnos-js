@@ -12,18 +12,20 @@
 const ENGINE_ATTRIBUTES = [ 'Time', 'Timestamp', 'Instance' ];
 
 /**
- * Returns true if the attribute is declared immutable.
+ * Returns true if the attribute is immutable: if it is declared so, or if it is the instance, which is immutable
+ * whether or not it is declared so.
  *
  * @param {ModdleElement} attribute  a `bpmnos:Attribute`
  *
  * @return {boolean}
  */
 export function isImmutable(attribute) {
-  return attribute.get('immutable') === true;
+  return attribute.get('immutable') === true || attribute.get('id') === 'Instance';
 }
 
 /**
- * Returns true if the attribute may be declared immutable.
+ * Returns true if whether the attribute is immutable may be declared, so that the properties panel lets the
+ * declaration be changed.
  *
  * The engine writes the time at every clock tick and the timestamp of a token at every change of its state,
  * so neither can be immutable, and the instance is immutable whether or not it is declared so, nothing being

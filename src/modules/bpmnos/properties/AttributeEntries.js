@@ -49,6 +49,12 @@ export default function AttributeEntries(props) {
     idPrefix,
     attribute
   },{
+    id: idPrefix + '-immutable',
+    component: AttributeImmutable,
+    idPrefix,
+    attribute,
+    isEdited: isCheckboxEntryEdited
+  },{
     id: idPrefix + '-objective',
     component: AttributeObjective,
     idPrefix,
@@ -58,12 +64,6 @@ export default function AttributeEntries(props) {
     component: AttributeWeight,
     idPrefix,
     attribute
-  },{
-    id: idPrefix + '-immutable',
-    component: AttributeImmutable,
-    idPrefix,
-    attribute,
-    isEdited: isCheckboxEntryEdited
   } ];
 
   return entries;
@@ -408,9 +408,9 @@ function AttributeWeight(props) {
  *
  * The checkbox is unticked by default, an attribute not declared immutable being changeable by the model and
  * by the environment of a run. Unticking it removes the declaration rather than writing `immutable="false"`,
- * which means the same, so that a model states only what differs from the default. The checkbox is not offered
- * for an attribute that cannot be declared immutable: the time, the timestamp, the instance and the attributes
- * of a guidance.
+ * which means the same, so that a model states only what differs from the default. Every attribute shows the
+ * checkbox, which is disabled where the declaration cannot be changed: for the time and the timestamp, which
+ * are never immutable, for the instance, which always is, and for the attributes of a guidance.
  */
 function AttributeImmutable(props) {
   const {
@@ -419,7 +419,7 @@ function AttributeImmutable(props) {
     attribute
   } = props;
 
-  if ( !attribute || !mayBeImmutable(attribute) ) {
+  if ( !attribute ) {
     return;
   }
 
@@ -444,7 +444,7 @@ function AttributeImmutable(props) {
     element: attribute,
     id: idPrefix + '-immutable',
     label: translate('Immutable'),
-    description: translate('Not changed after its scope is initialised'),
+    disabled: !mayBeImmutable(attribute),
     getValue,
     setValue
   });

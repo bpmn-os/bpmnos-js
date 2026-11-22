@@ -30,17 +30,17 @@ describe('immutable attributes', function() {
     definitions = await parse('immutable');
   });
 
-  it('are read as declared, and an attribute stating nothing is not immutable', function() {
-    for ( const id of [ 'Doors', 'Pallet', 'Home' ] ) {
+  it('are read as declared, the instance always, and an attribute stating nothing is not immutable', function() {
+    for ( const id of [ 'Doors', 'Pallet', 'Home', 'Instance' ] ) {
       assert.equal(isImmutable(attribute(definitions, id)), true, id);
     }
 
-    for ( const id of [ 'Open', 'Requests' ] ) {
+    for ( const id of [ 'Time', 'Timestamp', 'Open', 'Requests', 'Approach' ] ) {
       assert.equal(isImmutable(attribute(definitions, id)), false, id);
     }
   });
 
-  it('may not be the time, the timestamp, the instance or an attribute of a guidance', function() {
+  it('may not be declared for the time, the timestamp, the instance or an attribute of a guidance', function() {
     for ( const id of [ 'Time', 'Timestamp', 'Instance', 'Approach' ] ) {
       assert.equal(mayBeImmutable(attribute(definitions, id)), false, id);
     }
