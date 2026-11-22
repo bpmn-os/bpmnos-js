@@ -18,6 +18,7 @@ import { useService } from 'bpmn-js-properties-panel';
 import AttributesList from './GuidingAttributesList.js';
 import RestrictionsList from './GuidingRestrictionsList.js';
 import OperatorsList from './GuidingOperatorsList.js';
+import DeferralEntries from './DeferralEntries.js';
 
 /**
  * The types of guidance an element may carry, one for each decision made at it: the entry of a child of an
@@ -59,6 +60,11 @@ export default function GuidanceEntries(props) {
       idPrefix,
       guidance
     },
+    ...DeferralEntries({
+      idPrefix,
+      element,
+      guidance
+    }),
     {
       id: idPrefix + '-attributes',
       component: AttributesList,

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmnos="https://bpmnos.telematique.eu" id="deferral" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Deferrals" isExecutable="true">
+    <bpmn:performer name="Sequential">
+      <bpmn:extensionElements>
+        <bpmnos:deferral condition="count &lt; 3" />
+      </bpmn:extensionElements>
+    </bpmn:performer>
+    <bpmn:adHocSubProcess id="Shared" ordering="Sequential">
+      <bpmn:task id="SharedTask">
+        <bpmn:extensionElements>
+          <bpmnos:guidance type="entry" />
+        </bpmn:extensionElements>
+      </bpmn:task>
+      <bpmn:task id="OtherSharedTask">
+        <bpmn:extensionElements>
+          <bpmnos:guidance type="entry" />
+        </bpmn:extensionElements>
+      </bpmn:task>
+    </bpmn:adHocSubProcess>
+    <bpmn:adHocSubProcess id="OwnPerformer" ordering="Sequential">
+      <bpmn:performer name="Sequential" />
+      <bpmn:task id="OwnPerformerTask">
+        <bpmn:extensionElements>
+          <bpmnos:guidance type="entry" />
+        </bpmn:extensionElements>
+      </bpmn:task>
+    </bpmn:adHocSubProcess>
+    <bpmn:task id="ChoiceTask" bpmnos:type="Decision">
+      <bpmn:extensionElements>
+        <bpmnos:guidance type="choice">
+          <bpmnos:deferral condition="time &lt; 10">
+            <bpmnos:parameter name="observable" value="count" />
+            <bpmnos:parameter name="observable" value="time" />
+          </bpmnos:deferral>
+        </bpmnos:guidance>
+      </bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:receiveTask id="ReceiveTask">
+      <bpmn:extensionElements>
+        <bpmnos:message name="Message" />
+        <bpmnos:guidance type="message">
+          <bpmnos:deferral condition="count &gt; 0">
+            <bpmnos:parameter name="observable" value="count" />
+          </bpmnos:deferral>
+        </bpmnos:guidance>
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+  </bpmn:process>
+</bpmn:definitions>

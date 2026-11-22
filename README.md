@@ -167,6 +167,17 @@ the properties panel does not offer it, and the rule `bpmnos/entry-guidance` rep
 refuses. Guidance already present on an element is shown even where no type is offered, so that it can be
 removed.
 
+The panel of a guidance also edits the deferral of the decision point the guidance belongs to, which permits
+a controller to defer the decision. Its condition is a boolean expression deciding whether deferring is
+allowed, and its observed attributes are the data and global attributes whose update ends a deferral, each
+entered in a field of its own and stored as a `bpmnos:parameter` named `observable`. The deferral of a choice
+or of a message delivery is stored in its guidance as a `bpmnos:deferral`. The entries of the sequential
+activities of a performer are deferred together, so that their deferral is stored in the extension elements of
+the `bpmn:performer` named "Sequential" of the node declaring the performer, and the panel of the entry guidance
+of every sequential activity of that performer shows and edits the same deferral. A deferral is created with
+its first content and removed with its last, together with extension elements of the performer that it leaves
+empty.
+
 ## The annotation box
 
 The box attached to an element shows what that element declares and what it inherits, in the order a token
